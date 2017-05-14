@@ -11,7 +11,10 @@ import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
+import blockRendering.BlockRenderer;
 import controls.Keyboard;
+import cubyWaterNew.NewWaterRenderer;
+import cubyWaterNew.NewWaterUpdater;
 import gameStuff.*;
 import renderStuff.*;
 import toolBox.*;
@@ -49,12 +52,21 @@ public class WaterRenderer {
 		vbo = Loader.createEmptyVBO(MAX_INSTANCES * INSTANCE_DATA_LENGTH);
 		Loader.addInstancedAtribute(Water.side.getVaoID(), vbo, 2, 3, INSTANCE_DATA_LENGTH, 0);
 		inited = true;
+		
+		NewWaterRenderer.init();
+		
 		Err.err.println("WaterRenderer inited!");
 	}
 
 	public static void render(Matrix4f viewMatrix) {
+		
+		if(NewWaterUpdater.useWaterMesh){
+			NewWaterRenderer.render(viewMatrix);
+			return;
+		}
+		
 		// Err.err.println("rendering Water...");
-		boolean WIREFRAME = Keyboard.isKeyDown(GLFW.GLFW_KEY_E);
+		boolean WIREFRAME = BlockRenderer.WIREFRAME;
 		if (WIREFRAME)
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 
@@ -274,6 +286,7 @@ public class WaterRenderer {
 		Tools.setBoolPreference("reflectiveWater", REFLECTIVE);
 		Tools.setLongPreference("reflectionHeightMode", WaterManager.reflectionHeightMode);
 		w.cleanUp();
+		NewWaterRenderer.cleanUp();// seperate!!!
 	}
 
 	public static void setProjectionMatrix(Matrix4f projectionMatrix) {

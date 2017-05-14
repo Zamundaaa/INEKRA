@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
+import cubyWaterNew.NewWaterUpdater;
 import data.Block;
 import data.ChunkManager;
 import entities.Projectil;
@@ -23,12 +24,15 @@ public class WaterUpdater {
 												// think about it!
 	public static Thread updater;
 	private static volatile boolean updating = false;
-	
-	// water updates without list!!! Should remove lag spikes and performance killing on slower machines!
+
+	// water updates without list!!! Should remove lag spikes and performance
+	// killing on slower machines!
 	// build mesh from chunk data in extra thread,
 	// pass updated model to WaterRenderer which then loads it to the VAO
 
 	public static void init() {
+		if (NewWaterUpdater.useWaterMesh)
+			return;
 		if (MULTITHREADING) {
 			updater = new Thread() {
 				@Override
@@ -64,9 +68,10 @@ public class WaterUpdater {
 
 	public static void update() {
 		// ArrayList<Water> ws = WaterManager.getWater();
-		for (int i = 0; i < waters.size() && ThreadManager.running(); i++) {
-			update(waters.get(i));
-		}
+		if (!NewWaterUpdater.useWaterMesh)
+			for (int i = 0; i < waters.size() && ThreadManager.running(); i++) {
+				update(waters.get(i));
+			}
 	}
 
 	public static final float RANDOMSHIFTPS = 0.1f;

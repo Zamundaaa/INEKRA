@@ -559,4 +559,8 @@ public class Block {
 		return id == WOOD || id == LEAVES || id == GRASS;
 	}
 
+	public static float waterHeight(short currID) {
+		return (currID - 1000)*0.01f;
+	}
+
 }

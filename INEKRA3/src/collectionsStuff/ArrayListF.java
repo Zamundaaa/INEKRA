@@ -20,13 +20,13 @@ public class ArrayListF {
 	}
 
 	public void add(float f) {
-		add(size, f);
+		ensureCapacity(size+1);
+		values[size] = f;
+		size++;
 	}
 
-	public void add(int i, float f) {
-		ensureCapacity(i + 1);
+	public void set(int i, float f) {
 		values[i] = f;
-		size++;
 	}
 
 	public float remove(int i) {
@@ -82,6 +82,13 @@ public class ArrayListF {
 		ret.append(arr[arr.length-1]);
 		ret.append(" ]");
 		return ret.toString();
+	}
+
+	public float[] capToArray() {
+		float[] ret = new float[size];
+		for(int i = 0; i < size; i++)
+			ret[i] = values[i];
+		return ret;
 	}
 
 }

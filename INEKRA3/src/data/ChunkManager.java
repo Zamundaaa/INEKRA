@@ -62,6 +62,7 @@ public class ChunkManager {
 	 * in the WaterUpdater thread
 	 */
 	private static Key3D placeholder_WaterUpdater = new Key3D(0, 0, 0);
+	private static Key3D placeholder2 = new Key3D(0, 0, 0);
 
 //	/**
 //	 * a placeholder Key3D for fast access of the chunks map. May only be used
@@ -241,10 +242,12 @@ public class ChunkManager {
 //		if (Thread.currentThread() == LightMaster.lightUpdater) {
 //			key = placeholder_LightUpdater;
 //		} else 
-		if (Thread.currentThread() == WaterUpdater.updater) {
+		if (Thread.currentThread() == WaterUpdater.updater ) {
 			key = placeholder_WaterUpdater;
 			// } else if (Thread.currentThread() == listUpdater) {
 			// key = placeholder_ListUpdater;
+		}else if(!Thread.currentThread().getName().equals("main")){
+			key = placeholder2;
 		} else {
 			key = placeholder;
 		}
@@ -696,6 +699,10 @@ public class ChunkManager {
 				Vects.addV4i(v);
 			}
 		}
+	}
+
+	public static ArrayList<Chunk> getLoadedChunkList() {
+		return clist;
 	}
 	
 //	public static int getHighestNonEmptyChunk(float x, float y, float z){

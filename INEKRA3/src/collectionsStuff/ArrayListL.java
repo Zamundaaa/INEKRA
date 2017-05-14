@@ -20,13 +20,13 @@ public class ArrayListL {
 	}
 
 	public void add(long l) {
-		add(size, l);
+		ensureCapacity(size+1);
+		values[size] = l;
+		size++;
 	}
 
-	public void add(int i, long l) {
-		ensureCapacity(i + 1);
+	public void set(int i, long l) {
 		values[i] = l;
-		size++;
 	}
 
 	public long remove(int i) {

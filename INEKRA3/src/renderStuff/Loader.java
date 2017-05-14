@@ -75,12 +75,38 @@ public class Loader {
 		GL30.glBindVertexArray(mod.getVaoID());
 		updateIndicesBuffer(mod.vboID(), indices);
 		updateDataInAttributeList(mod.vboPos(), 0, 3, positions);
-		updateDataInAttributeList(mod.vboTex(), 1, 3, texCoords);
+		updateDataInAttributeList(mod.vboTex(), 1, 2, texCoords);
 		updateDataInAttributeList(mod.vboNorm(), 2, 3, normals);
 		mod.setVertexCount(indices.length);
 		unbindVAO();
 	}
-
+	
+	/**
+	 * if some parameter is null then it won't update it. Uses the RawModels attributeList values! (so obviously the best Method for updating!)
+	 * @param mod
+	 * @param positions 3D
+	 * @param texCoords 2D
+	 * @param normals 3D
+	 * @param tangents 3D
+	 * @param indices 1D
+	 */
+	public static void updateVAO(RawModel mod, float[] positions, float[] texCoords, float[] normals, float[] tangents, int[] indices){
+		GL30.glBindVertexArray(mod.getVaoID());
+		if(indices != null){
+			updateIndicesBuffer(mod.vboID(), indices);
+			mod.setVertexCount(indices.length);
+		}
+		if(positions != null)
+			updateDataInAttributeList(mod.vboPos(), mod.attributeListPositions(), 3, positions);
+		if(texCoords != null)
+			updateDataInAttributeList(mod.vboTex(), mod.attributeListTextureCoords(), 2, texCoords);
+		if(normals != null)
+			updateDataInAttributeList(mod.vboNorm(), mod.attributeListNormals(), 3, normals);
+		if(tangents != null)
+			updateDataInAttributeList(mod.vboTan(), mod.attributeListTangents(), 3, tangents);
+		unbindVAO();
+	}
+	
 	/**
 	 * @comment saves the texCoords as 3Dimensional; additionalData is a vec4!!!
 	 */
@@ -145,8 +171,8 @@ public class Loader {
 	public static void updateVAO(RawModel mod, float[] positions, float[] texCoords, int[] indices) {
 		GL30.glBindVertexArray(mod.getVaoID());
 		updateIndicesBuffer(mod.vboID(), indices);
-		updateDataInAttributeList(mod.vboPos(), 0, 3, positions);
-		updateDataInAttributeList(mod.vboTex(), 1, 2, texCoords);
+		updateDataInAttributeList(mod.vboPos(), mod.attributeListPositions(), 3, positions);
+		updateDataInAttributeList(mod.vboTex(), mod.attributeListTextureCoords(), 2, texCoords);
 		mod.setVertexCount(indices.length);
 		unbindVAO();
 	}
@@ -168,6 +194,17 @@ public class Loader {
 		int pos = storeDataInAttributeList(0, 3, positions);
 		unbindVAO();
 		RawModel raw = new RawModel(vaoID, indices.length, ib, pos, 0, 0, 0);
+		return raw;
+	}
+	
+	public static RawModel loadToVAO(float[] positions, float[] normals, int[] indices) {
+		int vaoID = createVAO();
+		int ib = bindIndicesBuffer(indices);
+		int pos = storeDataInAttributeList(0, 3, positions);
+		int norm = storeDataInAttributeList(1, 3, normals);
+		unbindVAO();
+		RawModel raw = new RawModel(vaoID, indices.length, ib, pos, 0, norm, 0);
+		raw.setAttributeListNormals(1);
 		return raw;
 	}
 	

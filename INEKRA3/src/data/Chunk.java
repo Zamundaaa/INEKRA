@@ -8,6 +8,7 @@ import blockRendering.BlockRenderer;
 import blockRendering.ChunkEntity;
 import collectionsStuff.*;
 import cubyWater.Water;
+import cubyWaterNew.NewWaterUpdater;
 import gameStuff.Err;
 import gameStuff.MainLoop;
 import inventory.Item3D;
@@ -63,9 +64,9 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	private boolean mask = true;// ob beim nächsten Update genMask() neu
 								// aufgerufen werden muss
 	// private boolean afterGen;// ob noch nachgeneriert werden muss
-	
-//	private Quad borders;
-	
+
+	// private Quad borders;
+
 	public Chunk(int x, int y, int z) {
 		this.x = x;
 		this.y = y;
@@ -92,7 +93,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		if (genMask)
 			genMask();
 	}
-	
+
 	public Chunk() {
 		this.x = 0;
 		this.y = 0;
@@ -104,9 +105,13 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		light = new short[SIZE][SIZE][SIZE];
 		fake = true;
 	}
-	
+
 	private boolean fake = false;
 	private boolean uw = true;
+
+	public boolean waterChanged() {
+		return uw;
+	}
 
 	public void update(boolean updateSomeBlocks) {
 		// TODO: GROWTH Sapling (+later plant) growth rate !!! change to :
@@ -142,8 +147,9 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			ChunkSaver.saveChunk(this);
 			lastSave = Meth.systemTime();
 		}
-//		if(((z < 1 && z > -5)) &&borders == null)
-//			borders = new Quad(realX, realY, realZ, realX+SIZE, realY+SIZE, realZ+SIZE);
+		// if(((z < 1 && z > -5)) &&borders == null)
+		// borders = new Quad(realX, realY, realZ, realX+SIZE, realY+SIZE,
+		// realZ+SIZE);
 	}
 
 	private long lastSave = Meth.systemTime();
@@ -163,6 +169,8 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	}
 
 	public void updateWaters() {
+		if (NewWaterUpdater.useWaterMesh)
+			return;
 		FramePerformanceLogger.stopTime();
 		for (int y = 0; y < SIZE; y++) {
 			for (int x = 0; x < SIZE; x++) {
@@ -262,8 +270,8 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			}
 		}
 		unloaded = true;
-//		if(borders != null)
-//			borders.cleanUp();
+		// if(borders != null)
+		// borders.cleanUp();
 	}
 
 	public boolean unloaded = false;
@@ -283,30 +291,30 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 					for (int z = 0; z < SIZE; z++) {
 						currY = 0;
 						while (currY < SIZE) {
-//							count = data[counter++];
-//							lo = data[counter++];
-//							hi = data[counter++];
-//							id = bytesToShort(hi, lo);
+							// count = data[counter++];
+							// lo = data[counter++];
+							// hi = data[counter++];
+							// id = bytesToShort(hi, lo);
 							count = d.read();
 							id = d.readShort();
-//							try{
-								for (i = 0; i < count; i++) {
-									blocks[x][currY][z] = id;
-									if (id < 0) {
-										specials.add(SpecialBlock.getInstance(id, realX + x, realY + currY, realZ + z));
-										
-//										int pos = d.position();
-										specials.get(specials.size()-1).applyMetaData(d);
-//										if(i > 0)
-//											d.setPosition(pos);
-									}
-									currY++;
+							// try{
+							for (i = 0; i < count; i++) {
+								blocks[x][currY][z] = id;
+								if (id < 0) {
+									specials.add(SpecialBlock.getInstance(id, realX + x, realY + currY, realZ + z));
+
+									// int pos = d.position();
+									specials.get(specials.size() - 1).applyMetaData(d);
+									// if(i > 0)
+									// d.setPosition(pos);
 								}
-//							}catch(Exception e){
-//								Err.err.println(count + " x " + id);
-//								e.printStackTrace(Err.err);
-//								System.exit(-1);
-//							}
+								currY++;
+							}
+							// }catch(Exception e){
+							// Err.err.println(count + " x " + id);
+							// e.printStackTrace(Err.err);
+							// System.exit(-1);
+							// }
 						}
 					}
 				}
@@ -353,7 +361,8 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	private int upcount, downcount, xpcount, xmcount, zpcount, zmcount;
 	private boolean restMaskNeeded = false, specialsInited = false;
 
-	private static final ArrayListF verts = new ArrayListF(), texes = new ArrayListF(), lightValues = new ArrayListF(), norms = new ArrayListF();
+	private static final ArrayListF verts = new ArrayListF(), texes = new ArrayListF(), lightValues = new ArrayListF(),
+			norms = new ArrayListF();
 	private static final ArrayListI indices = new ArrayListI();
 
 	public ChunkEntity genMask() {
@@ -372,7 +381,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 
 		zMask(verts, indices, texes, lightValues, true);
 		zMask(verts, indices, texes, lightValues, false);
-		
+
 		if (restMaskNeeded) {
 			restMask(verts, indices, texes, norms, lightValues);
 		}
@@ -542,15 +551,20 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			}
 			ChunkManager.scheduleBlockUpdate(x, y, z);
 			// ChunkManager.blockUpdate(x, y, z);
-//			if (Block.isLightSource(ID)) {// && !Block.isLightSource(old)
-//				// LightMaster.
-//			} else 
+			// if (Block.isLightSource(ID)) {// && !Block.isLightSource(old)
+			// // LightMaster.
+			// } else
 			if (!Block.isLightSource(old) && Block.isTransparent(old) != Block.isTransparent(ID)) {
 				LightMaster.checkForLightUpdates(x, y, z);
 			}
-			if (Block.lightReduction(old) != Block.lightReduction(ID)) {//	Block.isTransparent(old) != Block.isTransparent(ID) || 
-				LightMaster.updateSunLight(x, y, z);// why doesn't this work properly now?!?
-//				System.out.println("lightUpdate at " + x + " " + y + " " + z);
+			if (Block.lightReduction(old) != Block.lightReduction(ID)) {// Block.isTransparent(old)
+																		// !=
+																		// Block.isTransparent(ID)
+																		// ||
+				LightMaster.updateSunLight(x, y, z);// why doesn't this work
+													// properly now?!?
+				// System.out.println("lightUpdate at " + x + " " + y + " " +
+				// z);
 			}
 			needsSaving = true;
 		}
@@ -1280,10 +1294,10 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		boolean ret;
 		if (plus) {
 			ret = Block.isTransparent(blocks[x][y][z]) || Block.isTransparent(x < SIZE - 1 ? (blocks[x + 1][y][z])
-					: ChunkManager.getBlockID(this.x * SIZE + x + 1, this.y * SIZE + y, this.z * SIZE + z));
+					: ChunkManager.getBlockID(realX + x + 1, realY + y, realZ + z));
 		} else {
-			ret = Block.isTransparent(blocks[x][y][z]) || Block.isTransparent(x > 0 ? this.blocks[x - 1][y][z]
-					: ChunkManager.getBlockID(this.x * SIZE + x - 1, this.y * SIZE + y, this.z * SIZE + z));
+			ret = Block.isTransparent(blocks[x][y][z]) || Block.isTransparent(
+					x > 0 ? this.blocks[x - 1][y][z] : ChunkManager.getBlockID(realX + x - 1, realY + y, realZ + z));
 		}
 		return ret;
 	}
@@ -1308,19 +1322,19 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		}
 		return ret;
 	}
-	
+
 	private static short fakeLight;
-	static{
-		short value = MAXL-4;
+	static {
+		short value = MAXL - 4;
 		fakeLight = (short) ((fakeLight & ((0x00 << 8) | 0xFF)) | (value << 8));
 		fakeLight = (short) ((fakeLight & (0x00 | (0xFF << 8))) | value);
 	}
-	
+
 	private short[][][] lightValuesX(boolean plus) {
-		if(fake){
-			for(int x = 0; x < SIZE; x++)
-				for(int y = 0; y < SIZE; y++)
-					for(int z = 0; z < SIZE; z++)
+		if (fake) {
+			for (int x = 0; x < SIZE; x++)
+				for (int y = 0; y < SIZE; y++)
+					for (int z = 0; z < SIZE; z++)
 						lightCopy[x][y][z] = fakeLight;
 			return lightCopy;
 		}
@@ -1359,10 +1373,10 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	}
 
 	private short[][][] lightValuesY(boolean up) {
-		if(fake){
-			for(int x = 0; x < SIZE; x++)
-				for(int y = 0; y < SIZE; y++)
-					for(int z = 0; z < SIZE; z++)
+		if (fake) {
+			for (int x = 0; x < SIZE; x++)
+				for (int y = 0; y < SIZE; y++)
+					for (int z = 0; z < SIZE; z++)
 						lightCopy[x][y][z] = fakeLight;
 			return lightCopy;
 		}
@@ -1401,10 +1415,10 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	}
 
 	private short[][][] lightValuesZ(boolean plus) {
-		if(fake){
-			for(int x = 0; x < SIZE; x++)
-				for(int y = 0; y < SIZE; y++)
-					for(int z = 0; z < SIZE; z++)
+		if (fake) {
+			for (int x = 0; x < SIZE; x++)
+				for (int y = 0; y < SIZE; y++)
+					for (int z = 0; z < SIZE; z++)
 						lightCopy[x][y][z] = fakeLight;
 			return lightCopy;
 		}
@@ -1499,44 +1513,45 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			} else {
 				save.add(currentCount);
 				save.addShort(blocks[x][i][z]);
-				if(blocks[x][i][z] < 0){
-					getSpecial(realX+x, realY+i, realZ+z).addMetaData(save);
+				if (blocks[x][i][z] < 0) {
+					getSpecial(realX + x, realY + i, realZ + z).addMetaData(save);
 				}
 				currentCount = 1;
-				
+
 			}
 		}
-//		save.add(currentCount);
+		// save.add(currentCount);
 		save.add(currentCount);
-		save.addShort(blocks[x][SIZE-1][z]);
-		if(blocks[x][SIZE-1][z] < 0){
-			getSpecial(realX+x, realY+SIZE-1, realZ+z).addMetaData(save);
+		save.addShort(blocks[x][SIZE - 1][z]);
+		if (blocks[x][SIZE - 1][z] < 0) {
+			getSpecial(realX + x, realY + SIZE - 1, realZ + z).addMetaData(save);
 		}
-//		add(save, blocks[x][SIZE - 1][z]);
+		// add(save, blocks[x][SIZE - 1][z]);
 	}
-	
+
 	/**
 	 * xyz are worldspace coordinates!
+	 * 
 	 * @param x
 	 * @param y
 	 * @param z
 	 * @return
 	 */
-	public SpecialBlock getSpecial(int x, int y, int z){
-		for(int i = 0; i < specials.size(); i++)
-			if(specials.get(i).is(x, y, z))
+	public SpecialBlock getSpecial(int x, int y, int z) {
+		for (int i = 0; i < specials.size(); i++)
+			if (specials.get(i).is(x, y, z))
 				return specials.get(i);
 		return null;
 	}
 
-//	private static void add(ArrayList<Byte> data, short x) {
-//		data.add((byte) (x & 0xff));// lo
-//		data.add((byte) ((x >> 8) & 0xff));// hi
-//	}
-//
-//	private static short bytesToShort(byte hi, byte lo) {
-//		return (short) (((hi & 0xFF) << 8) | (lo & 0xFF));
-//	}
+	// private static void add(ArrayList<Byte> data, short x) {
+	// data.add((byte) (x & 0xff));// lo
+	// data.add((byte) ((x >> 8) & 0xff));// hi
+	// }
+	//
+	// private static short bytesToShort(byte hi, byte lo) {
+	// return (short) (((hi & 0xFF) << 8) | (lo & 0xFF));
+	// }
 
 	public void scheduleWaterUpdate() {
 		uw = true;
@@ -1546,22 +1561,23 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 
 	public int getTorchLightIC(int x, int y, int z) {
 		int ret = light[x][y][z] & 0xFF;
-//		if (ret > Chunk.LIGHTR || ret < 0) {
-//			System.err.println(
-//					"value too big/small? " + ret + " PATTERN: " + Integer.toBinaryString((int) light[x][y][z]));
-//			new Exception().printStackTrace();
-//			System.exit(-1);
-//		}
+		// if (ret > Chunk.LIGHTR || ret < 0) {
+		// System.err.println(
+		// "value too big/small? " + ret + " PATTERN: " +
+		// Integer.toBinaryString((int) light[x][y][z]));
+		// new Exception().printStackTrace();
+		// System.exit(-1);
+		// }
 		return ret;
 	}
 
 	public void setTorchLightIC(int x, int y, int z, int value) {
 		light[x][y][z] = (short) ((light[x][y][z] & (0x00 | (0xFF << 8))) | value);
-//		if (value > Chunk.LIGHTR || value < 0) {
-//			System.err.println("Value too big/small! " + value);
-//			new Exception().printStackTrace();
-//			System.exit(-1);
-//		}
+		// if (value > Chunk.LIGHTR || value < 0) {
+		// System.err.println("Value too big/small! " + value);
+		// new Exception().printStackTrace();
+		// System.exit(-1);
+		// }
 		mask = true;
 	}
 
@@ -1702,6 +1718,285 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			}
 			break;
 		}
+	}
+
+	public void mapWater(ArrayListF verts, ArrayListI indices, ArrayListF normals) {
+		// int s = verts.size();
+		yMaskWater(verts, indices, normals, true);
+		yMaskWater(verts, indices, normals, false);
+		xMaskWater(verts, indices, normals, true);
+		xMaskWater(verts, indices, normals, false);
+		zMaskWater(verts, indices, normals, true);
+		zMaskWater(verts, indices, normals, false);
+		// if(s > 0)
+		// for(int i = s-1; i < verts.size(); ){
+		// verts.set(i, verts.get(i++)+realX);
+		// verts.set(i, verts.get(i++)+realY);
+		// verts.set(i, verts.get(i++)+realZ);
+		// }
+	}
+
+	private void yMaskWater(ArrayListF verts, ArrayListI indices, ArrayListF normals, boolean up) {
+		short[][][] copy = getCopyYWater(up);
+		for (int x = 0; x < SIZE; x++) {// Yrepeat
+			for (int y = 0; y < SIZE; y++) {
+				for (int z = 0; z < SIZE; z++) {
+					if (copy[x][y][z] != 0) {
+
+						int ss = verts.size() / 3;
+
+						float h = Block.waterHeight(copy[x][y][z]);
+						float S = 0.5f;
+
+						verts.add(realX + x);
+						verts.add(realY + (up ? y + h : y));
+						verts.add(realZ + z);
+
+						verts.add(realX + x);
+						verts.add(realY + (up ? y + h : y));
+						verts.add(realZ + z + S * 2);
+
+						verts.add(realX + x + S * 2);
+						verts.add(realY + (up ? y + h : y));
+						verts.add(realZ + z);
+
+						verts.add(realX + x + S * 2);
+						verts.add(realY + (up ? y + h : y));
+						verts.add(realZ + z + S * 2);
+
+						if (up) {
+							indices.add(ss);
+							indices.add(ss + 1);
+							indices.add(ss + 2);
+							indices.add(ss + 1);
+							indices.add(ss + 3);
+							indices.add(ss + 2);
+						} else {
+							indices.add(ss);
+							indices.add(ss + 2);
+							indices.add(ss + 1);
+							indices.add(ss + 1);
+							indices.add(ss + 2);
+							indices.add(ss + 3);
+						}
+
+						int dir = 1;
+						if (!up)
+							dir = -1;
+
+						for (int i = 0; i < 4; i++) {
+							normals.add(0);
+							normals.add(dir);
+							normals.add(0);
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	private void xMaskWater(ArrayListF verts, ArrayListI indices, ArrayListF normals, boolean plus) {
+		short[][][] copy = getCopyXWater(plus);
+		for (int x = 0; x < SIZE; x++) {// Yrepeat
+			for (int y = 0; y < SIZE; y++) {
+				for (int z = 0; z < SIZE; z++) {
+					if (copy[x][y][z] != 0) {
+
+						int ss = verts.size() / 3;
+
+						float h = Block.waterHeight(copy[x][y][z]);
+						float S = 0.5f;
+
+						verts.add(realX + (plus ? x + S * 2 : x));
+						verts.add(realY + y);
+						verts.add(realZ + z);
+
+						verts.add(realX + (plus ? x + S * 2 : x));
+						verts.add(realY + y + h);
+						verts.add(realZ + z);
+
+						verts.add(realX + (plus ? x + S * 2 : x));
+						verts.add(realY + y);
+						verts.add(realZ + z + S * 2);
+
+						verts.add(realX + (plus ? x + S * 2 : x));
+						verts.add(realY + y + h);
+						verts.add(realZ + z + S * 2);
+
+						if (!plus) {
+							indices.add(ss);
+							indices.add(ss + 3);
+							indices.add(ss + 1);
+							indices.add(ss);
+							indices.add(ss + 2);
+							indices.add(ss + 3);
+						} else {
+							indices.add(ss);
+							indices.add(ss + 1);
+							indices.add(ss + 3);
+							indices.add(ss);
+							indices.add(ss + 3);
+							indices.add(ss + 2);
+						}
+
+						int dir = 1;
+						if (!plus)
+							dir = -1;
+
+						for (int i = 0; i < 4; i++) {
+							normals.add(dir);
+							normals.add(0);
+							normals.add(0);
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	private void zMaskWater(ArrayListF verts, ArrayListI indices, ArrayListF normals, boolean plus) {
+		short[][][] copy = getCopyZWater(plus);
+		for (int x = 0; x < SIZE; x++) {// Yrepeat
+			for (int y = 0; y < SIZE; y++) {
+				for (int z = 0; z < SIZE; z++) {
+					if (copy[x][y][z] != 0) {
+
+						int ss = verts.size() / 3;
+
+						float h = Block.waterHeight(copy[x][y][z]);
+						float S = 0.5f;
+
+						verts.add(realX + x);
+						verts.add(realY + y);
+						verts.add(realZ + (plus ? z + S * 2 : z));
+
+						verts.add(realX + x);
+						verts.add(realY + y + h);
+						verts.add(realZ + (plus ? z + S * 2 : z));
+
+						verts.add(realX + x + S * 2);
+						verts.add(realY + y);
+						verts.add(realZ + (plus ? z + S * 2 : z));
+
+						verts.add(realX + x + S * 2);
+						verts.add(realY + y + h);
+						verts.add(realZ + (plus ? z + S * 2 : z));
+
+						if (plus) {
+							indices.add(ss);
+							indices.add(ss + 3);
+							indices.add(ss + 1);
+							indices.add(ss);
+							indices.add(ss + 2);
+							indices.add(ss + 3);
+						} else {
+							indices.add(ss);
+							indices.add(ss + 1);
+							indices.add(ss + 3);
+							indices.add(ss);
+							indices.add(ss + 3);
+							indices.add(ss + 2);
+						}
+
+						int dir = 1;
+						if (!plus)
+							dir = -1;
+
+						for (int i = 0; i < 4; i++) {
+							normals.add(dir);
+							normals.add(0);
+							normals.add(0);
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	private static final short[][][] waterCopy = new short[SIZE][SIZE][SIZE];
+
+	private short[][][] getCopyXWater(boolean plus) {
+		for (int x = 0; x < SIZE; x++) {
+			for (int y = 0; y < SIZE; y++) {
+				for (int z = 0; z < SIZE; z++) {
+					if (Block.isWater(blocks[x][y][z]) && checkXWater(x, y, z, plus)) {
+						waterCopy[x][y][z] = blocks[x][y][z];
+					} else {
+						waterCopy[x][y][z] = 0;
+					}
+				}
+			}
+		}
+		return waterCopy;
+	}
+
+	private short[][][] getCopyZWater(boolean plus) {
+		for (int x = 0; x < SIZE; x++) {
+			for (int y = 0; y < SIZE; y++) {
+				for (int z = 0; z < SIZE; z++) {
+					if (Block.isWater(blocks[x][y][z]) && checkZWater(x, y, z, plus)) {
+						waterCopy[x][y][z] = blocks[x][y][z];
+					} else {
+						waterCopy[x][y][z] = 0;
+					}
+				}
+			}
+		}
+		return waterCopy;
+	}
+
+	private short[][][] getCopyYWater(boolean up) {
+		for (int x = 0; x < SIZE; x++) {
+			for (int y = 0; y < SIZE; y++) {
+				for (int z = 0; z < SIZE; z++) {
+					if (Block.isWater(blocks[x][y][z]) && checkYWater(x, y, z, up)) {
+						waterCopy[x][y][z] = blocks[x][y][z];
+					} else {
+						waterCopy[x][y][z] = 0;
+					}
+				}
+			}
+		}
+		return waterCopy;
+	}
+
+	private boolean checkXWater(int x, int y, int z, boolean plus) {
+		short s;
+		if (plus) {
+			s = x < SIZE - 1 ? (blocks[x + 1][y][z])
+					: ChunkManager.getBlockID(this.x * SIZE + x + 1, this.y * SIZE + y, this.z * SIZE + z);
+		} else {
+			s = x > 0 ? this.blocks[x - 1][y][z]
+					: ChunkManager.getBlockID(this.x * SIZE + x - 1, this.y * SIZE + y, this.z * SIZE + z);
+		}
+		return !Block.isWater(s) && Block.isTransparent(s);
+	}
+
+	private boolean checkZWater(int x, int y, int z, boolean plus) {
+		short s;
+		if (plus) {
+			s = z < SIZE - 1 ? this.blocks[x][y][z + 1]
+					: ChunkManager.getBlockID(this.x * SIZE + x, this.y * SIZE + y, this.z * SIZE + z + 1);
+		} else {
+			s = z > 0 ? this.blocks[x][y][z - 1]
+					: ChunkManager.getBlockID(this.x * SIZE + x, this.y * SIZE + y, this.z * SIZE + z - 1);
+		}
+		return !Block.isWater(s) && Block.isTransparent(s);
+	}
+
+	private boolean checkYWater(int x, int y, int z, boolean up) {
+		short s;
+		if (up) {
+			s = y < SIZE - 1 ? this.blocks[x][y + 1][z]
+					: ChunkManager.getBlockID(this.x * SIZE + x, this.y * SIZE + y + 1, this.z * SIZE + z);
+		} else {
+			s = y > 0 ? this.blocks[x][y - 1][z]
+					: ChunkManager.getBlockID(this.x * SIZE + x, this.y * SIZE + y - 1, this.z * SIZE + z);
+		}
+		return !Block.isWater(s) && Block.isTransparent(s);
 	}
 
 }

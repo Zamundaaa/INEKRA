@@ -1,10 +1,14 @@
 package models;
 
+import org.lwjgl.opengl.GL30;
+
 import objConverter.ModelData;
 
 public class RawModel {
+	
 	private int vaoID;
 	private int vboID, vboPos, vboTex, vboNorm, vboTan;
+	private int aP = 0, aTex = 1, aN = 2, aTan = 3;
 	private int vertexCount;
 	private float[] vertices;
 	private int[] indices;
@@ -38,7 +42,27 @@ public class RawModel {
 		this.vboNorm = vboNorm;
 		this.vboTan = tan;
 	}
-
+	
+	public int attributeListPositions(){
+		return aP;
+	}
+	
+	public int attributeListTextureCoords(){
+		return aTex;
+	}
+	
+	public int attributeListNormals(){
+		return aN;
+	}
+	
+	public int attributeListTangents(){
+		return aTan;
+	}
+	
+	public void setAttributeListNormals(int al){
+		aN = al;
+	}
+	
 	public int vboID() {
 		return vboID;
 	}
@@ -91,6 +115,14 @@ public class RawModel {
 	@Override
 	public String toString(){
 		return "VAO: " + vaoID + " posVbo: " + vboPos + " indicesVbo: " + vboID;
+	}
+
+	public void bindVAO() {
+		GL30.glBindVertexArray(vaoID);
+	}
+	
+	public void unbindVAO(){
+		GL30.glBindVertexArray(0);
 	}
 
 }

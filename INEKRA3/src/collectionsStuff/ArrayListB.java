@@ -25,13 +25,13 @@ public class ArrayListB {
 	}
 
 	public void add(byte b) {
-		add(size, b);
+		ensureCapacity(size+1);
+		values[size] = b;
+		size++;
 	}
 
-	public void add(int i, byte b) {
-		ensureCapacity(i + 1);
+	public void set(int i, byte b) {
 		values[i] = b;
-		size++;
 	}
 
 	public byte remove(int i) {
