@@ -38,7 +38,7 @@ public class Projectil implements TickingThing, HarmingThing {
 	protected float gravityfact = 1;
 	protected float particleRandomOffset = 0;
 
-	private Source sound;
+	protected Source sound;
 
 	// private Vector3f exmin = new Vector3f(-2, -2, -2), exmax = new
 	// Vector3f(2, 2, 2);
@@ -331,6 +331,7 @@ public class Projectil implements TickingThing, HarmingThing {
 							Vects.randomVector3f(new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)), 0, 2, 0,
 							Meth.randomFloat(0.3f, 0.6f), 0);
 				}
+				removeAttatched();
 				WorldObjects.removeThingFromWorld(this);
 			}
 		}
@@ -387,9 +388,13 @@ public class Projectil implements TickingThing, HarmingThing {
 		}
 		return attatched;
 	}
-
-	public void attatch(TexturedModel mod) {
-		attatched = new Entity(mod, 0, position, null, 0, 0, 0, 0.5f, false, true);
+	
+	public void attatch(TexturedModel mod){
+		attatch(mod, 0.5f);
+	}
+	
+	public void attatch(TexturedModel mod, float scale) {
+		attatched = new Entity(mod, 0, position, null, 0, 0, 0, scale, false, true);
 	}
 
 }

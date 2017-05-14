@@ -20,6 +20,7 @@ import particles.PTM;
 import particles.ParticleMaster;
 import renderStuff.DisplayManager;
 import toolBox.*;
+import weather.Meteorite;
 import weather.WeatherController;
 
 public class ItemStack {
@@ -144,13 +145,20 @@ public class ItemStack {
 	public boolean action() {
 		if (ID == BOOM) {
 			if (Mouse.isButtonDown(1) && Meth.systemTime() > lastTime + 500) {
-				Vector3f p = MousePicker.getPoint(30).sub(Camera.getPosition());
-				Projectil pro = new Projectil(new Vector3f(Camera.getPosition()), p, PTM.projectile,
-						WorldObjects.player, 5, 10, 1, true);
-				pro.setGravity(0.2f);
-				pro.setFlare();
-				WorldObjects.player.influence(new Vector3f(-p.x / 10, -p.y / 10, -p.z / 10));
+				if(Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL)){
+					Vector3f p = MousePicker.getPoint(30).sub(Camera.getPosition());
+					Projectil pro = new Projectil(new Vector3f(Camera.getPosition()), p, PTM.projectile,
+							WorldObjects.player, 5, 10, 1, true);
+					pro.setGravity(0.2f);
+					pro.setFlare();
+					WorldObjects.player.influence(new Vector3f(-p.x / 10, -p.y / 10, -p.z / 10));
+				}else{
+					Vector3f p = MousePicker.getPoint(50).sub(Camera.getPosition());
+					Meteorite m = new Meteorite(new Vector3f(Camera.getPosition()), p);
+					WorldObjects.player.influence(new Vector3f(-p.x / 10, -p.y / 10, -p.z / 10));
+				}
 				lastTime = Meth.systemTime();
+				
 			} else if (Mouse.isButtonDown(0) && Meth.systemTime() > lastTime + 333) {
 				Vector3f ipos = new Vector3f(Camera.getPosition());
 				ipos.x += 2*Meth.sinDeg(180-Camera.getYaw()-40);
