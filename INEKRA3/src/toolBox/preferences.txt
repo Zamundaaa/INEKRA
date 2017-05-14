@@ -1,0 +1,19 @@
+
+sound = true
+music = true
+PX = 5000
+PY = 100
+PZ = 5000
+time = 0
+gravity = -9.81
+xPosOfDisplay = 50
+yPosOfDisplay = 50
+gameTimeMillis = 0
+Wavemodel = 4.0
+flight = false
+burn = false
+rainallowed = true
+rainmakeswater = true
+rain = false
+snow = false
+snowcandosomething = true

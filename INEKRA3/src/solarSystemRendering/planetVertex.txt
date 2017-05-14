@@ -1,0 +1,27 @@
+#version 330
+
+in vec3 position;
+in vec2 textureCoords;
+//in vec3 normals;
+
+out vec2 texCoords;
+out vec3 norm;
+out vec3 pos;
+
+uniform mat4 viewMatrix;
+uniform mat4 transformationMatrix;
+uniform mat4 drehMatrix;
+uniform mat4 projectionMatrix;
+
+void main(){
+	
+	vec4 worldPosition = transformationMatrix * vec4(position,1.0);
+	
+	gl_Position = projectionMatrix * viewMatrix * worldPosition;
+	
+	texCoords = textureCoords;
+	//norm = (transformationMatrix * vec4(normals, 0.0)).xyz;
+	norm = (drehMatrix * vec4(position, 1.0)).xyz;
+	//pos = (drehMatrix * vec4(position, 1.0)).xyz;
+	pos = position;
+}

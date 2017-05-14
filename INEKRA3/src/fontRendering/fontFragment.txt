@@ -1,0 +1,44 @@
+#version 400 core
+
+in vec2 pass_textureCoords;
+
+layout (location = 0) out vec4 out_Color;
+layout (location = 1) out vec4 out_BrightColor;
+
+uniform vec4 colour;
+uniform sampler2D fontAtlas;
+
+const float width = 0.5;
+const float edge = 0.1;
+
+const float borderWidth = 0.4;
+const float borderEdge = 0.5;
+
+const vec2 offset = vec2(0.006, 0.006);
+
+const vec3 outlineColor = vec3(0.2, 0.2, 0.2);
+
+uniform int displayLevel;
+
+void main(void){
+	
+	float distance = 1.0 - texture(fontAtlas, pass_textureCoords + offset).a;
+	float alpha = 1.0 - smoothstep(width, width + edge, distance);
+	
+	float distance2 = 1.0 - texture(fontAtlas, pass_textureCoords).a;
+	float outlineAlpha = 1.0 - smoothstep(borderWidth, borderWidth + borderEdge, distance2);
+	
+	float overallAlpha = alpha + (1.0 - alpha) * outlineAlpha;
+	
+	if(overallAlpha < 0.01)
+		discard;
+	
+	vec3 overallColor = mix(outlineColor, colour.rgb, alpha/overallAlpha);
+	
+	gl_FragDepth = 1 - displayLevel*0.01;
+	
+	out_Color = vec4(overallColor, overallAlpha*colour.a);
+	
+	out_BrightColor = vec4(0.0);
+	
+}

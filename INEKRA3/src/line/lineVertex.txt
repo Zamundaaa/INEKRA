@@ -1,0 +1,43 @@
+#version 330 core
+
+in vec3 position;
+
+uniform vec3 one;
+uniform vec3 two;
+
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+
+uniform int MODE;
+uniform float TIME;
+uniform float DIST;
+
+uniform vec4 plane;
+
+void main(void){
+	
+	vec3 pos;
+	
+	if(position.x > 0){
+		pos = one;
+	}else{
+		pos = two;
+	}
+	
+	if(MODE == 1 || MODE == 2){
+		vec4 posRelatToCam = viewMatrix * vec4(pos, 1.0);
+		float distance = length(posRelatToCam.xyz);
+		float teilDings = min(distance-DIST, 1);
+		if(teilDings > 0){
+			float dx = teilDings*sin(750*TIME+pos.y+pos.z);
+			float dy = teilDings*sin(750*TIME+pos.x+pos.z);
+			float dz = teilDings*cos(750*TIME+pos.x+pos.y);
+			pos.x += dx;
+			pos.y += dy;
+			pos.z += dz;
+		}
+	}
+	gl_ClipDistance[0] = dot(vec4(pos, 1.0), plane);
+	gl_Position = projectionMatrix * viewMatrix * vec4(pos, 1.0);
+	
+}

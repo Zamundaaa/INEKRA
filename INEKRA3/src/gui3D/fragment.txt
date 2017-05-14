@@ -1,0 +1,14 @@
+#version 330
+
+in vec2 textureCoordinates;
+
+out vec4 out_Color;
+
+uniform sampler2D tex;
+
+void main(){
+	
+	out_Color = texture(tex, textureCoordinates);
+	//out_Color = vec4(1.0);
+	
+}

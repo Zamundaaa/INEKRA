@@ -1,0 +1,134 @@
+#version 400 core
+
+in vec3 position;
+in vec3 textureCoordinates;
+in vec3 normal;
+in vec4 lightStuff;
+
+const int LIGHTS = 1;
+
+out vec3 pass_textureCoordinates;
+out vec3 surfaceNormal;
+out vec3 toLightVector[LIGHTS];
+out vec3 toCameraVector;
+out float visibility;
+out vec4 shadowCoords;
+
+out vec4 LV;
+
+out float verz;
+
+uniform mat4 transformationMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform vec3 lightPosition[LIGHTS];
+
+uniform float useFakeLightning;
+
+uniform float numberOfRows;
+uniform vec2 offSet;
+
+uniform vec4 plane;
+
+uniform float density;
+uniform float gradient;
+
+uniform float TIME;
+uniform int MODE;
+uniform float DIST;
+uniform float timesin;
+
+uniform float useLightingCalc;
+
+uniform vec3 sunDirection;
+
+//for perVertex lighting!
+//uniform vec3 lightColour[LIGHTS];
+//uniform vec3 attenuation[LIGHTS];
+uniform float shineDamper;
+uniform float reflectivity;
+
+const int LEAVES = 8, LEAVES_H = 16, LEAVES_W = 17;
+const int TALL_GRASS = 21;
+const int WOOD = 6, WOODY = 7;
+const int GLASS = 11;
+
+void main(void){
+	
+	vec4 worldPosition = transformationMatrix * vec4(position,1.0);//transformationMatrix * 
+	toCameraVector = (inverse(viewMatrix) * vec4(0.0,0.0,0.0,1.0)).xyz - worldPosition.xyz;
+	
+	vec4 posRelatToCam = viewMatrix * worldPosition;
+	float distance = length(posRelatToCam.xyz);
+	visibility = exp(-pow((distance * density), gradient));
+	visibility = clamp(visibility, 0.0, 1.0);
+	
+	float somesin = sin(1.5*TIME+worldPosition.x+worldPosition.y+worldPosition.z);
+	float teilDings = min((distance-DIST), 1);
+	if(teilDings <= 0.0){//MODE == 0 || 
+		if(textureCoordinates.z == LEAVES || textureCoordinates.z == LEAVES_H || textureCoordinates.z == LEAVES_W){
+			worldPosition.x += 0.04*somesin;
+			//worldPosition = transformationMatrix * vec4(shift > 0 ? position.x+shift : position.x, position.y, position.z,1.0);
+		}else if(textureCoordinates.z == TALL_GRASS){
+			worldPosition.x += 0.1*fract(worldPosition.y)*timesin;//sin(1.5*TIME+worldPosition.y+worldPosition.z);
+		}
+		verz = 0.0;
+	}else{
+		//float dx = teilDings*sin(TIME+worldPosition.y+worldPosition.z);
+		//float dy = teilDings*sin(TIME+worldPosition.x+worldPosition.z);
+		//float dz = teilDings*cos(TIME+worldPosition.x+worldPosition.y);
+		float dx = teilDings*somesin;
+		float dy = teilDings*-somesin;
+		float dz = teilDings*somesin*timesin;
+		
+		if(MODE == 1){
+			worldPosition.x += dx;
+			worldPosition.y += dy;
+			worldPosition.z += dz;
+		}
+		verz = dx*dx+dy*dy+dz*dz;
+		
+		if(verz >= 1.0){
+			verz = 1.0;
+			if(MODE == 2.0){
+				worldPosition = vec4(dx, dy, dz, 1.0);
+				worldPosition.y -= 50+posRelatToCam.y;	
+			}
+		}else if(MODE == 2.0){
+			vec4 newPos = vec4(dx, dy, dz, 1.0);
+			newPos.y = -50.0-posRelatToCam.y;
+			worldPosition = (newPos + worldPosition)*0.5;
+		}
+	}
+	
+	gl_ClipDistance[0] = dot(worldPosition, plane);
+	
+	
+	gl_Position = projectionMatrix * viewMatrix * worldPosition;
+	
+	pass_textureCoordinates = textureCoordinates;//(textureCoordinates/numberOfRows) + offSet;
+	//if(textureCoordinates.z == GLASS){
+	//	if(textureCoordinates.x > 1){
+	//		pass_textureCoordinates.x = 1;
+	//	}
+	//	if(textureCoordinates.y > 1){
+	//		pass_textureCoordinates.y = 1;
+	//	}
+	//}
+	
+	vec3 actualNormal = (transformationMatrix * vec4(normal, 0.0)).xyz;//normal;
+	if(useFakeLightning > 0.5){
+		actualNormal = vec3(0.0, 1.0, 0.0);
+	}
+	surfaceNormal = actualNormal;
+	
+	//for(int i = 0; i < LIGHTS; i++){
+	//	toLightVector[i] = lightPosition[i] - worldPosition.xyz;
+	//}
+	toLightVector[0] = sunDirection;
+	
+	LV = lightStuff;
+	const float gamma = 2.2;
+	LV = pow(LV, vec4(gamma));
+	
+}

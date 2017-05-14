@@ -1,0 +1,22 @@
+#version 330
+
+in vec3 position;
+//in vec2 texCoords;
+
+out vec2 textureCoordinates;
+
+uniform vec3 trans;
+uniform vec2 scale;
+uniform mat4 projectionMatrix;
+
+const float somefact = 0.014;
+
+void main(){
+	
+	vec4 p = vec4(position.x*scale.x*somefact + trans.x*somefact, position.y*scale.y*somefact + trans.y*somefact, position.z, 1.0);
+	
+	gl_Position = p * projectionMatrix;
+	
+	textureCoordinates = vec2((position.x+1.0)/2.0, 1 - (position.y+1.0)/2.0);
+	
+}

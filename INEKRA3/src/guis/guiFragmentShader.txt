@@ -1,0 +1,21 @@
+#version 140
+
+in vec2 textureCoords;
+
+out vec4 out_Color;
+
+uniform sampler2D guiTexture;
+uniform float highlight;
+uniform int displayLevel;
+
+void main(void){
+
+	out_Color = texture(guiTexture,textureCoords)*highlight;
+	
+	//if(out_Color.a < 0.01){
+	//	discard;
+	//}
+	
+	gl_FragDepth = 1.0 - displayLevel*0.01;
+	
+}

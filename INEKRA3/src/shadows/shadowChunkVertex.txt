@@ -1,0 +1,16 @@
+#version 330
+
+in vec3 pos;
+in vec3 texCoords;
+
+out vec3 pass_texCoords;
+
+uniform mat4 mvp;
+
+void main(){
+	
+	gl_Position = mvp * vec4(pos, 1.0);
+	
+	pass_texCoords = texCoords;
+	
+}
