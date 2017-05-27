@@ -208,6 +208,7 @@ public abstract class MainLoop {
 				setText("Verts: " + BlockRenderer.VERTICES);
 			}
 		});
+		debugPanel.hide();
 	}
 	
 	public static void runGame() {
