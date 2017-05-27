@@ -1,11 +1,9 @@
 package toolBox;
 
 import java.lang.Math;
-import java.util.ArrayDeque;
+import java.util.*;
 
 import org.joml.*;
-
-import cubyWater.WaterUpdater;
 
 /**
  * @author xaver
@@ -13,6 +11,10 @@ import cubyWater.WaterUpdater;
  */
 public class Vects {
 
+	public static final Vector2f calcVect2D = new Vector2f();
+	public static final Vector2f half2D = new Vector2f(0.5f);
+	public static final Vector2f NULL2 = new Vector2f();
+	
 	public static final Vector3f UP30 = new Vector3f(0, 30, 0);
 	public static final Vector3f UP = new Vector3f(0, 1, 0);
 	public static final Vector3f DOWN = new Vector3f(0, -1, 0);
@@ -21,9 +23,9 @@ public class Vects {
 	public static final Vector3f NULL = new Vector3f();
 	public static final Vector3f ONE = new Vector3f(1);
 	public static final Vector3f WATERDOWN = new Vector3f(0, -0.1f, 0);
-	public static final Vector2f calcVect2D = new Vector2f();
 	public static final Vector3f calcVect = new Vector3f();
 	public static final Vector3f calcVect2 = new Vector3f();
+	
 	public static final Vector4f NULL4 = new Vector4f(0, 0, 0, 0);
 	public static final Vector4f calcVect4D = new Vector4f();
 	
@@ -218,17 +220,18 @@ public class Vects {
 		v.z = (float) Math.floor(v.z);
 	}
 
-	private static final ArrayDeque<Vector4i> i4 = new ArrayDeque<>();
-	private static final ArrayDeque<Vector4i> i4Water = new ArrayDeque<>();
-
+//	private static final ArrayDeque<Vector4i> i4 = new ArrayDeque<>();
+//	private static final ArrayDeque<Vector4i> i4Water = new ArrayDeque<>();
+	private static final Map<String, ArrayDeque<Vector4i>> i4s = new HashMap<String, ArrayDeque<Vector4i>>();
+	
 	public static Vector4i getV4i(int x, int y, int z, int w) {
-		ArrayDeque<Vector4i> threadQueue;
-		if (Thread.currentThread() == WaterUpdater.updater) {
-			threadQueue = i4Water;
-		} else {
-			threadQueue = i4;
-		}
-		if (threadQueue.isEmpty()) {
+		ArrayDeque<Vector4i> threadQueue = i4s.get(Thread.currentThread().getName());
+//		if (Thread.currentThread() == WaterUpdater.updater) {
+//			threadQueue = i4Water;
+//		} else {
+//			threadQueue = i4;
+//		}
+		if (threadQueue == null || threadQueue.isEmpty()) {
 			return new Vector4i(x, y, z, w);
 		} else {
 			return threadQueue.pop().set(x, y, z, w);
@@ -236,7 +239,12 @@ public class Vects {
 	}
 
 	public static void addV4i(Vector4i v4i) {
-		i4.add(v4i);
+		ArrayDeque<Vector4i> v = i4s.get(Thread.currentThread().getName());
+		if(v == null){
+			v = new ArrayDeque<Vector4i>();
+			i4s.put(Thread.currentThread().getName(), v);
+		}
+		v.add(v4i);
 	}
 
 }

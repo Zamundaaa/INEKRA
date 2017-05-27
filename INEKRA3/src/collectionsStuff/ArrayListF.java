@@ -1,12 +1,11 @@
 package collectionsStuff;
 
-public class ArrayListF {
+public class ArrayListF extends PrimitiveList{
 
 	private float[] values;
-	private int size;
 
 	public ArrayListF() {
-		this(10);
+		this(STARTCAPACITY);
 	}
 
 	public ArrayListF(int startCapacity) {
@@ -36,7 +35,6 @@ public class ArrayListF {
 			for (int I = i; I < size; I++) {
 				values[I] = values[I + 1];
 			}
-			values[size] = 0;
 			return ret;
 		} else {
 			throw new ArrayIndexOutOfBoundsException(i);
@@ -61,9 +59,6 @@ public class ArrayListF {
 	}
 
 	public void clear() {
-		for (int i = 0; i < size; i++) {
-			values[i] = 0;
-		}
 		size = 0;
 	}
 	
@@ -89,6 +84,11 @@ public class ArrayListF {
 		for(int i = 0; i < size; i++)
 			ret[i] = values[i];
 		return ret;
+	}
+
+	public void addAll(ArrayListF a) {
+		for(int i = 0; i < a.size; i++)
+			add(a.get(i));
 	}
 
 }

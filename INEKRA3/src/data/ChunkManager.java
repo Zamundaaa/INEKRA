@@ -11,6 +11,8 @@ import audio.AudioMaster;
 import audio.SourcesManager;
 import cubyWater.WaterManager;
 import cubyWater.WaterUpdater;
+import cubyWaterNew.NewWaterUpdater;
+import dataAdvanced.SimpleConstructs;
 import gameStuff.Err;
 import gameStuff.WorldObjects;
 import renderStuff.DisplayManager;
@@ -88,18 +90,19 @@ public class ChunkManager {
 	 */
 	private static boolean generateAllAtOnce = true;
 
-	/**
-	 * when true a {@link inventory.Item3D} will be generated when a block is
-	 * destroyed
-	 */
-	public static boolean dropItems = true;
+//	/**
+//	 * when true a {@link inventory.Item3D} will be generated when a block is
+//	 * destroyed
+//	 */
+//	public static boolean dropItems = true;
 
 	public static boolean unloadingAll = false;
-	/**
-	 * when true (and dropItems is not) a particle will be generated when a
-	 * block is destroyed
-	 */
-	public static boolean dropParticles = true;
+	
+//	/**
+//	 * when true (and dropItems is not) a particle will be generated when a
+//	 * block is destroyed
+//	 */
+//	public static boolean dropParticles = true;
 
 	/**
 	 * generates the first chunks and sets up the loading queue. Also inits the
@@ -117,6 +120,8 @@ public class ChunkManager {
 			generateAllAtOnce = false;
 		}
 		LightMaster.init();
+		BlockStuffUpdater.init();
+		SimpleConstructs.init();
 	}
 
 	// /**
@@ -144,12 +149,13 @@ public class ChunkManager {
 	 * are still near enough and unloads those too far away
 	 */
 	public static void update() {
-		FramePerformanceLogger.stopTime();
+		int key = FramePerformanceLogger.stopTime();
 		Vector3f pos = WorldObjects.player.getPosition();
 		int px = toChunkCoord(WorldObjects.player.getPosition().x);
 		int py = toChunkCoord(WorldObjects.player.getPosition().y);
 		int pz = toChunkCoord(WorldObjects.player.getPosition().z);
 		if (generateAllAtOnce) {
+			notAddingOrRemovingChunks = false;
 			for (float x = -range; x <= range; x++) {
 				for (float z = -range; z <= range; z++) {
 					for (float y = -yrange; y <= yrange; y++) {
@@ -176,6 +182,7 @@ public class ChunkManager {
 			// for(int i = 0; i < 5 && !toLoad.isEmpty(); i++){
 			// ChunkLoader.queue.add(toLoad.poll());
 			// }
+			notAddingOrRemovingChunks = false;
 			int i = 0;
 			while (!toAdd.isEmpty() && i < 5) {
 				Chunk c = toAdd.poll();
@@ -185,6 +192,7 @@ public class ChunkManager {
 			}
 
 		}
+		notAddingOrRemovingChunks = false;
 		int i = 0;
 		for (int c = 0; c < clist.size(); c++) {
 			float X = clist.get(c).cx() - px;
@@ -195,27 +203,25 @@ public class ChunkManager {
 					unloadChunk(clist.get(c).cx(), clist.get(c).cy(), clist.get(c).cz());
 				}
 			} else {
-				boolean b;
 				if (i < numberOfChunksToUpdatePerFrame && c == pointer) {
 					i++;
 					pointer++;
 					if (pointer > clist.size() - 2)
 						pointer = 0;
-					b = true;
-				} else {
-					b = false;
 				}
-				clist.get(c).update(b);
+				clist.get(c).update();
 			}
 		}
+		notAddingOrRemovingChunks = true;
 		
-		FramePerformanceLogger.writeStoppedTime("ChunkManager Update Without BlockUpdates");
+		FramePerformanceLogger.writeStoppedTime(key ,"ChunkManager Update Without BlockUpdates");
 		
-		blockUpdates(1 + blockUpdates.size() / 2);
-		
-		FramePerformanceLogger.writeStoppedTime("BlockUpdates...");
+//		blockUpdates(1 + blockUpdates.size() / 2);
+//		FramePerformanceLogger.writeStoppedTime("BlockUpdates...");// remove this then!
 
 	}
+	
+	private static volatile boolean notAddingOrRemovingChunks = false;
 
 	private static int numberOfChunksToUpdatePerFrame = 100;
 	private static int pointer = 0;
@@ -242,7 +248,7 @@ public class ChunkManager {
 //		if (Thread.currentThread() == LightMaster.lightUpdater) {
 //			key = placeholder_LightUpdater;
 //		} else 
-		if (Thread.currentThread() == WaterUpdater.updater ) {
+		if (Thread.currentThread() == WaterUpdater.updater || Thread.currentThread() == NewWaterUpdater.updater) {
 			key = placeholder_WaterUpdater;
 			// } else if (Thread.currentThread() == listUpdater) {
 			// key = placeholder_ListUpdater;
@@ -337,16 +343,19 @@ public class ChunkManager {
 			Chunk t = getWithChunkCoords(x + 1, y, z);
 			if (t != null) {
 				t.scheduleMaskCreation();
+				t.scheduleWaterUpdate();
 				t.updateLightAtSide(Block.XM);
 			}
 			t = getWithChunkCoords(x - 1, y, z);
 			if (t != null) {
 				t.scheduleMaskCreation();
+				t.scheduleWaterUpdate();
 				t.updateLightAtSide(Block.XP);
 			}
 			t = getWithChunkCoords(x, y + 1, z);
 			if (t != null) {
 				t.scheduleMaskCreation();
+				t.scheduleWaterUpdate();
 				t.updateLightAtSide(Block.DOWN);
 			}
 			t = getWithChunkCoords(x, y - 1, z);
@@ -358,11 +367,13 @@ public class ChunkManager {
 			t = getWithChunkCoords(x, y, z + 1);
 			if (t != null) {
 				t.scheduleMaskCreation();
+				t.scheduleWaterUpdate();
 				t.updateLightAtSide(Block.ZM);
 			}
 			t = getWithChunkCoords(x, y, z - 1);
 			if (t != null) {
 				t.scheduleMaskCreation();
+				t.scheduleWaterUpdate();
 				t.updateLightAtSide(Block.ZP);
 			}
 		} else {
@@ -472,6 +483,7 @@ public class ChunkManager {
 		WaterUpdater.waitAndStop();
 		WaterUpdater.clearList();
 		WaterManager.cleanUp();
+		notAddingOrRemovingChunks = false;
 		while (clist.size() > 0) {
 			Chunk c = clist.get(clist.size() - 1);
 			unloadChunk(c.cx(), c.cy(), c.cz());
@@ -683,7 +695,14 @@ public class ChunkManager {
 	public static void scheduleBlockUpdate(int x, int y, int z) {
 		blockUpdates.add(Vects.getV4i(x, y, z, -chanceToDo));
 	}
-
+	
+	protected static void doBlockUpdates(){
+		blockUpdates(1 + blockUpdates.size() / 2);
+		for(int i = 0; notAddingOrRemovingChunks && i < clist.size() && i < 5; i++){
+			clist.get(Meth.randomInt(0, clist.size()-1)).updateSomeBlocks();
+		}
+	}
+	
 	private static void blockUpdates(int count) {
 		for (int i = 0; i < count && i < blockUpdates.size(); i++) {
 			Vector4i v = blockUpdates.pop();
@@ -703,6 +722,56 @@ public class ChunkManager {
 
 	public static ArrayList<Chunk> getLoadedChunkList() {
 		return clist;
+	}
+
+	public static String getBlockString(Vector3f v) {
+		Chunk c = getWithBlockCoords(v.x, v.y, v.z);
+		if(c != null){
+			short s = c.get(Meth.toInt(v.x), Meth.toInt(v.y), Meth.toInt(v.z));
+			if(s < 0){
+				SpecialBlock sb = c.getSpecial(Meth.toInt(v.x), Meth.toInt(v.y), Meth.toInt(v.z));
+				return sb.toString();
+			}else{
+				return Block.string(s);
+			}
+		}else{
+			return "nothing";
+		}
+	}
+
+	public static void dropItems() {
+		DI.put(Thread.currentThread(), true);
+	}
+	
+	public static void dontDropItems(){
+		DI.put(Thread.currentThread(), false);
+	}
+	
+	public static boolean mayDropItems(){
+		Boolean b = DI.get(Thread.currentThread());
+		if(b == null)
+			return true;
+		else
+			return b;
+	}
+	
+	private static final Map<Thread, Boolean> DI = new HashMap<Thread, Boolean>();
+	private static final Map<Thread, Boolean> DP = new HashMap<Thread, Boolean>();
+	
+	public static boolean mayDropParticles() {
+		Boolean b = DP.get(Thread.currentThread());
+		if(b == null)
+			return true;
+		else
+			return b;
+	}
+	
+	public static void dropParticles(){
+		DP.put(Thread.currentThread(), true);
+	}
+	
+	public static void dontDropParticles(){
+		DP.put(Thread.currentThread(), false);
 	}
 	
 //	public static int getHighestNonEmptyChunk(float x, float y, float z){

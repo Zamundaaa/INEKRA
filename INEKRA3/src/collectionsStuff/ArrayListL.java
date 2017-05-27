@@ -1,12 +1,11 @@
 package collectionsStuff;
 
-public class ArrayListL {
+public class ArrayListL extends PrimitiveList{
 
 	private long[] values;
-	private int size;
 
 	public ArrayListL() {
-		this(10);
+		this(STARTCAPACITY);
 	}
 
 	public ArrayListL(int startCapacity) {
@@ -108,5 +107,14 @@ public class ArrayListL {
 			ret += values[i];
 		return ret;
 	}
+	
+//	public static void main(String[] args){
+//		ArrayListL list = new ArrayListL();
+//		for(long l = 0; l < 20; l++){
+//			list.add(l);
+//		}
+//		list.remove(10);
+//		System.out.println(list);
+//	}
 
 }

@@ -13,7 +13,7 @@ import toolBox.Queues;
 
 public class ChunkLoader extends Thread {
 
-	public static long delayBetweenChunkLoads = 20;
+	public static long delayBetweenChunkLoads = 10;
 
 	public static final ArrayDeque<Key3D> queue = new ArrayDeque<>();
 	private static ArrayList<Key3D> toLoad = new ArrayList<Key3D>();

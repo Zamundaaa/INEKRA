@@ -7,10 +7,12 @@ out vec4 out_Color;
 uniform sampler2D guiTexture;
 uniform float highlight;
 uniform int displayLevel;
+uniform float alphaHighlight;
 
 void main(void){
 
 	out_Color = texture(guiTexture,textureCoords)*highlight;
+	out_Color.a *= alphaHighlight;
 	
 	//if(out_Color.a < 0.01){
 	//	discard;

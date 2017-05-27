@@ -52,7 +52,8 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 		shader.loadClipPlane(clipPlane);
 		shader.loadSkyColor(MasterRenderer.r, MasterRenderer.g, MasterRenderer.b);
 		ls[0] = lights.get(0);
-		shader.loadViewMatrix(viewMatrix);
+		shader.loadViewMatrix(Meth.createViewMatrix(Camera.getYaw(), Camera.getPitch(), MasterRenderer.renderOrigin.x, 
+				MasterRenderer.renderOrigin.y, MasterRenderer.renderOrigin.z));
 		shader.loadGradient(WeatherController.getFogGradient());
 		shader.loadDensity(WeatherController.getFogDensity());
 		shader.loadToShadowMapSpaceMatrix(toShadowSpace);
@@ -259,38 +260,27 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 	private static float[] verts, texcs, norms, light;
 	private static int[] indis;
 	private static ArrayList<ChunkEntity> es = new ArrayList<ChunkEntity>();
+	
+//	private static ArrayList<ChunkEntity> cesOT = new ArrayList<ChunkEntity>();
 
 	public static boolean doneThisFrame = false;
 	public static int VERTICES = 0;
 
 	private static void renderAllAtOnce() {
 		if (!doneThisFrame) {
-			FramePerformanceLogger.stopTime();
+			int key = FramePerformanceLogger.stopTime();
 			// if(!MainLoop.renderingRefraction){
 			doneThisFrame = true;
 			// long millis = System.currentTimeMillis();
+			
 			int indiCount = 0, vertCount = 0;
-			// es.clear();
-			// for (int i = 0; i < entities.size(); i++) {
-			// ChunkEntity e = entities.get(i);
-			// if (MasterRenderer.FI.testAab(e.getX(), e.getY(), e.getZ(),
-			// e.getX() + Chunk.SIZE,
-			// e.getY() + Chunk.SIZE, e.getZ() + Chunk.SIZE)) {
-			// indiCount += e.indis().length;
-			// vertCount += e.verts().length;
-			// es.add(e);
-			// }
-			// }
-			//
 			es = entities;
 			for (int i = 0; i < es.size(); i++) {
 				indiCount += es.get(i).indis().length;
 				vertCount += es.get(i).verts().length;
 			}
-			//
-			if (indis == null || indis.length != indiCount || verts.length != vertCount
-					|| MasterRenderer.renderOrigin.x != vergleich.x || MasterRenderer.renderOrigin.y != vergleich.y
-					|| MasterRenderer.renderOrigin.z != vergleich.z) {
+			if(indis == null || indiCount != indis.length || vertCount != verts.length
+					|| !MasterRenderer.renderOrigin.equals(vergleich)){
 				vergleich.set(MasterRenderer.renderOrigin);
 				verts = new float[vertCount];
 				texcs = new float[vertCount];
@@ -307,11 +297,11 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 								+ (es.get(i).getY() - (Camera.getPosition().y - MasterRenderer.renderOrigin.y));
 						verts[pointer + 2] = es.get(i).verts()[ka + 2]
 								+ (es.get(i).getZ() - (Camera.getPosition().z - MasterRenderer.renderOrigin.z));
-
+	
 						texcs[pointer] = es.get(i).texCs()[ka];
 						texcs[pointer + 1] = es.get(i).texCs()[ka + 1];
 						texcs[pointer + 2] = es.get(i).texCs()[ka + 2];
-
+	
 						norms[pointer] = es.get(i).norms()[ka];
 						norms[pointer + 1] = es.get(i).norms()[ka + 1];
 						norms[pointer + 2] = es.get(i).norms()[ka + 2];
@@ -326,21 +316,20 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 					}
 					last += es.get(i).verts().length / 3;
 				}
-				VERTICES = verts.length;
+				VERTICES = verts.length/3;
 			}
-
+			
 			if (rm == null) {
 				rm = Loader.loadToVAO3DTex(verts, texcs, norms, indis, light);
 			} else {
 				Loader.updateVAO3DTex(rm, verts, texcs, norms, indis, light);
 			}
-			FramePerformanceLogger.writeStoppedTime(keyword);
+			FramePerformanceLogger.writeStoppedTime(key, keyword);
 		}
 		prepareModel(rm);
 		ls[0] = WorldObjects.sun;
 		shader.loadLights(ls);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, rm.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
-		
 	}
 
 	public static void renderForShadowMap() {

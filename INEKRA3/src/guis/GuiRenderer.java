@@ -31,6 +31,7 @@ public class GuiRenderer {
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, gui.getTexture());
 			shader.loadTransformation(Meth.createTransformationMatrix(gui.getPos(), gui.getScale()));
 			shader.loadHighLight(gui.highlight());
+			shader.loadAlphaHighlight(gui.alphaHighLight());
 			shader.loadDisplayLevel(gui.displayLevel());
 			GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, quad.getVertexCount());
 		}
@@ -42,6 +43,7 @@ public class GuiRenderer {
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, gui.getTexture());
 			shader.loadTransformation(Meth.createTransformationMatrix(gui.getPos(), gui.getScale()));
 			shader.loadHighLight(gui.highlight());
+			shader.loadAlphaHighlight(gui.alphaHighLight());
 			shader.loadDisplayLevel(gui.displayLevel());
 			GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, quad.getVertexCount());
 		}

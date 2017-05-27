@@ -63,15 +63,23 @@ public class Menü {
 //			inputs.get(i).cleanUp();
 //	}
 	
+	private boolean hidden = false;
+	
 	public void hide() {
-		for (int i = 0; i < inputs.size(); i++) {
-			inputs.get(i).hide();
+		if(!hidden){
+			for (int i = 0; i < inputs.size(); i++) {
+				inputs.get(i).hide();
+			}
+			hidden = true;
 		}
 	}
 
 	public void show() {
-		for (int i = 0; i < inputs.size(); i++) {
-			inputs.get(i).show();
+		if(hidden){
+			for (int i = 0; i < inputs.size(); i++) {
+				inputs.get(i).show();
+			}
+			hidden = false;
 		}
 	}
 
@@ -113,6 +121,10 @@ public class Menü {
 		for(int i = 0; i < inputs.size(); i++)
 			inputs.get(i).cleanUp();
 		inputs.clear();
+	}
+
+	public boolean visible() {
+		return !hidden;
 	}
 
 }

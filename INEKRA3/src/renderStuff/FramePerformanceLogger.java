@@ -1,6 +1,7 @@
 package renderStuff;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,12 +9,20 @@ import collectionsStuff.ArrayListL;
 import gameStuff.Err;
 import toolBox.Tools;
 
+/**
+ * this class logs the time some methods need to be executed.
+ *  If a frame has less than {@link FramePerformanceLogger#criticalFps} fps
+ * then the log of the current frame is printed to performanceLog.txt in
+ * the INEKRA folder
+ * @author xaver
+ */
 public class FramePerformanceLogger {
 	
 	public static final boolean log = true;
+	public static final boolean logToErr = false;
 	private static final Map<String, ArrayListL> map = new HashMap<String, ArrayListL>();
 	
-	private static float criticalFps = 50;
+	private static float criticalFps = 25;
 	
 	public static void update(){
 		float fps = DisplayManager.getFps();
@@ -23,15 +32,28 @@ public class FramePerformanceLogger {
 		map.clear();
 	}
 	
-	private static long lm;
+	private static ArrayListL lms = new ArrayListL();
+	private static int lastKey;
 	
-	public static void stopTime(){
-		lm = System.currentTimeMillis();
+	public static int stopTime(){
+		int key = lms.size();
+		lms.add(System.currentTimeMillis());
+		lastKey = key;
+		return key;
 	}
 	
-	public static void writeStoppedTime(String keyword) {
-		writeTime(keyword, System.currentTimeMillis()-lm);
-		lm = System.currentTimeMillis();
+	public static void writeStoppedTime(String keyword){
+		writeStoppedTime(lastKey, keyword);
+	}
+	
+	public static void writeStoppedTime(int key, String keyword) {
+		writeTime(keyword, System.currentTimeMillis()-lms.get(key));
+		lms.remove(key);
+	}
+	
+	public static void writeStoppedTimeAndStopTime(int key, String keyword) {
+		writeTime(keyword, System.currentTimeMillis()-lms.get(key));
+		lms.set(key, System.currentTimeMillis());
 	}
 	
 	public static void writeTime(String method, long millis){
@@ -47,6 +69,10 @@ public class FramePerformanceLogger {
 	private static boolean already = false;
 	
 	private static void printPerformanceLog(float fps){
+		
+		if(map.isEmpty())
+			return;
+		
 		StringBuilder log = new StringBuilder();
 		// if not already printed!
 		if(!already){
@@ -70,7 +96,10 @@ public class FramePerformanceLogger {
 		}
 		log.append(" ************************\n");
 		try {
-			out.write(log.toString());
+			String l = log.toString();
+			if(logToErr)
+				System.err.println(l);
+			out.write(l);
 		} catch (IOException e) {
 			e.printStackTrace(Err.err);
 			Err.err.println("Wanted to print performancelog to logfile. Failed somehow! Here comes the full performancelog!");

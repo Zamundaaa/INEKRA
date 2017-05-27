@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 import gameStuff.TM;
 import renderStuff.MasterRenderer;

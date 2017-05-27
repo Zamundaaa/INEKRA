@@ -6,7 +6,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.*;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -23,12 +24,13 @@ import controls.Keyboard;
 import controls.Mouse;
 import gameStuff.Err;
 import gameStuff.MainLoop;
-import toolBox.*;
+import toolBox.Meth;
+import toolBox.Tools;
 
 public class DisplayManager {
 
 	public static final boolean DEBUG = false;
-	public static boolean VSYNC = true;
+	public static boolean VSYNC = Tools.loadBoolPreference("VSYNC", true);
 
 	/**
 	 * 16/8.8
@@ -71,6 +73,8 @@ public class DisplayManager {
 		glfwTerminate();
 		
 		FramePerformanceLogger.cleanUp();
+		
+		Tools.setBoolPreference("VSYNC", VSYNC);
 		
 	}
 	
@@ -141,10 +145,7 @@ public class DisplayManager {
 		// Make the OpenGL context current
 		glfwMakeContextCurrent(window);
 
-		if (VSYNC) {
-			// Enable v-sync
-			glfwSwapInterval(1);
-		}
+		glfwSwapInterval(1);
 		// Make the window visible
 		glfwShowWindow(window);
 
@@ -192,16 +193,6 @@ public class DisplayManager {
 
 	}
 	
-	public static void enableVSync(){
-		VSYNC = true;
-//		glfwSwapInterval(1);
-	}
-	
-	public static void disableVSync(){
-		VSYNC = false;
-//		glfwSwapInterval(0);
-	}
-	
 	private static long lastMillis = Meth.systemTime();
 	private static long ldelta;
 
@@ -211,9 +202,25 @@ public class DisplayManager {
 	private static float dfts;
 	
 	private static final long desiredPollFTS = 1000/60;
+	private static boolean vsyncEnabled = true;
+	private static boolean vsyncoff = true;
+	
+	public static void disableVsyncMessage(){
+		if(!VSYNC)
+			vsyncoff = true;
+	}
 	
 	public static void updateWindow() {
-
+		
+		if(vsyncoff && vsyncEnabled){
+			glfwSwapInterval(0);
+			vsyncEnabled = false;
+		}else if(!vsyncoff && !vsyncEnabled){
+			glfwSwapInterval(1);
+			vsyncEnabled = true;
+		}
+		vsyncoff = false;
+		
 		glfwSwapBuffers(window); // swap the color buffers
 
 		long millis = Meth.systemTime();
@@ -443,7 +450,7 @@ public class DisplayManager {
 	}
 
 	public static float getFps() {
-		return 1f/getDFTS();
+		return 1f/getFrameTimeSeconds();
 	}
 	
 }

@@ -1,16 +1,18 @@
 package postProcessing;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 import bloom.CombineFilter;
 import entities.Camera;
-import gameStuff.MainLoop;
+import gameStuff.*;
 import gaussianBlur.HorizontalBlur;
 import gaussianBlur.VerticalBlur;
 import models.RawModel;
 import renderStuff.DisplayManager;
 import renderStuff.Loader;
 import toolBox.Tools;
+import toolBox.Vects;
 
 public class PostProcessing {
 
@@ -94,7 +96,7 @@ public class PostProcessing {
 			cc.render(colourTexture);
 			colourTexture = cc.getOutputTexture();
 		}
-		CF.render(colourTexture, vblur2.getOutputTexture(), GUI, renderGUI);
+		CF.render(colourTexture, vblur2.getOutputTexture(), GUI, renderGUI, WorldObjects.getSunDirection(Vects.calcVect, (float)TM.getDayTime()));
 		// brightTexture);
 		end();
 	}

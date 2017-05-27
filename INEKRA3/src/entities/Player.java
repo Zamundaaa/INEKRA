@@ -30,7 +30,8 @@ public class Player extends Entity implements HittableThing {
 																					// SIDESPEEDACCEL
 																					// =
 																					// 15
-	private static final float MAXSPEED = 10, MAXYSPEED = 50;// , HEADY = 1.5f
+	public static float speedMul = Tools.loadFloatPreference("speedMulForPlayer", 1);
+	private static final float MAXSPEED = 30, MAXYSPEED = 100;// , HEADY = 1.5f
 	// private static final float maxheight = 1.1f;
 	private static final float fatness = 0.3f;
 
@@ -429,7 +430,7 @@ public class Player extends Entity implements HittableThing {
 
 	private void checkInputs() {
 
-		float rotYChange = DisplayManager.getFrameTimeSeconds() * Mouse.sensitivity * Mouse.getDX();
+		float rotYChange = 0.017f * Mouse.sensitivity * Mouse.getDX();
 		// if (Mouse.isButtonDown(0)) {
 		rotY -= rotYChange;
 		rotY %= 360;
@@ -440,7 +441,7 @@ public class Player extends Entity implements HittableThing {
 			flight = !flight;
 		}
 
-		float runspeedfact = Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) ? (flight ? 20 : 2.5f) : 1;
+		float runspeedfact = speedMul * (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) ? (flight ? 20 : 2.5f) : 1);
 
 		float forwardspeed = 0;
 		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) {
@@ -519,8 +520,8 @@ public class Player extends Entity implements HittableThing {
 	private void fly() {
 		if (velocity.y < JETSPEED) {
 			velocity.y += JETSPEED * DisplayManager.getFrameTimeSeconds();
-			if (velocity.y > JETSPEED) {
-				velocity.y = JETSPEED;
+			if (velocity.y > JETSPEED*speedMul) {
+				velocity.y = JETSPEED*speedMul;
 			}
 			// if(Meth.doChance(100*DisplayManager.getFrameTimeSeconds())){
 			float min = -0.2f;
@@ -795,6 +796,11 @@ public class Player extends Entity implements HittableThing {
 		for (int i = 0; i < lines.length; i++) {
 			lines[i].cleanUp();
 		}
+		Tools.setFloatPreference("speedMulForPlayer", speedMul);
+	}
+
+	public Inv2D getInventory() {
+		return inv;
 	}
 
 }

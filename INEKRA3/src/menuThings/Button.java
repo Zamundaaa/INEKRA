@@ -7,7 +7,6 @@ import org.joml.Vector2f;
 import controls.Mouse;
 import fontMeshCreator.GUIText;
 import gameStuff.SC;
-import guis.GUIManager;
 import guis.GuiTexture;
 import renderStuff.DisplayManager;
 
@@ -29,12 +28,14 @@ public class Button extends MenuThing {
 		this.bounds = bounds;
 		t = text;
 		setTextPos();
-		this.text = new GUIText(t, fontSize, font, textPos, (float) bounds.getWidth() / 1000f, true);
-		this.text.setColour(1, 1, 1);
-		if (this.text.getNumberOfLines() > 1) {
-			this.text.setPosition((float) (bounds.getX() / 1000f), (float) ((bounds.getY() + (bounds.getHeight() / 5)) / 1000f));
+		if(t.length() > 0){
+			this.text = new GUIText(t, fontSize, font, textPos, (float) bounds.getWidth() / 1000f, true);
+			this.text.setColour(1, 1, 1);
+			if (this.text.getNumberOfLines() > 1) {
+				this.text.setPosition((float) (bounds.getX() / 1000f), (float) ((bounds.getY() + (bounds.getHeight() / 5)) / 1000f));
+			}
+			this.text.setDisplayLevel(displayLevel+1);
 		}
-		this.text.setDisplayLevel(displayLevel+1);
 		Vector2f gpos = new Vector2f((float) ((bounds.getX() * 0.001f) + (bounds.getWidth() * 0.0005f)),
 				(float) ((bounds.getY() * 0.001f) + (bounds.getHeight() * 0.0005f)));
 		gpos.x = gpos.x * 2 - 1;
@@ -42,7 +43,7 @@ public class Button extends MenuThing {
 		gpos.y *= -1;
 		gtex = new GuiTexture(texID, gpos, new Vector2f((float) bounds.getWidth() * 0.001f, (float) bounds.getHeight() * 0.001f),
 				texTransparent);
-		GUIManager.addGuiTexture(gtex);
+		gtex.show();
 		gtex.setHighlight((hoveradd / maxHover) * hoverHighlight);
 		transparent = texTransparent;
 	}
@@ -84,7 +85,7 @@ public class Button extends MenuThing {
 		gpos.y *= -1;
 		gtex = new GuiTexture(Frame.button, gpos,
 				new Vector2f((float) bounds.getWidth() * 0.001f, (float) bounds.getHeight() * 0.001f), false);
-		GUIManager.addGuiTexture(gtex);
+		gtex.show();
 		gtex.setHighlight((hoveradd / maxHover) * hoverHighlight);
 	}
 
@@ -167,7 +168,8 @@ public class Button extends MenuThing {
 
 	public void setHOVER(boolean b) {
 		HOVER = b;
-		
+		hoveradd = maxHover;
+		gtex.setHighlight(0);
 	}
 
 	private static final float maxHover = 0.05f, highlightSpeed = 0.25f, auftauchSpeed = 0.5f * highlightSpeed,
@@ -392,6 +394,10 @@ public class Button extends MenuThing {
 		super.setDisplayLevel(displayLevel);
 		if(text != null)
 			text.setDisplayLevel(displayLevel+1);
+	}
+
+	public GuiTexture getTex() {
+		return gtex;
 	}
 	
 }

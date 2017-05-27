@@ -34,7 +34,7 @@ public class WaterUpdater {
 		if (NewWaterUpdater.useWaterMesh)
 			return;
 		if (MULTITHREADING) {
-			updater = new Thread() {
+			updater = new Thread("waterUpdater") {
 				@Override
 				public void run() {
 					long cooldown = (long) (1000 / UPS);

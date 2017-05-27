@@ -12,10 +12,10 @@ import org.lwjgl.opengl.GL13;
 
 import audio.AudioMaster;
 import blockRendering.BlockRenderer;
-import controls.Keyboard;
 import cubyWater.WaterRenderer;
 import entities.*;
-import gameStuff.*;
+import gameStuff.MainLoop;
+import gameStuff.TickManager;
 import line.LineRenderer;
 import models.TexturedModel;
 import particles.ParticleMaster;
@@ -28,6 +28,8 @@ import toolBox.*;
 import weather.WeatherController;
 
 public abstract class MasterRenderer {
+	
+	public static final boolean lenseFlare = true;
 
 	public static int POLYLINES = GLFW.GLFW_KEY_COMMA;
 
@@ -55,15 +57,11 @@ public abstract class MasterRenderer {
 	// private CubeSideRenderer csrenderer;
 	// private CubeSideShader csshader;
 	private static SkyRenderer skyRenderer;
+	private static LenseFlare lf;
 	// private NormalMappingRenderer nmr;
 	// private MeshRenderer mr;
 
 	// private static ShadowMapMasterRenderer smmr;
-
-	// private LWJGLRenderer guiR;
-	// private ThemeManager theme;
-	// public GUI gui;
-	// public Widget root;
 
 	private static Map<TexturedModel, List<MWBE>> entities = new HashMap<TexturedModel, List<MWBE>>(),
 			normalMapEntites = new HashMap<TexturedModel, List<MWBE>>();
@@ -93,6 +91,9 @@ public abstract class MasterRenderer {
 			ParticleMaster.init(projectionMatrix);
 
 		FI = new FrustumIntersection();
+		
+		if(lenseFlare)
+			lf = new LenseFlare(1, 1.1f);
 
 	}
 
@@ -129,8 +130,8 @@ public abstract class MasterRenderer {
 
 	private static final Matrix4f calcMat = new Matrix4f();
 
-	private static boolean ZOOM = false;
-	private static final float ZOOMDIST = 20;
+//	private static boolean ZOOM = false;
+//	private static final float ZOOMDIST = 20;
 
 	public static void render(List<Light> lights, Vector4f clipPlane) {
 
@@ -141,14 +142,16 @@ public abstract class MasterRenderer {
 		// GL11.glViewport(0, DisplayManager.getYGUIOffset(),
 		// DisplayManager.WIDTH,
 		// DisplayManager.HEIGHT-DisplayManager.getYGUIOffset()*2);
-		ZOOM = false;
+//		ZOOM = false;
 		if (!MainLoop.renderForWater) {
-			ZOOM = Keyboard.isKeyDown(ZOOMKEY);
-			if (ZOOM) {
-				Vects.calcVect2.set(Camera.getPosition());
-				MousePicker.getPoint(ZOOMDIST, Vects.calcVect);
-				Camera.setPosition(Vects.calcVect.x, Vects.calcVect.y, Vects.calcVect.z);
-			}
+//			ZOOM = Keyboard.isKeyDown(ZOOMKEY);
+//			if (ZOOM) {
+//				Vects.calcVect2.set(Camera.getPosition());
+//				MousePicker.getPoint(ZOOMDIST, Vects.calcVect);
+//				Camera.setPosition(Vects.calcVect.x, Vects.calcVect.y, Vects.calcVect.z);
+//			}
+			if(lenseFlare)
+				lf.update();
 		}
 
 		viewMatrix = Meth.createViewMatrix();// build in to all to
@@ -205,9 +208,9 @@ public abstract class MasterRenderer {
 		entities.clear();
 		normalMapEntites.clear();
 
-		if (ZOOM) {
-			Camera.setPosition(Vects.calcVect2);
-		}
+//		if (ZOOM) {
+//			Camera.setPosition(Vects.calcVect2);
+//		}
 
 	}
 
@@ -329,6 +332,10 @@ public abstract class MasterRenderer {
 		Tools.setFloatPreference("TRANSITIONDISTANCE", TRANSITION_DISTANCE);
 		if(!dontUseShadowsAtAll)
 			Tools.setBoolPreference("SHADOWS", SHADOWS);
+		
+		if(lenseFlare)
+			lf.cleanUp();
+		
 	}
 
 	public static void reload() {
@@ -399,5 +406,20 @@ public abstract class MasterRenderer {
 		mat.m33(0);
 		return mat;
 	}
+	
+	public static Vector2f toScreenSpace(Vector3f worldPos){
+		return convertToScreenSpace(worldPos, viewMatrix, projectionMatrix);
+	}
+	
+	public static Vector2f convertToScreenSpace(Vector3f worldPos, Matrix4f viewMat, Matrix4f projectionMat) {
+        Vector4f coords = new Vector4f(worldPos.x, worldPos.y, worldPos.z, 1f);
+        viewMat.transform(coords);
+        projectionMat.transform(coords);
+        if (coords.w <= 0) {
+            return null;
+        }
+        //no need for conversion below
+        return new Vector2f(coords.x / coords.w , coords.y / coords.w);
+    }
 
 }

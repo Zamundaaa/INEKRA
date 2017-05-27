@@ -10,7 +10,7 @@ public abstract class MenuThing implements Inputthing{
 	protected boolean hidden;
 	protected boolean transparent;
 	protected boolean clickable;
-	protected int displayLevel;
+	protected int displayLevel = 1;
 	protected ArrayList<MenuThing> attached = new ArrayList<MenuThing>();
 	protected Rectangle bounds;
 	protected Rectangle boundsOfParent;
@@ -193,6 +193,10 @@ public abstract class MenuThing implements Inputthing{
 	
 	public void setTextColor(Vector3f color){
 		setTextColor(color.x, color.y, color.z);
+	}
+
+	public boolean visible() {
+		return !hidden;
 	}
 	
 }

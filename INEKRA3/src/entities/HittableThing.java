@@ -11,6 +11,10 @@ public interface HittableThing {
 	public boolean inHitbox(Vector3f point);
 
 	public Vector3f getPosition();
+	
+	public void influence(float x, float y, float z);
+	
+	public void influence(Vector3f i);
 
 	public Hitbox getHitbox();
 

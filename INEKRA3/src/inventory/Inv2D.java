@@ -8,12 +8,11 @@ import controls.Keyboard;
 import controls.Mouse;
 import data.ChunkSaver;
 import entities.*;
-import gameStuff.SC;
-import gameStuff.WorldObjects;
+import gameStuff.*;
 import guis.GUIManager;
 import guis.GuiTexture;
-import menuThings.Button;
-import menuThings.Rectangle;
+import menuThings.*;
+import menuThings2.Pane;
 import models.RawModel;
 import models.TexturedModel;
 import renderStuff.DisplayManager;
@@ -42,8 +41,12 @@ public class Inv2D {
 	private final float YO = 500;
 
 	private Entity handcontents;
+	
+	private Pane pane;
 
 	public Inv2D() {
+		pane = new Pane();
+		
 		background = new GuiTexture(SC.getTex("menu").getID(), new Vector2f(), new Vector2f(0.5f, 0.5f), false);
 		stacks = new ItemStack[9][yrows];
 		buttons = new Button[9][yrows];
@@ -52,6 +55,7 @@ public class Inv2D {
 				new Vector2f(W / 1000.0f, H / 1000.0f), true);
 		chosenItemStackIndicator.setDisplayLevel(10);
 		chosenItemStackIndicator.show();
+		pane.attach(chosenItemStackIndicator);
 		for (int x = 0; x < 9; x++) {
 			for (int y = 0; y < yrows; y++) {
 				final int X = x;
@@ -71,7 +75,7 @@ public class Inv2D {
 
 					@Override
 					public void leftHold() {
-						if (buttonClick)
+						if (buttonClick && cb == this)
 							setPosition((Mouse.getAX() * 1000) - W / 2, (Mouse.getAY() * 1000) - H / 2);
 					}
 
@@ -94,6 +98,7 @@ public class Inv2D {
 								if(size > 0){
 									lastStack.setSize(size);
 									stacks[cx][cy] = lastStack;
+//									return;
 								}else{
 									stacks[cx][cy] = null;
 									lastStack = null;
@@ -101,8 +106,20 @@ public class Inv2D {
 							}else{
 								stacks[cx][cy] = lastStack;
 							}
-							buttons[sx][sy].setTex(stacks[sx][sy].getTex());
-							buttons[sx][sy].setText(stacks[sx][sy].toString());
+//							if(stacks[sx][sy] == null){
+//								Err.err.println("stacks[" + sx + "][" + sy + "] is null!!! *WHY**?*");
+//								return;
+//							}
+							if(stacks[sx][sy] != null){
+								buttons[sx][sy].setTex(stacks[sx][sy].getTex());
+								buttons[sx][sy].setText(stacks[sx][sy].toString());
+//								buttons[sx][sy].setPosition(((sx + ka - 4.5f) * space * W + 500) - W / 2,
+//										((sy + ka - yrows * 0.5f) * space * H + YO) - H / 2);
+							}else{
+								Err.err.println("stacks[" + sx + "][" + sy + "] is null!!! *WHY**?*");
+								buttons[sx][sy].setTex(emptyStackTex);
+								buttons[sx][sy].setText("");
+							}
 							if (lastStack == null) {
 								buttons[cx][cy].setTex(emptyStackTex);
 								buttons[cx][cy].setText("");
@@ -134,6 +151,7 @@ public class Inv2D {
 				buttons[x][y].setTextColor(1, 1, 1);
 				buttons[x][y].hide();
 				buttons[x][y].setDisplayLevel(20);
+				pane.attach(buttons[x][y]);
 			}
 		}
 
@@ -254,6 +272,8 @@ public class Inv2D {
 					stacks[chosen][exy] = null;
 					buttons[chosen][exy].setTex(emptyStackTex);
 					buttons[chosen][exy].setText("");
+				}else{
+					buttons[chosen][exy].setText(stacks[chosen][exy].toString());
 				}
 			} else {
 				hand.action();
@@ -459,6 +479,10 @@ public class Inv2D {
 			ret.append((char) (data.charAt(i) - 5));
 		}
 		return ret.toString();
+	}
+
+	public MenuThing getPanel() {
+		return pane;
 	}
 
 }

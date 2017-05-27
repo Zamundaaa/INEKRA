@@ -1,12 +1,17 @@
 package dataAdvanced;
 
+import java.util.ArrayDeque;
+
 import org.joml.Vector3f;
+import org.joml.Vector4i;
 
 import audio.SourcesManager;
 import data.Block;
 import data.ChunkManager;
 import particles.PTM;
 import particles.ParticleMaster;
+import threadingStuff.ThreadManager;
+import toolBox.Meth;
 import toolBox.Vects;
 
 public class SimpleConstructs {
@@ -66,19 +71,54 @@ public class SimpleConstructs {
 
 	public static void EXPLOSION(int x, int y, int z, int r) {
 		SourcesManager.play(SourcesManager.boom, 100, new Vector3f(x, y, z));
-		ChunkManager.dropItems = false;
+		ChunkManager.dontDropItems();
 		// ChunkManager.dropParticles = true;
 		fillSphere(x, y, z, r, Block.AIR);
-		ChunkManager.dropItems = true;
+		ChunkManager.dropItems();
 		// ChunkManager.dropParticles = false;
-		for (int i = 0; i < 20; i++) {
-			ParticleMaster.addNewParticle(PTM.fire, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
-					Vects.randomVector3f(-2 * r, 2 * r, -2 * r, 2 * r, -2 * r, 2 * r), 0, 0.3f, 0, 2);
-		}
+		if(Thread.currentThread().getName().equals("main"))
+			for (int i = 0; i < 20; i++) {
+				ParticleMaster.addNewParticle(PTM.fire, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
+						Vects.randomVector3f(-2 * r, 2 * r, -2 * r, 2 * r, -2 * r, 2 * r), 0, 0.3f, 0, 2);
+			}
+		
 	}
 
 	public static void EXPLOSION(Vector3f position, int r) {
+		explosionQueue.add(Vects.getV4i((int) position.x, (int) position.y, (int) position.z, r));
+		for (int i = 0; i < 20; i++) {
+			ParticleMaster.addNewParticle(PTM.fire, new Vector3f(position.x + 0.5f, position.y + 0.5f, position.z + 0.5f),
+					Vects.randomVector3f(-2 * r, 2 * r, -2 * r, 2 * r, -2 * r, 2 * r), 0, 0.3f, 0, 2);
+		}
+//		EXPLOSION((int) position.x, (int) position.y, (int) position.z, r);
+	}
+	
+	public static void EXPLOSIONNOW(Vector3f position, int r){
 		EXPLOSION((int) position.x, (int) position.y, (int) position.z, r);
+		for (int i = 0; i < 20; i++) {
+			ParticleMaster.addNewParticle(PTM.fire, new Vector3f(position.x + 0.5f, position.y + 0.5f, position.z + 0.5f),
+					Vects.randomVector3f(-2 * r, 2 * r, -2 * r, 2 * r, -2 * r, 2 * r), 0, 0.3f, 0, 2);
+		}
+	}
+	
+	private static ArrayDeque<Vector4i> explosionQueue = new ArrayDeque<>();
+	
+	private static Thread runner;
+	
+	public static void init(){
+		runner = new Thread("ExplosionHelper"){
+			@Override
+			public void run(){
+				while(ThreadManager.running()){
+					while(explosionQueue.isEmpty()){
+						Meth.wartn(5);
+					}
+					Vector4i v = explosionQueue.pop();
+					EXPLOSION(v.x, v.y, v.z, v.w);
+				}
+			}
+		};
+		runner.start();
 	}
 
 	public static void replaceAllAncients(Vector3f v, short repID, int CAP) {
@@ -88,11 +128,11 @@ public class SimpleConstructs {
 	public static void replaceAllAncients(int x, int y, int z, short repID, int CAP) {
 		short id = ChunkManager.getBlockID(x, y, z);
 		if (id != Block.AIR) {
-			ChunkManager.dropItems = false;
+			ChunkManager.dontDropItems();
 			counter = 0;
 			ChunkManager.setBlockID(x, y, z, repID);
 			replaceHelp(x, y, z, id, repID, CAP);
-			ChunkManager.dropItems = true;
+			ChunkManager.dropItems();
 		}
 	}
 

@@ -14,6 +14,7 @@ public class GuiShader extends ShaderProgram {
 	private int location_pos;
 	private int location_highlight;
 	private int location_displayLevel;
+	private int location_alphaHighLight;
 
 	public GuiShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -29,6 +30,7 @@ public class GuiShader extends ShaderProgram {
 		location_pos = super.getUniformLocation("pos");
 		location_highlight = super.getUniformLocation("highlight");
 		location_displayLevel = super.getUniformLocation("displayLevel");
+		location_alphaHighLight = super.getUniformLocation("alphaHighlight");
 	}
 
 	@Override
@@ -46,6 +48,10 @@ public class GuiShader extends ShaderProgram {
 
 	public void loadDisplayLevel(int displayLevel) {
 		super.loadInt(location_displayLevel, displayLevel);
+	}
+
+	public void loadAlphaHighlight(float alphaHighLight) {
+		super.loadFloat(location_alphaHighLight, alphaHighLight);
 	}
 
 }

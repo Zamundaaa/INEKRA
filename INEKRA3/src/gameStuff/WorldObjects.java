@@ -13,7 +13,6 @@ import data.LightMaster;
 import entities.*;
 import gameStuff2.CommandProcessor;
 import mobs.MobMaster;
-import network.SensorData;
 import toolBox.*;
 import weather.WeatherController;
 
@@ -42,7 +41,7 @@ public abstract class WorldObjects {
 
 		MousePicker.init();
 
-		SensorData.init();
+//		SensorData.init();
 
 		// tex3d = new GuiTex(SC.getTex("button").getID(), new Vector3f(0, 0,
 		// 0), new Vector2f(1));
@@ -71,6 +70,8 @@ public abstract class WorldObjects {
 		TickManager.update();
 
 		ChunkManager.update();
+		
+//		System.out.println("WorldObjects updated!");
 
 //		Vector3f bpos = MousePicker.getNextFilledBlockCoord(50, false);
 //		if (bpos != null) {

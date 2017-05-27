@@ -1,10 +1,14 @@
 package bloom;
 
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
+import gameStuff.WorldObjects;
 import postProcessing.ImageRenderer;
 import postProcessing.PostProcessing;
+import renderStuff.MasterRenderer;
+import toolBox.Vects;
 
 public class CombineFilter {
 
@@ -37,7 +41,7 @@ public class CombineFilter {
 		shader.cleanUp();
 	}
 
-	public void render(int colourTexture, int highlightTexture, int GUI, boolean renderGUI) {
+	public void render(int colourTexture, int highlightTexture, int GUI, boolean renderGUI, Vector3f v) {
 		shader.start();
 		shader.loadBrightness(PostProcessing.brightness);
 		shader.loadRenderGUI(renderGUI);
@@ -47,6 +51,13 @@ public class CombineFilter {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, highlightTexture);
 		GL13.glActiveTexture(GL13.GL_TEXTURE2);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, GUI);
+		shader.loadSunDir(v);
+		shader.loadInvProj(Vects.mat4.set(MasterRenderer.getProjectionMatrix()).invert());
+		shader.loadInvView(Vects.mat4.set(MasterRenderer.viewMatrix).invert());
+		if(WorldObjects.sun != null)
+			shader.loadSunColour(WorldObjects.sun.getColour());
+		else
+			shader.loadSunColour(Vects.ONE);
 		renderer.renderQuad();
 		shader.stop();
 	}

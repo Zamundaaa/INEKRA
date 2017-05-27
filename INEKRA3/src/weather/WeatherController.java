@@ -546,6 +546,11 @@ public class WeatherController {
 			ParticleMaster.addNewParticle(lightning, new Vector3f(pos), Vects.NULL, 0,
 					(float) Math.max(lightningParticlesDuration, 5 * DisplayManager.getFrameTimeSeconds()), 0,
 					lightningParticlesSize);
+
+			ParticleMaster.addNewParticle(lightning, new Vector3f(pos), Vects.randomVector3f(5), 0,
+					Meth.randomFloat(1, 3), 0,
+					lightningParticlesSize*0.1f);
+			
 			b = ChunkManager.getBlockID(pos);
 		}
 		lastFlash = Meth.systemTime();
@@ -568,6 +573,11 @@ public class WeatherController {
 			ParticleMaster.addNewParticle(lightning, new Vector3f(pos), Vects.NULL, 0,
 					(float) Math.max(lightningParticlesDuration, 5 * DisplayManager.getFrameTimeSeconds()), 0,
 					lightningParticlesSize);
+			
+			ParticleMaster.addNewParticle(lightning, new Vector3f(pos), Vects.randomVector3f(5), 0,
+					Meth.randomFloat(1, 3), 0,
+					lightningParticlesSize*0.1f);
+			
 			b = ChunkManager.getBlockID(pos);
 		}
 		if (ChunkManager.deleteBlock(pos)) {
@@ -610,6 +620,11 @@ public class WeatherController {
 			ParticleMaster.addNewParticle(lightning, new Vector3f(pos), Vects.NULL, 0,
 					(float) Math.max(lightningParticlesDuration, 5 * DisplayManager.getFrameTimeSeconds()), 0,
 					lightningParticlesSize);
+			
+			ParticleMaster.addNewParticle(lightning, new Vector3f(pos), Vects.randomVector3f(5), 0,
+					Meth.randomFloat(1, 3), 0,
+					lightningParticlesSize*0.1f);
+			
 			b = ChunkManager.getBlockID(pos);
 		}
 		if (ChunkManager.deleteBlock(pos)) {
@@ -656,9 +671,21 @@ public class WeatherController {
 		float d = startPos.distance(endPos);
 		Vector3f dir = endPos.sub(startPos, new Vector3f()).normalize();
 		for(int i = 0; i < d; i++){
-			ParticleMaster.addNewParticle(lightning, Vects.addRandom(MousePicker.getPointOnRay(startPos, dir, i, new Vector3f()), 0.5f), Vects.NULL, 0,
-			(float) Math.max(lightningParticlesDuration, 5 * DisplayManager.getFrameTimeSeconds()), 0,
-			lightningParticlesSize);
+			Vector3f v = MousePicker.getPointOnRay(startPos, dir, i, new Vector3f());
+			ParticleMaster.addNewParticle(lightning, Vects.addRandom(new Vector3f(v), 0.5f), Vects.NULL, 0,
+				(float) Math.max(lightningParticlesDuration, 5 * DisplayManager.getFrameTimeSeconds()), 0,
+				lightningParticlesSize);
+			for(int i2 = 0; i2 < WorldObjects.getHits().size(); i2++){
+				HittableThing h = WorldObjects.getHits().get(i2);
+				if(h.getPosition().distanceSquared(v) < 25){
+					h.influence(10/((h.getPosition().x-v.x)*(h.getPosition().x-v.x)),
+							10/((h.getPosition().y-v.y)*(-v.y+h.getPosition().y)),
+							10/((-v.z+h.getPosition().z)*(-v.z+h.getPosition().z)));
+				}
+			}
+			ParticleMaster.addNewParticle(lightning, Vects.addRandom(v, 0.5f), Vects.randomVector3f(5), 0,
+					Meth.randomFloat(1, 3), 0,
+					lightningParticlesSize*0.1f);
 		}
 //		Vector3f dir = Vects.randomVector3f(-1, 1, 1, 1, -1, 1);
 //		short b = Block.AIR;
@@ -724,7 +751,7 @@ public class WeatherController {
 
 	// private static final float snowDensity = 0.025f;
 	// private static final float normalDensity = 0.01f;
-	private static float fogDensity = 0.01f;
+	private static float fogDensity = 0;//0.01f;
 	private static float fogGradient = 5;
 
 	public static float getFogDensity() {

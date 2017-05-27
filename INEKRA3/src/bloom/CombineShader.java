@@ -1,5 +1,8 @@
 package bloom;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
 import shaders.ShaderProgram;
 
 public class CombineShader extends ShaderProgram {
@@ -12,6 +15,12 @@ public class CombineShader extends ShaderProgram {
 	private int location_brightness;
 	private int location_GUI;
 	private int location_renderGUI;
+	
+	private int location_sunDir;
+	private int location_sunC;
+	
+	private int location_invProj;
+	private int location_invView;
 
 	protected CombineShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -24,6 +33,11 @@ public class CombineShader extends ShaderProgram {
 		location_brightness = super.getUniformLocation("brightness");
 		location_GUI = super.getUniformLocation("GUI");
 		location_renderGUI = super.getUniformLocation("renderGUI");
+		
+		location_sunDir = super.getUniformLocation("sunDir");
+		location_invProj = super.getUniformLocation("invertedProjMat");
+		location_invView = super.getUniformLocation("invertedViewMat");
+		location_sunC = super.getUniformLocation("sunColour");
 	}
 
 	protected void connectTextureUnits() {
@@ -43,6 +57,22 @@ public class CombineShader extends ShaderProgram {
 
 	public void loadRenderGUI(boolean renderGUI) {
 		super.loadBoolean(location_renderGUI, renderGUI);
+	}
+
+	public void loadSunDir(Vector3f v) {
+		super.loadVector(location_sunDir, v);
+	}
+	
+	public void loadInvView(Matrix4f mat){
+		super.loadMatrix(location_invView, mat);
+	}
+	
+	public void loadInvProj(Matrix4f mat){
+		super.loadMatrix(location_invProj, mat);
+	}
+	
+	public void loadSunColour(Vector3f c){
+		super.loadVector(location_sunC, c);
 	}
 
 }

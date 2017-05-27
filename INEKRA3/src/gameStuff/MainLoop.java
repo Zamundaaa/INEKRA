@@ -11,8 +11,9 @@ import org.lwjgl.opengl.GL30;
 
 import audio.MusicManager;
 import audio.SourcesManager;
-import controls.Keyboard;
-import controls.Mouse;
+import blockRendering.BlockRenderer;
+import chatStuff.Chat;
+import controls.*;
 import cubyWater.*;
 import data.Block;
 import data.ChunkManager;
@@ -95,31 +96,39 @@ public abstract class MainLoop {
 	}
 	
 	private static Menü playerGUI = new Menü(new ArrayList<MenuThing>());
-	private static Button coords;
+	private static Button coords, show;
 	
-	public static void runGame() {
-		Button show = new Button("", new Rectangle(610, 20-10*DisplayManager.desiredRatioForGUI, 
-				80, 80*DisplayManager.desiredRatioForGUI), 0, true);
+	public static void addPlayerGUI(){
+		show = new Button("", new Rectangle(610, 20-10*DisplayManager.desiredRatioForGUI, 
+				80, 80*DisplayManager.desiredRatioForGUI), Frame.button, true);
 		show.setHOVER(false);
+		
+		int blackBorder = SC.getTex("BlackBorder").getID();
+		
 		Button forText = new Button("nothing", new Rectangle(310, 30, 
-				290, 80), SC.getTex("BlackBorder").getID(), true);
+				290, 80), blackBorder, true);
 		forText.setHOVER(false);
-		headUpDisplay = new Button("", new Rectangle(300, 20, 400, 100), SC.getTex("BlackBorder").getID(), false){
+		
+		headUpDisplay = new Button("", new Rectangle(300, 20, 400, 100), blackBorder, false){
 			final short zero = 0;
 			final boolean showSunLightLevel = false;
 			@Override
 			public void update(){
 				Vector3f c = MousePicker.getNextFilledBlockCoord(100, Camera.underWater());
 				if(c != null){
-					show.show();
+//					show.show();
 					short b = ChunkManager.getBlockID(c);
+					show.setTex(ItemRenderer.getItemTex(b));
+					
+					String s = ChunkManager.getBlockString(c);
 					if(showSunLightLevel){
-						show.setTex(ItemRenderer.getItemTex(b));
-						c.y++;
+						c.add(MousePicker.calcVect);
+						s += " " + ChunkManager.getSunLight(c);
 					}
-					forText.setText(Block.string(b) + " " + ChunkManager.getSunLight(c));
+					forText.setText(s);
 				}else{
-					show.hide();
+//					show.hide();
+					show.setTex(blackBorder);
 					forText.setText(Block.string(zero));
 				}
 				forText.setTextColor(FontColorManager.one);
@@ -131,6 +140,7 @@ public abstract class MainLoop {
 		headUpDisplay.attach(show);
 		headUpDisplay.attach(forText);
 		playerGUI.add(headUpDisplay);
+		
 		coords = new Button("HI!", new Rectangle(775, 900, 200, 80)){
 			@Override
 			public void update(){
@@ -145,7 +155,7 @@ public abstract class MainLoop {
 		life = new ProgressBar(new Rectangle(100, 920, 150, 30), SC.getTex("texPack/red").getID(), false, 1);
 		life.show();
 		playerGUI.add(life);
-		Button clock = new Button("ok", new Rectangle(10, 10*DisplayManager.desiredRatioForGUI, 250, 75)){
+		Button clock = new Button("clock", new Rectangle(10, 10*DisplayManager.desiredRatioForGUI, 250, 75)){
 			@Override
 			public void update(){
 				int hours = (int) TM.getDayTime();
@@ -186,9 +196,21 @@ public abstract class MainLoop {
 		fps.setHOVER(false);
 		fps.setTextPos();
 		playerGUI.add(fps);
-		
-		
-		DisplayManager.disableVSync();
+		playerGUI.add(WorldObjects.player.getInventory().getPanel());
+	}
+
+	private static Menü debugPanel = new Menü(new ArrayList<>());
+	
+	public static void addDebugGUI(){
+		debugPanel.add(new Button("", new Rectangle(900, 400, 100, 200), SC.getTex("BlackBorder").getID(), true){
+			@Override
+			public void update(){
+				setText("Verts: " + BlockRenderer.VERTICES);
+			}
+		});
+	}
+	
+	public static void runGame() {
 		MENUOPEN = false;
 		Projectil.GAIN = Projectil.NORMGAIN;
 		icon16.hide();
@@ -205,6 +227,10 @@ public abstract class MainLoop {
 		Mouse.setGrabbed(true);
 		firstRender = true;
 		SkyRenderer.setMoonThings();
+
+		addPlayerGUI();
+		addDebugGUI();
+		
 		boolean resetDMouse = false;
 		while (running && !DisplayManager.isCloseRequested()) {
 			if (CLEANUPNOW) {
@@ -213,7 +239,11 @@ public abstract class MainLoop {
 				break;
 			}
 			if (Keyboard.isKeyDown(GLFW.GLFW_KEY_ESCAPE) && !Inv2D.open) {
-				DisplayManager.enableVSync();
+				playerGUI.hide();
+				debugPanel.hide();
+				Err.err.println("Show shown? " + show.visible() + " tv? " + show.getTex().visible());
+				Err.err.println("GUIManager.transparents().contains(show.getTex()): " + GUIManager.transparents().contains(show.getTex()));
+				Chat.hideCompletely();
 				MENUOPEN = true;
 				Frame.startInMenu();
 				DisplayManager.setFrameTimeSeconds(0.000000000001f);
@@ -222,12 +252,16 @@ public abstract class MainLoop {
 				resetDMouse = true;
 				Mouse.getDX();
 				Mouse.getDY();
-				DisplayManager.disableVSync();
+				Chat.showAgain();
+				debugPanel.show();
+				playerGUI.show();
 			}
 			if (Keyboard.keyTipped(GUISWITCHKEY)) {
 				renderGUI = !renderGUI;
 			}
+			
 			update();
+			
 			updateIngameText();
 			ParticleSystemMaster.update();
 			ParticleMaster.update();
@@ -235,7 +269,8 @@ public abstract class MainLoop {
 			if (renderGUI)
 				renderGUIandText();
 			render();
-
+			
+			DisplayManager.disableVsyncMessage();
 			DisplayManager.updateWindow();
 			if (firstRender) {
 				firstRender = false;
@@ -247,7 +282,6 @@ public abstract class MainLoop {
 				resetDMouse = false;
 			}
 		}
-		DisplayManager.enableVSync();
 		cleanUpGame();
 		
 		GUIManager.reset();
@@ -290,13 +324,11 @@ public abstract class MainLoop {
 
 	public static void render() {
 		MasterRenderer.clear();
+
 		if (!MasterRenderer.dontUseShadowsAtAll && MasterRenderer.SHADOWS && TM.isDay()) {
 			MasterRenderer.renderShadowMap(EntityManager.getList(), WorldObjects.sun);
 		}
-		// works?
-		multisampledFbo.bindFrameBuffer();
-		MasterRenderer.renderAll(EntityManager.getList(), null, WorldObjects.getLightsToRender(), Vects.NULL4);
-		multisampledFbo.unbindFrameBuffer();
+		
 		if (WaterRenderer.REFLECTIVE) {
 			if (WHU == 0) {
 				for (int i = dwhs.length - 2; i >= 0; i--) {
@@ -345,6 +377,10 @@ public abstract class MainLoop {
 			renderForWater = false;
 		}
 
+		multisampledFbo.bindFrameBuffer();
+		MasterRenderer.renderAll(EntityManager.getList(), null, WorldObjects.getLightsToRender(), Vects.NULL4);
+		multisampledFbo.unbindFrameBuffer();
+		
 		multisampledFbo.resolveToFbo(GL30.GL_COLOR_ATTACHMENT0, outputFbo);
 		multisampledFbo.resolveToFbo(GL30.GL_COLOR_ATTACHMENT1, outputFbo2);
 		PostProcessing.doPostProcessing(outputFbo.getColourTexture(), outputFbo2.getColourTexture(), guiFbo.getColourTexture(), renderGUI || MENUOPEN);
@@ -386,6 +422,15 @@ public abstract class MainLoop {
 		life.setProgress(WorldObjects.player.lives()*0.1f);
 		
 		playerGUI.update();
+		
+		if(KeyManager.switchDebugPanel())
+			if(debugPanel.visible())
+				debugPanel.hide();
+			else
+				debugPanel.show();
+		
+		if(debugPanel.visible())
+			debugPanel.update();
 		
 	}
 

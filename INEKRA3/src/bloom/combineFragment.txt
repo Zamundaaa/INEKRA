@@ -11,12 +11,31 @@ uniform sampler2D GUI;
 uniform float brightness;
 uniform float renderGUI;
 
+uniform mat4 invertedProjMat;
+uniform mat4 invertedViewMat;
+
+uniform vec3 sunColour;
+uniform vec3 sunDir;
+
 void main(void){
 	
 	vec4 sceneColor = texture(colourTexture, textureCoords);
 	vec4 highlightColor = texture(highlightTexture, textureCoords);
 	
 	out_Colour = (sceneColor + highlightColor)*brightness;
+	
+	//vec4 tc = vec4((vec2(textureCoords)*2.0)-1.0, -1.0, 1.0);
+	//tc *= invertedProjMat;
+	//tc.z = -1;
+	//tc.w = 0;
+	//vec3 worldRay = (tc * invertedViewMat).xyz;
+	
+	//float dot = dot(worldRay, sunDir);
+	//dot = clamp(-dot, 0.0, 1.0);
+	//
+	//if(dot > 0.999){
+	//	out_Colour = vec4(mix(out_Colour.xyz, sunColour, 1.0-((1.0-dot)*20.0)), 1.0);
+	//}
 	
 	if(renderGUI > 0.5){
 		vec4 g = texture(GUI, textureCoords);	

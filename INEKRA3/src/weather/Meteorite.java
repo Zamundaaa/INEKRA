@@ -1,5 +1,7 @@
 package weather;
 
+import static data.Block.*;
+
 import org.joml.Vector3f;
 
 import data.ChunkManager;
@@ -7,8 +9,7 @@ import dataAdvanced.SimpleConstructs;
 import entities.Projectil;
 import gameStuff.SC;
 import models.TexturedModel;
-import particles.PTM;
-import particles.ParticleMaster;
+import particles.*;
 import renderStuff.DisplayManager;
 import toolBox.Meth;
 import toolBox.Vects;
@@ -16,6 +17,8 @@ import toolBox.Vects;
 public class Meteorite extends Projectil{
 	
 	private static final TexturedModel mod = SC.getModel("meteo", "grey");
+	
+	private float krassigkeit = 1;
 	
 	public Meteorite(Vector3f position, Vector3f velocity, float scale) {
 		super(position, velocity, null, true);
@@ -48,7 +51,7 @@ public class Meteorite extends Projectil{
 			ChunkManager.deleteBlock(position);
 			numberOfDestroyBlocks--;
 			if (numberOfDestroyBlocks == 0) {
-				ChunkManager.dropItems = false;
+//				ChunkManager.dontDropItems();
 //				ChunkManager.dropParticles = false;
 				SimpleConstructs.EXPLOSION(position, exprad);
 //				for(int i = 0; i < 5; i++){
@@ -61,37 +64,61 @@ public class Meteorite extends Projectil{
 //					p.setParticleLifeTime(1);
 //					p.setBlock(Block.FIRE);
 //				}
-				ChunkManager.dropItems = true;
+//				ChunkManager.dropItems();
 				float vel = velocity.length()*0.1f;
 				for(int i = 0; i < 20; i++){
-					ParticleMaster.addNewParticle(PTM.sand, new Vector3f(position), Vects.randomVector3f(3*vel),
-							1, 5, 0, Meth.randomFloat(1, 3));
+					ParticleTexture p = PTM.sand;
+					if(Meth.doChance(0.3f)){
+						p = PTM.fire;
+					}else if(Meth.doChance(0.3f)){
+						p = PTM.cosmic;
+					}
+					ParticleMaster.addNewParticle(p, new Vector3f(position), Vects.randomVector3f(10*vel),
+							1, 3, 0, Meth.randomFloat(0.5f, 2));
 				}
 				if(exprad == max){
-					for(int i = 0; i < 5; i++){
-						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-1, 1, -0.1f, 3, -1, 1), vel), 0.5f);
+					vel *= 2;
+					for(int i = 0; i < 10*krassigkeit; i++){
+						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-1, 1, -0.01f, 0.2f, -1, 1), vel), 0.5f);
 						m.exprad = 14;
 					}
-					vel *= 2;
-					for(int i = 0; i < 13; i++){
-						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-1, 1, -0.1f, 0.5f, -1, 1), vel), 0.3f);
+					vel *= 3;
+					for(int i = 0; i < 50*krassigkeit; i++){
+						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-1, 1, 0.1f, 0.5f, -1, 1), vel), 0.3f);
 //						m.particleScale = 2.5f;
 //						m.attatched.setScale(2);
 						m.exprad = 10;
 					}
-					vel *= 1.5f;
-					for(int i = 0; i < 50; i++){
-						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-1, 1, -0.1f, 4, -1, 1), vel), 0.1f);
+					vel *= 1.25f;
+					for(int i = 0; i < 75*krassigkeit; i++){
+						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-5, 5, -0.1f, 2.5f, -5, 5), vel), 0.1f);
 //						m.particleScale = 2.5f;
 //						m.attatched.setScale(2);
 						m.exprad = 7;
 					}
 					vel *= 1.5f;
-					for(int i = 0; i < 75; i++){
-						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-1, 1, -0.1f, 7, -1, 1), vel), 0.05f);
+					for(int i = 0; i < 150*krassigkeit; i++){
+						Meteorite m = new Meteorite(new Vector3f(position), Meth.scaleToLength(Vects.randomVector3f(-3, 3, -0.1f, 3, -3, 3), vel), 0.05f);
 //						m.particleScale = 2.5f;
 //						m.attatched.setScale(2);
 						m.exprad = 5;
+					}
+					for(int i = 0; i < 100*krassigkeit; i++){
+						short b;
+						switch(Meth.randomInt(0, 10)){
+						case 1: b = GLASS;break;
+						case 2: b = BLACK; break;
+						case 3: b = DIRT;break;
+						case 4: b = FIRE;break;
+						case 5: b = GRAVEL;break;
+						case 6: b = SAND; break;
+						case 7: b = LAMP;break;
+						default:
+							b = STONE;
+						}
+						Projectil p = new Projectil(Vects.addRandom(new Vector3f(position), 10), Vects.randomVector3f(10), null, false);
+						p.setBlock(b);
+						p.attatch(SC.sandmod);
 					}
 				}
 //				else if(exprad == 7){

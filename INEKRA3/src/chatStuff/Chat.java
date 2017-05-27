@@ -6,6 +6,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import controls.Keyboard;
@@ -16,8 +17,7 @@ import fontRendering.Out;
 import gameStuff.*;
 import guis.GUIManager;
 import guis.GuiTexture;
-import toolBox.Meth;
-import toolBox.Tools;
+import toolBox.*;
 import weather.WeatherController;
 
 public class Chat {
@@ -97,9 +97,13 @@ public class Chat {
 								WorldObjects.player.getPosition().y = Integer.parseInt(is[1]);
 								WorldObjects.player.getPosition().z = Integer.parseInt(is[2]);
 							}
-
 						} catch (Exception e) {
 							Out.println("no valid input! what you probably wanted is: /tp X Y Z");
+						}
+					} else if(input.startsWith(lstrike)){
+						Vector3f v = MousePicker.getNextFilledBlockCoord(100);
+						if(v != null){
+							WeatherController.lstrikeback(v);
 						}
 					} else if (input.startsWith(script)) {
 						try {
@@ -203,6 +207,18 @@ public class Chat {
 				m.setPos(0.2f, y);
 				y -= m.getDY();
 			}
+		}
+	}
+
+	public static void hideCompletely() {
+		for(int i = 0; i < messages.size(); i++){
+			messages.get(i).hide();
+		}
+	}
+	
+	public static void showAgain(){
+		for(int i = 0; i < messages.size(); i++){
+			messages.get(i).show();
 		}
 	}
 

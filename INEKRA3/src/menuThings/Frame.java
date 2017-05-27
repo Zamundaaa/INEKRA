@@ -11,12 +11,12 @@ import org.lwjgl.glfw.GLFW;
 
 import audio.AudioMaster;
 import audio.MusicManager;
-import blockRendering.BlockRenderer;
 import controls.Keyboard;
 import controls.Mouse;
 import cubyWater.WaterManager;
 import cubyWater.WaterRenderer;
 import data.ChunkSaver;
+import entities.Player;
 import fontMeshCreator.GUIText;
 import gameStuff.*;
 import mobs.MobMaster;
@@ -191,6 +191,8 @@ public class Frame {
 							startGame();
 							name = new GUIText("INEKRA", 7, SC.specialFont, new Vector2f(0, 0.15f), 1, true);
 							name.setColour(0, 1, 1);
+							start.cleanUpAndClear();
+							start = null;
 							addStartMenu();
 						} else {
 							setText("Choose a world!");
@@ -506,11 +508,11 @@ public class Frame {
 
 			bs.add(new SchiebeRegler(new Rectangle(MIDDLE, 675, 200, 100),
 					((ResourceManager.loadingTime - 3000) * 0.001f) / 57,
-					"Ladezeit: " + (int) (ResourceManager.loadingTime * 0.001f)) {
+					"Loading time: " + (int) (ResourceManager.loadingTime * 0.001f)) {
 				@Override
 				public void valueChange(float value) {
 					ResourceManager.loadingTime = (long) (3000 + value * 57000);
-					this.setText("Ladezeit: " + (int) (ResourceManager.loadingTime * 0.001f));
+					this.setText("Loading time: " + (int) (ResourceManager.loadingTime * 0.001f));
 				}
 			});
 
@@ -810,14 +812,13 @@ public class Frame {
 				}
 			});
 
-			// bs.add(new Button("back", new Rectangle(MIDDLE, 850-offset, 200,
-			// 100)) {
-			// @Override
-			// public void leftClick() {
-			// removeMenu(inoptions);
-			// addInMenu();
-			// }
-			// });
+			bs.add(new Button("Vsync? " + DisplayManager.VSYNC, new Rectangle(VERYLEFT, 225-offset, 200, 100)) {
+				@Override
+				public void leftClick() {
+					DisplayManager.VSYNC = !DisplayManager.VSYNC;
+					setText("Vsync? " + DisplayManager.VSYNC);
+				}
+			});
 
 			inoptions = new Menü(bs);
 			menus.add(inoptions);
@@ -914,35 +915,19 @@ public class Frame {
 				}
 			});
 
-			bs.add(new Button("perPixelLighting? " + BlockRenderer.usePerPixelLighting,
-					new Rectangle(VERYLEFT, 600, 200, 100)) {
-				@Override
-				public void update(){
-					super.update();
-//					if(MasterRenderer.dontUseShadowsAtAll){
-						if(lt != 0 && Meth.systemTime() > lt + 5000){
-							lt = 0;
-							setText("perPixelLighting? false");
-							setTextColor(1, 1, 1);
-						}
-//					}
-				}
-				private long lt;
-				@Override
-				public void leftClick() {
-//						BlockRenderer.usePerPixelLighting = !BlockRenderer.usePerPixelLighting;
-//						setText("perPixelLighting? " + BlockRenderer.usePerPixelLighting);
-						setText("DISABLED!");
-						setTextColor(1, 0, 0);
-						lt = Meth.systemTime();
-				}
-			});
-
-			bs.add(new Button("spawn Mobs? " + MobMaster.SPAWNMOBS, new Rectangle(VERYRIGHT, 600, 200, 100)) {
+			bs.add(new Button("spawn Mobs? " + MobMaster.SPAWNMOBS, new Rectangle(VERYLEFT, 600, 200, 100)) {
 				@Override
 				public void leftClick() {
 					MobMaster.SPAWNMOBS = !MobMaster.SPAWNMOBS;
 					setText("spawn Mobs? " + MobMaster.SPAWNMOBS);
+				}
+			});
+			
+			bs.add(new SchiebeRegler(new Rectangle(VERYRIGHT, 600, 200, 100), Player.speedMul*0.1f, "SpeedMul: " + Player.speedMul){
+				@Override
+				public void valueChange(float value){
+					Player.speedMul = value*10;
+					setText("SpeedMul: " + Player.speedMul);
 				}
 			});
 

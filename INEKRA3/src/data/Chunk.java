@@ -18,6 +18,8 @@ import particles.ParticleMaster;
 import renderStuff.*;
 import toolBox.Meth;
 
+import static data.Block.*;
+
 /**
  * represents a certain chunk of space, contains all the blocks of that area and
  * pretty much all additional data of that area
@@ -104,23 +106,30 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		blocks = new short[SIZE][SIZE][SIZE];
 		light = new short[SIZE][SIZE][SIZE];
 		fake = true;
+		hasNoBlocksButWater = false;
 	}
 
 	private boolean fake = false;
-	private boolean uw = true;
+	private boolean uw = false;
 
 	public boolean waterChanged() {
 		return uw;
 	}
 
-	public void update(boolean updateSomeBlocks) {
+	@SuppressWarnings("unused")
+	public void update() {// boolean updateSomeBlocks
 		// TODO: GROWTH Sapling (+later plant) growth rate !!! change to :
 		// questioned constant OR: !extra update method!
-		for (int i = 0; i < 5; i++) {
-			updateBlock(Meth.randomInt(0, SIZE - 1) + realX(), Meth.randomInt(0, SIZE - 1) + realY(),
-					Meth.randomInt(0, SIZE - 1) + realZ());
-		}
-		if (uw && Meth.doChance(100 * DisplayManager.getFrameTimeSeconds())) {
+
+		// BlockUpdates solely through extra Thread!
+		// for (int i = 0; i < 5; i++) {
+		// updateBlock(Meth.randomInt(0, SIZE - 1) + realX(), Meth.randomInt(0,
+		// SIZE - 1) + realY(),
+		// Meth.randomInt(0, SIZE - 1) + realZ());
+		// }
+		
+		// dead code because !NewWaterUpdater.useWaterMesh is *false*
+		if (!NewWaterUpdater.useWaterMesh && uw && Meth.doChance(100 * DisplayManager.getFrameTimeSeconds())) {
 			updateWaters();
 			uw = false;
 		}
@@ -144,7 +153,9 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		if (needsSaving && Meth.systemTime() > lastSave + 30000
 				&& Meth.doChance(0.1f * DisplayManager.getFrameTimeSeconds())) {
 			needsSaving = false;
+			int key = FramePerformanceLogger.stopTime();
 			ChunkSaver.saveChunk(this);
+			FramePerformanceLogger.writeStoppedTime(key, "Saving chunk");
 			lastSave = Meth.systemTime();
 		}
 		// if(((z < 1 && z > -5)) &&borders == null)
@@ -154,24 +165,31 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 
 	private long lastSave = Meth.systemTime();
 
+	public void updateSomeBlocks() {
+		for (int i = 0; i < 5; i++) {
+			updateBlock(Meth.randomInt(0, SIZE - 1) + realX(), Meth.randomInt(0, SIZE - 1) + realY(),
+					Meth.randomInt(0, SIZE - 1) + realZ());
+		}
+	}
+
 	private void updateBlock(int x, int y, int z) {
 		short id = get(x, y, z);
-		if (id < 0) {
-			for (int i = 0; i < specials.size(); i++) {
-				if (specials.get(i).is(x, y, z)) {
-					specials.get(i).update();
-					break;
-				}
-			}
-		} else if (id > 0) {
-			Block.update(this, id, x, y, z);
-		}
+		// if (id < 0) {
+		// for (int i = 0; i < specials.size(); i++) {
+		// if (specials.get(i).is(x, y, z)) {
+		// specials.get(i).update();
+		// break;
+		// }
+		// }
+		// } else if (id > 0) {
+		Block.update(this, id, x, y, z);
+		// }
 	}
 
 	public void updateWaters() {
 		if (NewWaterUpdater.useWaterMesh)
 			return;
-		FramePerformanceLogger.stopTime();
+		int key = FramePerformanceLogger.stopTime();
 		for (int y = 0; y < SIZE; y++) {
 			for (int x = 0; x < SIZE; x++) {
 				for (int z = 0; z < SIZE; z++) {
@@ -214,7 +232,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 				waters.get(i).update();
 			}
 		}
-		FramePerformanceLogger.writeStoppedTime("Chunk.updateWaters()");
+		FramePerformanceLogger.writeStoppedTime(key, "Chunk.updateWaters()");
 	}
 
 	private int waterIndex(int x, int y, int z) {
@@ -239,23 +257,24 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 
 	/**
 	 * unloads the chunk model and saves the data of this chunk, if something's
-	 * changed since creation. Also removes the contained waters, if
-	 * {@link gameStuff.MainLoop#running} is false (for performance reasons)
+	 * changed since creation. Also removes the contained waters, but only if
+	 * {@link gameStuff.MainLoop#running} is true (for performance reasons on shutdown)
 	 */
 	public void unload() {
 		if (e != null) {
 			BlockRenderer.entities.remove(e);
 			e.unload();
 		}
+		int key = FramePerformanceLogger.stopTime();
 		if (SAVE && needsSaving)
 			ChunkSaver.saveChunk(this);
-
+		FramePerformanceLogger.writeStoppedTimeAndStopTime(key, "saving Chunk");
 		if (waters != null && MainLoop.running) {
 			for (int i : waters.keySet()) {
 				waters.get(i).cleanUp();
 			}
 		}
-
+		FramePerformanceLogger.writeStoppedTime(key, "cleaning up waters");
 		unloaded = true;
 	}
 
@@ -287,6 +306,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 				int i, currY;
 				byte count;
 				short id;
+				boolean already = false;
 				for (int x = 0; x < SIZE; x++) {
 					for (int z = 0; z < SIZE; z++) {
 						currY = 0;
@@ -297,6 +317,11 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 							// id = bytesToShort(hi, lo);
 							count = d.read();
 							id = d.readShort();
+							if(Block.isWater(id)){
+								already = true;
+							}else{
+								hasNoBlocksButWater = false;
+							}
 							// try{
 							for (i = 0; i < count; i++) {
 								blocks[x][currY][z] = id;
@@ -318,14 +343,23 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 						}
 					}
 				}
+				if(already){
+					uw = true;
+					NewWaterUpdater.waterChanged = true;
+				}
 			} else {
 				randomGen();
 			}
 		}
+		// MUST NOT DO THAT!!! NEVER EVER!!!
+		// for(int i = 0; i < specials.size(); i++){
+		// specials.get(i).initAfterGen();
+		// }
 	}
 
 	private void randomGen() {
 		Generator g = Generator.getG();
+		boolean already = false;
 		for (int x = 0; x < SIZE; x++) {
 			for (int z = 0; z < SIZE; z++) {
 				int i = (int) g.generateHeight(x + realX, z + realZ);
@@ -346,15 +380,22 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 						} else {
 							blocks[x][y][z] = Block.STONE;
 						}
+						hasNoBlocksButWater = false;
 					} else if (genWater && y + realY <= Meth.waterHeight) {
 						blocks[x][y][z] = Block.max_water;
+						already = true;
 					} else if (y + realY == i) {
 						if (g.genThing((x + realX) * 100, (z + realZ) * 100, 3163) > 0.43f) {
 							blocks[x][y][z] = Block.SAPLING;
+							hasNoBlocksButWater = false;
 						}
 					}
 				}
 			}
+		}
+		if(already){
+			uw = true;
+			NewWaterUpdater.waterChanged = true;
 		}
 	}
 
@@ -364,8 +405,11 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	private static final ArrayListF verts = new ArrayListF(), texes = new ArrayListF(), lightValues = new ArrayListF(),
 			norms = new ArrayListF();
 	private static final ArrayListI indices = new ArrayListI();
+	
+	private boolean hasNoBlocksButWater = true;
 
 	public ChunkEntity genMask() {
+		if(hasNoBlocksButWater)return null;
 		verts.clear();
 		indices.clear();
 		texes.clear();
@@ -499,16 +543,25 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 					}
 				}
 			}
-			if (Block.isWater(old) || Block.isWater(ID)) {
+			if (Block.isWater(ID)) {
 				uw = true;
+				NewWaterUpdater.waterChanged = true;
+			}else{
+				if(Block.isWater(old)){
+					uw = true;
+					NewWaterUpdater.waterChanged = true;
+				}
+				if(ID != AIR){
+					hasNoBlocksButWater = false;
+				}
 			}
 			if (old != Block.AIR && !Block.isWater(blocks[X][Y][Z])
 					&& Thread.currentThread().getName().equals("main")) {// !!!!!!!!
-				if (ChunkManager.dropItems) {
+				if (ChunkManager.mayDropItems()) {
 					Item3D i = Item3D.getBlockInstance(blocks[X][Y][Z], new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
 							true);
 					i.influence(Meth.randomFloat(-1, 1), Meth.randomFloat(3, 5), Meth.randomFloat(-1, 1));
-				} else if (ChunkManager.dropParticles) {
+				} else if (ChunkManager.mayDropParticles()) {
 					ParticleMaster.addNewParticle(PTM.stony,
 							new Vector3f(x + DISPLAYOFFSET, y + DISPLAYOFFSET, z + DISPLAYOFFSET),
 							new Vector3f(Meth.randomFloat(-ddd, ddd), 1, Meth.randomFloat(-ddd, ddd)), 1, particleTime,
@@ -518,8 +571,9 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			blocks[X][Y][Z] = ID;
 			// light[X][Y][Z] = 0;
 			if (ID < 0) {
-				specials.add(SpecialBlock.getInstance(ID, x, y, z));
-				specials.get(specials.size() - 1).initAfterGen();
+				SpecialBlock b = SpecialBlock.getInstance(ID, x, y, z);
+				specials.add(b);
+				b.initAfterGen();
 			}
 			mask = true;
 			if (X == 0) {
@@ -586,16 +640,25 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 					}
 				}
 			}
-			if (Block.isWater(old) || Block.isWater(ID)) {
+			if (Block.isWater(ID)) {
 				uw = true;
+				NewWaterUpdater.waterChanged = true;
+			}else{
+				if(Block.isWater(old)){
+					uw = true;
+					NewWaterUpdater.waterChanged = true;
+				}
+				if(ID != AIR){
+					hasNoBlocksButWater = false;
+				}
 			}
 			if (old != Block.AIR && !Block.isWater(blocks[X][Y][Z])
 					&& Thread.currentThread().getName().equals("main")) {// !!!!!!!!
-				if (ChunkManager.dropItems) {
+				if (ChunkManager.mayDropItems()) {
 					Item3D i = Item3D.getBlockInstance(blocks[X][Y][Z], new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
 							true);
 					i.influence(Meth.randomFloat(-1, 1), Meth.randomFloat(3, 5), Meth.randomFloat(-1, 1));
-				} else if (ChunkManager.dropParticles) {
+				} else if (ChunkManager.mayDropParticles()) {
 					ParticleMaster.addNewParticle(PTM.stony,
 							new Vector3f(x + DISPLAYOFFSET, y + DISPLAYOFFSET, z + DISPLAYOFFSET),
 							new Vector3f(Meth.randomFloat(-ddd, ddd), 1, Meth.randomFloat(-ddd, ddd)), 1, particleTime,
@@ -604,8 +667,9 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			}
 			blocks[X][Y][Z] = ID;
 			if (ID < 0) {
-				specials.add(SpecialBlock.getInstance(ID, x, y, z));
-				specials.get(specials.size() - 1).initAfterGen();
+				SpecialBlock b = SpecialBlock.getInstance(ID, x, y, z);
+				specials.add(b);
+				b.initAfterGen();
 			}
 			// light[X][Y][Z] = 0;
 			mask = true;
@@ -662,6 +726,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			blocks[X][Y][Z] = ID;
 			needsSaving = true;
 			uw = true;
+			NewWaterUpdater.waterChanged = true;
 			LightMaster.checkForLightUpdates(x, y, z);
 		}
 	}
@@ -1555,6 +1620,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 
 	public void scheduleWaterUpdate() {
 		uw = true;
+		NewWaterUpdater.waterChanged = true;
 	}
 
 	private short[][][] light;
@@ -1722,18 +1788,61 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 
 	public void mapWater(ArrayListF verts, ArrayListI indices, ArrayListF normals) {
 		// int s = verts.size();
-		yMaskWater(verts, indices, normals, true);
-		yMaskWater(verts, indices, normals, false);
-		xMaskWater(verts, indices, normals, true);
-		xMaskWater(verts, indices, normals, false);
-		zMaskWater(verts, indices, normals, true);
-		zMaskWater(verts, indices, normals, false);
+		if(uw){
+			if(waterVerts == null){
+				waterVerts = new ArrayListF();
+				waterNormals = new ArrayListF();
+				waterIndices = new ArrayListI();
+			}else{
+				waterVerts.clear();
+				waterNormals.clear();
+				waterIndices.clear();
+			}
+			yMaskWater(waterVerts, waterIndices, waterNormals, true);
+			yMaskWater(waterVerts, waterIndices, waterNormals, false);
+			xMaskWater(waterVerts, waterIndices, waterNormals, true);
+			xMaskWater(waterVerts, waterIndices, waterNormals, false);
+			zMaskWater(waterVerts, waterIndices, waterNormals, true);
+			zMaskWater(waterVerts, waterIndices, waterNormals, false);
+			uw = false;
+		}
+		if(waterVerts != null){
+			indices.addAll(waterIndices, verts.size()/3);
+			verts.addAll(waterVerts);
+			normals.addAll(waterNormals);// could / SHOULD compress to single byte - or use slopes to represent flowing water...
+		}
+		
 		// if(s > 0)
 		// for(int i = s-1; i < verts.size(); ){
 		// verts.set(i, verts.get(i++)+realX);
 		// verts.set(i, verts.get(i++)+realY);
 		// verts.set(i, verts.get(i++)+realZ);
 		// }
+	}
+	
+	private ArrayListF waterVerts, waterNormals;
+	private ArrayListI waterIndices;
+	
+	private static final short[][][] completeWaterCopy = new short[SIZE][SIZE][SIZE];
+	
+	public short[][][] giveWaterCopy(){
+		boolean w = false;
+		for (int x = 0; x < SIZE; x++) {
+			for (int y = 0; y < SIZE; y++) {
+				for (int z = 0; z < SIZE; z++) {
+					if (Block.isWater(blocks[x][y][z])) {
+						completeWaterCopy[x][y][z] = blocks[x][y][z];
+						w = true;
+					}else{
+						completeWaterCopy[x][y][z] = 0;
+					}
+				}
+			}
+		}
+		if(w)
+			return completeWaterCopy;
+		else
+			return null;
 	}
 
 	private void yMaskWater(ArrayListF verts, ArrayListI indices, ArrayListF normals, boolean up) {

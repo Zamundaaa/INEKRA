@@ -3,7 +3,7 @@ package dataAdvanced;
 import data.ChunkManager;
 import renderStuff.DisplayManager;
 import skybox.SkyRenderer;
-import toolBox.*;
+import toolBox.Meth;
 
 public class SolarPanel extends PowerBlock{
 	

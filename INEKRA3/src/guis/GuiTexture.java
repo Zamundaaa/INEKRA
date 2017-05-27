@@ -2,10 +2,12 @@ package guis;
 
 import org.joml.Vector2f;
 
-public class GuiTexture {
+import menuThings.MenuThing;
 
-	private int displayLevel = GUIManager.DOWN;
-	private boolean transparent;
+public class GuiTexture extends MenuThing{
+
+//	private int displayLevel = GUIManager.DOWN;
+	private boolean transparent, applyHighLightToAlpha;
 	private int texture;
 	protected Vector2f pos;
 	protected Vector2f scale;
@@ -31,10 +33,8 @@ public class GuiTexture {
 		this.scale = scale;
 		this.displayLevel = displayLevel;
 		this.transparent = transparent;
-	}
-
-	public void setDisplayLevel(int level) {
-		this.displayLevel = level;
+		this.displayLevel = GUIManager.DOWN;
+		hidden = true;
 	}
 
 	public int getTexture() {
@@ -48,13 +48,18 @@ public class GuiTexture {
 	public Vector2f getScale() {
 		return scale;
 	}
-
+	
+	@Override
 	public void show() {
-		GUIManager.addGuiTexture(this);
+		if(hidden)
+			GUIManager.addGuiTexture(this);
+		super.show();
 	}
 
 	public void hide() {
-		GUIManager.removeGuiTexture(this);
+		if(!hidden)
+			GUIManager.removeGuiTexture(this);
+		super.hide();
 	}
 
 	public int displayLevel() {
@@ -69,10 +74,12 @@ public class GuiTexture {
 		return highlight;
 	}
 
-	private float highlight;
+	private float highlight, alphaHighlight = 1;
 
 	public void setHighlight(float h) {
 		highlight = h;
+		if(applyHighLightToAlpha)
+			alphaHighlight = h;
 	}
 
 	public boolean isTransparent() {
@@ -81,6 +88,38 @@ public class GuiTexture {
 	
 	public void setTransparency(boolean b){
 		transparent = b;
+	}
+
+	public void setHighlightToAlpha(boolean b) {
+		applyHighLightToAlpha = b;
+	}
+	
+	public void setAlphaHighlight(float a){
+		alphaHighlight = a;
+	}
+
+	public float alphaHighLight() {
+		return alphaHighlight;
+	}
+
+	@Override
+	public void updateClicks() {
+		
+	}
+
+	@Override
+	public void setTextAlpha(float a) {
+		
+	}
+
+	@Override
+	public void setTextColor(float r, float g, float b, float a) {
+		
+	}
+
+	@Override
+	public void setTextColor(float r, float g, float b) {
+		
 	}
 
 }

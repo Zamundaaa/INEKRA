@@ -53,7 +53,7 @@ public class Message {
 	}
 
 	public float getDY() {
-		return (t.getNumberOfLines() * 2 - 1) * fontSize * 0.03f;
+		return (t.getNumberOfLines() * 2 - 1) * fontSize * 0.05f;
 	}
 
 }

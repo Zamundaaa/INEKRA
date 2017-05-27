@@ -68,21 +68,22 @@ public class CommandProcessor {
 		}
 	}
 
-	public static String RAIN = "/rain";
-	public static String STOPRAIN = "/stopweather";
-	public static String HELP1 = "/help";
-	public static String HELP2 = "/?";
-	public static String toggleBurn = "/toggleburn";
-	public static String day = "/day";
-	public static String night = "/night";
-	public static String speedup = "/speedup";
-	public static String slowdown = "/slowdown";
-	public static String teleport = "/tp";
-	public static String script = "/order66";
-	public static String setTime = "/time set";
-	public static String setServer = "/setServer";
-	public static String setClient = "/setClient";
-	public static String saveScript = "/saveS";
+	public static final String RAIN = "/rain";
+	public static final String STOPRAIN = "/stopweather";
+	public static final String HELP1 = "/help";
+	public static final String HELP2 = "/?";
+	public static final String toggleBurn = "/toggleburn";
+	public static final String day = "/day";
+	public static final String night = "/night";
+	public static final String speedup = "/speedup";
+	public static final String slowdown = "/slowdown";
+	public static final String teleport = "/tp";
+	public static final String script = "/order66";
+	public static final String setTime = "/time set";
+	public static final String setServer = "/setServer";
+	public static final String setClient = "/setClient";
+	public static final String saveScript = "/saveS";
+	public static final String lstrike = "/lstrike";
 
 	public static boolean isServer = false, isClient = false;
 

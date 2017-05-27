@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import blockRendering.ChunkEntity;
 import entities.Camera;
 import entities.Light;
+import toolBox.Meth;
 import toolBox.Vects;
 
 /**
@@ -88,11 +89,14 @@ public class LightMaster {
 			if (!c.unloaded)
 				doSunLightLoad(c);
 		}
+		updatingSunLight = true;
 		while (suz.size() > 0) {
 			doSunLightUpdate(sux.poll(), suy.poll(), suz.poll());
 		}
-
+		updatingSunLight = false;
 	}
+	
+	private static volatile boolean updatingSunLight = false;
 
 	public static void addLight(Light l) {
 		lights.add(l);
@@ -662,9 +666,14 @@ public class LightMaster {
 	 *            coords of changed block.
 	 */
 	public static void updateSunLight(int x, int y, int z) {
-		sux.add(x);
-		suy.add(y);
-		suz.add(z);
+		while(updatingSunLight){
+			Meth.wartn(1);
+		}
+		synchronized(sux){
+			sux.add(x);
+			suy.add(y);
+			suz.add(z);
+		}
 	}
 
 	private static void doSunLightUpdate(int x, int y, int z) {

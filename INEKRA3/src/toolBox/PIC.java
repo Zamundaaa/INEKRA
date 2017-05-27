@@ -1,5 +1,6 @@
 package toolBox;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -7,8 +8,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import org.lwjgl.BufferUtils;
 
@@ -111,6 +115,25 @@ public class PIC {
 		buffer.flip();
 
 		return buffer;
+	}
+
+	public static Dimension getDimensions(String file) {
+		try(ImageInputStream in = ImageIO.createImageInputStream(PIC.class.getClassLoader().getResourceAsStream(file))){
+		    final Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
+		    if (readers.hasNext()) {
+		        ImageReader reader = readers.next();
+		        try {
+		            reader.setInput(in);
+		            return new Dimension(reader.getWidth(0), reader.getHeight(0));
+		        } finally {
+		            reader.dispose();
+		        }
+		    }
+		} catch (Exception e) {
+			e.printStackTrace();
+			Err.err.println(file);
+		}
+		return null;
 	}
 
 	// public static BufferedImage BufferToImg(FloatBuffer imageData, int w, int

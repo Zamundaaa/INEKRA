@@ -35,7 +35,8 @@ public class Block {
 	}
 
 	public static void update(Chunk c, short ID, int x, int y, int z) {// FALLING SAND/GRAVEL/WATER!!! UPDATECHANCE FOR SEASON CHANGE
-		ChunkManager.dropItems = false;
+		ChunkManager.dontDropItems();
+		ChunkManager.dontDropParticles();
 		if (isGrass(ID)) {
 			short over = ChunkManager.getBlockID(x, y + 1, z);
 			if (!isTransparent(over)) {
@@ -77,13 +78,9 @@ public class Block {
 		} else if (ID == GRAVEL || ID == SAND) {
 			short d = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 			if (d == Block.AIR) {
-				ChunkManager.dropItems = false;
-				ChunkManager.dropParticles = false;
 				ChunkManager.chanceToDo = chanceForNextFallingBlockToFall;
 				ChunkManager.deleteBlock(x, y, z);
 				ChunkManager.chanceToDo = 0;
-				ChunkManager.dropParticles = true;
-				ChunkManager.dropItems = true;
 				// ChunkManager.setBlockID(x, y-1, z, ID);
 				Projectil p = new Projectil(new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f), new Vector3f(), null, false);
 				p.setPT(PTM.sand);
@@ -94,11 +91,7 @@ public class Block {
 				p.setParticleGravity(1);
 				p.attatch(SC.sandmod);
 			} else if (Block.isWater(d)) {
-				ChunkManager.dropItems = false;
-				ChunkManager.dropParticles = false;
 				ChunkManager.deleteBlock(x, y, z);
-				ChunkManager.dropParticles = true;
-				ChunkManager.dropItems = true;
 				ChunkManager.setBlockID(x, y - 1, z, ID);
 				for (int i = 0; i < 5; i++) {
 					ParticleMaster.addNewParticle(PTM.raindrop, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
@@ -106,7 +99,8 @@ public class Block {
 				}
 			}
 		}
-		ChunkManager.dropItems = true;
+		ChunkManager.dropItems();
+		ChunkManager.dropParticles();
 	}
 
 	private static final int chanceForNextFallingBlockToFall = 50;
@@ -142,16 +136,14 @@ public class Block {
 	}
 
 	public static void blockUpdate(Chunk c, int x, int y, int z, short ID) {
+		ChunkManager.dontDropItems();
+		ChunkManager.dontDropParticles();
 		if (ID == GRAVEL || ID == SAND) {
 			short d = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 			if (d == Block.AIR) {
-				ChunkManager.dropItems = false;
-				ChunkManager.dropParticles = false;
 				ChunkManager.chanceToDo = chanceForNextFallingBlockToFall;
 				ChunkManager.deleteBlock(x, y, z);
 				ChunkManager.chanceToDo = 0;
-				ChunkManager.dropParticles = true;
-				ChunkManager.dropItems = true;
 				// ChunkManager.setBlockID(x, y-1, z, ID);
 				Projectil p = new Projectil(new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f), new Vector3f(), null, false);
 				p.setPT(PTM.sand);
@@ -162,11 +154,7 @@ public class Block {
 				p.setParticleGravity(1);
 				p.attatch(SC.sandmod);
 			} else if (Block.isWater(d)) {
-				ChunkManager.dropItems = false;
-				ChunkManager.dropParticles = false;
 				ChunkManager.deleteBlock(x, y, z);
-				ChunkManager.dropParticles = true;
-				ChunkManager.dropItems = true;
 				ChunkManager.setBlockID(x, y - 1, z, ID);
 				for (int i = 0; i < 5; i++) {
 					ParticleMaster.addNewParticle(PTM.raindrop, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
@@ -174,6 +162,8 @@ public class Block {
 				}
 			}
 		}
+		ChunkManager.dropItems();
+		ChunkManager.dropParticles();
 	}
 
 	private static boolean growSapling(int x, int y, int z) {
@@ -548,7 +538,7 @@ public class Block {
 		case LEAVES:
 			return AIR;
 		case GRASS:
-			if(Meth.doChance(0.01f))
+			if(Meth.doChance(5f/60/24))
 				return DIRT;
 		default:
 			return id;
@@ -561,6 +551,19 @@ public class Block {
 
 	public static float waterHeight(short currID) {
 		return (currID - 1000)*0.01f;
+	}
+
+	public static float getBurnTimeInDays(short s) {
+		switch(s){
+		case GRASS:
+			return 20f/60/24;
+		case WOOD:
+			return 1f/24;
+		case LEAVES:
+			return 30f/60/24;
+		default:
+			return 0;
+		}
 	}
 
 }

@@ -376,7 +376,7 @@ public class Tools {
 			return null;
 		}
 	}
-
+	
 	public static String readJarFile(String path) {
 		BufferedReader reader = new BufferedReader(
 				new InputStreamReader(Tools.class.getClassLoader().getResourceAsStream(path)));

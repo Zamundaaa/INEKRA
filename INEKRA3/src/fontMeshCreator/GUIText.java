@@ -3,6 +3,7 @@ package fontMeshCreator;
 import org.joml.*;
 
 import fontRendering.TextMaster;
+import gameStuff.SC;
 import renderStuff.Loader;
 
 /**
@@ -62,7 +63,10 @@ public class GUIText {
 		this.lineMaxSize = maxLineLength;
 		this.centerText = centered;
 		TextMaster.loadTex(this);
+		SCFont = font == SC.font;
 	}
+	
+	private boolean SCFont;
 
 	/**
 	 * Remove the text from the screen.
@@ -228,8 +232,10 @@ public class GUIText {
 	 * just adds the text to the screen again
 	 */
 	public void show() {
-		// TextMaster.loadTex(this);
 		TextMaster.showTex(this);
+		if(SCFont){
+			setFont(SC.font);
+		}
 	}
 
 	/**
@@ -240,12 +246,12 @@ public class GUIText {
 	}
 
 	public void setFont(FontType NEW) {
-		if (font != NEW) {
-			hide();
+		if (font != NEW || (NEW == SC.font && SC.swappingFont)) {
+			TextMaster.removeText(this);
 			font = NEW;
 			TextMeshData data = NEW.loadText(this);
 			Loader.updateText(this, data.getVertexPositions(), data.getTextureCoords());
-			show();
+			TextMaster.showTex(this);
 		}
 	}
 
@@ -256,6 +262,8 @@ public class GUIText {
 			Loader.updateText(this, data.getVertexPositions(), data.getTextureCoords());
 		}
 	}
+	
+	
 
 	public void setFontSize(float f) {
 		if (this.fontSize != f) {

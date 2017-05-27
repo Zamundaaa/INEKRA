@@ -2,9 +2,7 @@ package entities;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
 
-import controls.Keyboard;
 import controls.Mouse;
 import data.Block;
 import data.ChunkManager;
@@ -64,19 +62,19 @@ public abstract class Camera {
 		// calcZoom();
 		// angleAroundPlayer = 0;
 		if (!Player.NOCONTROL) {
-			float pC = Mouse.getDY() * Mouse.sensitivity * 0.01f;
+			float pC = Mouse.getDY() * Mouse.sensitivity * 0.017f;
 			// if (Mouse.isButtonDown(1)) {
 			pitch += pC;
 			// }
 			
 		}
 		
-		if(Keyboard.isKeyDown(GLFW.GLFW_KEY_K)){
-			roll += 30*DisplayManager.getFrameTimeSeconds();
-		}
-		if(Keyboard.isKeyDown(GLFW.GLFW_KEY_J)){
-			roll -= 30*DisplayManager.getFrameTimeSeconds();
-		}
+//		if(Keyboard.isKeyDown(GLFW.GLFW_KEY_K)){
+//			roll += 30*DisplayManager.getFrameTimeSeconds();
+//		}
+//		if(Keyboard.isKeyDown(GLFW.GLFW_KEY_J)){
+//			roll -= 30*DisplayManager.getFrameTimeSeconds();
+//		}
 		
 		// pitch = Meth.clamp(pitch, cap-90, 90);
 		pitch = Meth.clamp(pitch, -90, 90);

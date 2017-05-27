@@ -314,9 +314,9 @@ public class ItemStack {
 					z1 = (int) Math.floor(quader.z2());
 					z2 = (int) Math.floor(quader.z1());
 				}
-				ChunkManager.dropItems = false;
+				ChunkManager.dontDropItems();
 				SimpleConstructs.fill(x1, y1, z1, x2, y2, z2, id);
-				ChunkManager.dropItems = true;
+				ChunkManager.dropItems();
 				// Out.println("built! " + Block.string(id));
 				lastTime = Meth.systemTime();
 			}

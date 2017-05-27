@@ -1,12 +1,11 @@
 package collectionsStuff;
 
-public class ArrayListB {
+public class ArrayListB extends PrimitiveList{
 	
 	protected byte[] values;
-	protected int size;
 
 	public ArrayListB() {
-		this(10);
+		this(STARTCAPACITY);
 	}
 
 	public ArrayListB(int startCapacity) {

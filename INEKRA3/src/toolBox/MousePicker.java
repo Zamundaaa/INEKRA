@@ -82,6 +82,9 @@ public class MousePicker {
 	private static Vector3f calculateMouseRay() {
 		float mouseX = Mouse.getX();
 		float mouseY = DisplayManager.HEIGHT * 0.5f - (Mouse.getY() - DisplayManager.HEIGHT * 0.5f);
+		// H*0.5 - Y + H*0.5
+		// = -Y
+//		float mouseY = -Mouse.getY();
 		Vector2f normalizedCoords = getNormalisedDeviceCoordinates(mouseX, mouseY);
 		Vector4f clipCoords = new Vector4f(normalizedCoords.x, normalizedCoords.y, -1.0f, 1.0f);
 		Vector4f eyeCoords = toEyeCoords(clipCoords);
@@ -422,6 +425,14 @@ public class MousePicker {
 
 	public static boolean DEBUG = false;
 
+	/**
+	 * STORES ITS RESULT IN {@link toolBox.Vects#calcVect}!!!
+	 * @param pos
+	 * @param ray
+	 * @param range
+	 * @param ignoreWater
+	 * @return
+	 */
 	public static Vector3f getNextFilledBlockCoord(Vector3f pos, Vector3f ray, float range, boolean ignoreWater) {
 		// Vector3f start = new Vector3f(pos);
 		Vector3f start = pos;

@@ -21,8 +21,8 @@ public class TM {
 
 	// private static int SEASON = 1;
 
-	private static double time = Tools.loadFloatPreference("time", 15);
-	private static double ingameDays = Tools.loadFloatPreference("gameTimeMillis", 1 / 15f);
+	private static double time;// = Tools.loadFloatPreference("time", 15);
+	private static double ingameDays;// = Tools.loadFloatPreference("gameTimeMillis", 1 / 15f);
 	private static long fromStartMillis = 0;
 	private static int JAHRESZEIT;
 
@@ -113,17 +113,15 @@ public class TM {
 
 	public static void setNextDay() {
 		while (!isDay()) {
-			time += 0.5f;
-			time %= 24;
 			ingameDays += 0.5f * mul;
+			time = (ingameDays%1)*24;
 		}
 	}
 
 	public static void setNextNight() {
 		while (!isNight()) {
-			time += 0.5f;
-			time %= 24;
 			ingameDays += 0.5f * mul;
+			time = (ingameDays%1)*24;
 		}
 	}
 
@@ -175,6 +173,11 @@ public class TM {
 			time %= 24;
 			ingameDays += 0.1f * mul;
 		}
+	}
+
+	public static void setIngameDays(double d) {
+		ingameDays = d;
+		time = (ingameDays%1)*24;
 	}
 
 }

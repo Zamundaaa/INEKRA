@@ -1,6 +1,7 @@
 package textureGenerator;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 import models.RawModel;
 import postProcessing.Fbo;

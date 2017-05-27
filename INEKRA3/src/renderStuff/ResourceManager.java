@@ -21,15 +21,15 @@ public abstract class ResourceManager {
 	public static long loadStart;
 
 	public static void loadResources() {
-//		Err.err.println("----------------loading Resources!");
+		// Err.err.println("----------------loading Resources!");
 		SC.init();
-//		Err.err.println("----------------------loading PTM");
+		// Err.err.println("----------------------loading PTM");
 		PTM.init();
 		MasterRenderer.init();
-		
+
 		PlanetRenderer.init();
-		
-//		Err.err.println("-------------------initing GuiRenderer");
+
+		// Err.err.println("-------------------initing GuiRenderer");
 		GuiRenderer.init();
 		loadStart = Meth.systemTime();
 		MainLoop.renderLoadingScreen();
@@ -40,15 +40,18 @@ public abstract class ResourceManager {
 			System.exit(-1);
 		}
 		SourcesManager.init();
-//		Err.err.println("----------initing TextMaster");
+		// Err.err.println("----------initing TextMaster");
 		TextMaster.init();
-//		Err.err.println("----------initing LineRenderer");
+		// Err.err.println("----------initing LineRenderer");
 		LineRenderer.init();
-//		Err.err.println("----------initing PostProcessing");
+		// Err.err.println("----------initing PostProcessing");
 		PostProcessing.init();
-//		G3DRenderer.init();
+		// G3DRenderer.init();
 		Keyboard.init();
 		Mouse.init();
+
+		loadModelsAndTextures();
+
 	}
 
 	public static void cleanUp() {
@@ -64,6 +67,14 @@ public abstract class ResourceManager {
 		// G3DRenderer.cleanUp();
 		SC.cleanUp();
 		Tools.setLongPreference("Ladezeit", loadingTime);
+	}
+
+	/**
+	 * models and textures, at least those needed by other threads than the main
+	 * thread can be loaded here to bypass the openGL restriction to one thread
+	 */
+	public static void loadModelsAndTextures() {
+		// TODO
 	}
 
 }

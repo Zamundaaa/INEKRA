@@ -47,10 +47,14 @@ public class SC {
 		font.cleanUp();
 		FontType newFont = new FontType(Loader.loadTextureForFonts(fontTypes[chosenFont]),
 				SC.class.getClassLoader().getResourceAsStream("res/fonts/" + fontTypes[chosenFont] + ".fnt"));
+		swappingFont = true;
 		TextMaster.switchFontType(font, newFont);
 		font = newFont;
+		swappingFont = false;
 		return fontTypes[chosenFont];
 	}
+	
+	public static boolean swappingFont;
 
 	public static ModelTexture getTex(String name) {
 		return Models.getTex(name);

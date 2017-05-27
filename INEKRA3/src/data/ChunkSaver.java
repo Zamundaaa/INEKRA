@@ -1,11 +1,10 @@
 package data;
 
-import collectionsStuff.SmartByteBuffer;
-import gameStuff.Err;
-import gameStuff.WorldObjects;
-import toolBox.Tools;
-
 import static data.Chunk.SIZE;
+
+import collectionsStuff.SmartByteBuffer;
+import gameStuff.*;
+import toolBox.Tools;
 
 public class ChunkSaver {
 
@@ -16,12 +15,20 @@ public class ChunkSaver {
 
 	public static void saveStandardData() {
 		if (WorldObjects.player != null) {
-			String save = Generator.seed + trenner;
-			save += WorldObjects.player.getPosition().x + trenner;
-			save += WorldObjects.player.getPosition().y + trenner;
-			save += WorldObjects.player.getPosition().z + trenner;
+			StringBuilder save = new StringBuilder();
+			save.append(Generator.seed);
+			save.append(trenner);
+			save.append(WorldObjects.player.getPosition().x);
+			save.append(trenner);
+			save.append(WorldObjects.player.getPosition().y);
+			save.append(trenner);
+			save.append(WorldObjects.player.getPosition().z);
+			save.append(trenner);
+			save.append(TM.inGameDays());
+//			save.append(trenner);
+//			save.append(TM.getDayTime());
 
-			Tools.writeToFile("ChunksSave/" + worldName + "/" + "dataSave.txt", save);
+			Tools.writeToFile("ChunksSave/" + worldName + "/" + "dataSave.txt", save.toString());
 		}
 		Tools.writeToFile("ChunksSave/" + worldName, "/saveVersion.txt", "2", true);
 	}
@@ -33,6 +40,8 @@ public class ChunkSaver {
 			Generator.seed = Long.parseLong(datas[0]);
 			WorldObjects.player.setPosition(Float.parseFloat(datas[1]), Float.parseFloat(datas[2]),
 					Float.parseFloat(datas[3]));
+			if(datas.length > 4 && !datas[4].isEmpty() && !datas[4].equals("\n"))
+				TM.setIngameDays(Double.parseDouble(datas[4]));
 		}
 		checkAndUpdateSaveVersion();
 	}

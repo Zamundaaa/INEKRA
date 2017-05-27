@@ -55,5 +55,10 @@ public class Torch extends SpecialBlock {
 	public void addMetaData(SmartByteBuffer data) {
 		
 	}
+	
+	@Override
+	public String toString(){
+		return "Torch";
+	}
 
 }
