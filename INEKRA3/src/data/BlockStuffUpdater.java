@@ -5,8 +5,8 @@ import toolBox.Meth;
 
 public class BlockStuffUpdater {
 	
-	private static Thread worker;
-	private static final long wantedFrameTime = 1000/60;
+	public static Thread worker;
+	public static final long wantedFrameTime = 1000/60;
 	
 	public static void init(){
 		worker = new Thread("BlockStuffUpdater"){
@@ -14,9 +14,9 @@ public class BlockStuffUpdater {
 			public void run(){
 				long time;
 				while(ThreadManager.running()){
-					time = Meth.systemTime();
+					time = System.currentTimeMillis();
 					ChunkManager.doBlockUpdates();
-					long t = wantedFrameTime - (Meth.systemTime()-time);
+					long t = wantedFrameTime - (System.currentTimeMillis()-time);
 					if(t > 0){
 						Meth.wartn(t);
 					}
@@ -24,6 +24,12 @@ public class BlockStuffUpdater {
 			}
 		};
 		worker.start();
+	}
+	
+	public static void update(){
+		if(worker == null || !worker.isAlive()){
+			init();
+		}
 	}
 
 }

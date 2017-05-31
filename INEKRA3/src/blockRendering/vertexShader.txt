@@ -74,9 +74,6 @@ void main(void){
 		}
 		verz = 0.0;
 	}else{
-		//float dx = teilDings*sin(TIME+worldPosition.y+worldPosition.z);
-		//float dy = teilDings*sin(TIME+worldPosition.x+worldPosition.z);
-		//float dz = teilDings*cos(TIME+worldPosition.x+worldPosition.y);
 		float dx = teilDings*somesin;
 		float dy = teilDings*-somesin;
 		float dz = teilDings*somesin*timesin;
@@ -107,14 +104,6 @@ void main(void){
 	gl_Position = projectionMatrix * viewMatrix * worldPosition;
 	
 	pass_textureCoordinates = textureCoordinates;//(textureCoordinates/numberOfRows) + offSet;
-	//if(textureCoordinates.z == GLASS){
-	//	if(textureCoordinates.x > 1){
-	//		pass_textureCoordinates.x = 1;
-	//	}
-	//	if(textureCoordinates.y > 1){
-	//		pass_textureCoordinates.y = 1;
-	//	}
-	//}
 	
 	vec3 actualNormal = (transformationMatrix * vec4(normal, 0.0)).xyz;//normal;
 	if(useFakeLightning > 0.5){
@@ -122,13 +111,10 @@ void main(void){
 	}
 	surfaceNormal = actualNormal;
 	
-	//for(int i = 0; i < LIGHTS; i++){
-	//	toLightVector[i] = lightPosition[i] - worldPosition.xyz;
-	//}
 	toLightVector[0] = sunDirection;
 	
 	LV = lightStuff;
-	const float gamma = 2.2;
-	LV = pow(LV, vec4(gamma));
+	//const float gamma = 2.2;
+	//LV = pow(LV, vec4(gamma));
 	
 }

@@ -135,9 +135,9 @@ public abstract class MasterRenderer {
 
 	public static void render(List<Light> lights, Vector4f clipPlane) {
 
-		renderOrigin.x = Camera.getPosition().x % 500;
-		renderOrigin.y = Camera.getPosition().y % 500;
-		renderOrigin.z = Camera.getPosition().z % 500;
+		renderOrigin.x = 500*(((int)Camera.getPosition().x) / 500);
+		renderOrigin.y = 500*(((int)Camera.getPosition().y) / 500);
+		renderOrigin.z = 500*(((int)Camera.getPosition().z) / 500);
 
 		// GL11.glViewport(0, DisplayManager.getYGUIOffset(),
 		// DisplayManager.WIDTH,

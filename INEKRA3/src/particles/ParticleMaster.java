@@ -190,9 +190,9 @@ public class ParticleMaster {
 			}
 			ps.add(p);
 		}
-		if(!Thread.currentThread().getName().equals("main")){
-			System.out.println(Thread.currentThread().getName());
-		}
+//		if(!Thread.currentThread().getName().equals("main")){
+//			System.out.println(Thread.currentThread().getName());
+//		}
 	}
 
 	public static void removeParticle(Particle p) {

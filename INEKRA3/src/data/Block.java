@@ -34,7 +34,8 @@ public class Block {
 		return BLACK;
 	}
 
-	public static void update(Chunk c, short ID, int x, int y, int z) {// FALLING SAND/GRAVEL/WATER!!! UPDATECHANCE FOR SEASON CHANGE
+	public static void update(Chunk c, short ID, int x, int y, int z) {// FALLING SAND/GRAVEL/WATER!!!
+		//UPDATECHANCE FOR SEASON CHANGE shall be added, please!
 		ChunkManager.dontDropItems();
 		ChunkManager.dontDropParticles();
 		if (isGrass(ID)) {
@@ -63,15 +64,20 @@ public class Block {
 				c.set(x, y, z, jahresZeitLeaves());
 			}
 		} else if (ID == SAPLING) {
-			if (TM.isDay()) {
-				int cx = x - c.realX();
-				int cz = z - c.realZ();
-				if ((cx != 0 || ChunkManager.getWithBlockCoords(x - 1, y, z) != null)
-						&& (cx != SIZE || ChunkManager.getWithChunkCoords(x + 1, y, z) != null)
-						&& (cz != 0 || ChunkManager.getWithBlockCoords(x, y, z - 1) != null)
-						&& (cz != SIZE || ChunkManager.getWithChunkCoords(x, y, z + 1) != null)) {
-					if (growSapling(x, y, z) && Meth.doChance(0.01f)) {
-						growSapling(x, y + 1, z);
+			if(TM.isDay()){
+				int lightLevel = ChunkManager.getSunLight(x, y+1, z);
+				final int growLevel = 7;
+				if (lightLevel >= growLevel) {
+					int cx = x - c.realX();
+					int cz = z - c.realZ();
+					if ((cx != 0 || ChunkManager.getWithBlockCoords(x - 1, y, z) != null)
+							&& (cx != SIZE || ChunkManager.getWithChunkCoords(x + 1, y, z) != null)
+							&& (cz != 0 || ChunkManager.getWithBlockCoords(x, y, z - 1) != null)
+							&& (cz != SIZE || ChunkManager.getWithChunkCoords(x, y, z + 1) != null)) {
+						if (growSapling(x, y, z) && Meth.doChance(0.01f)) {
+							growSapling(x, y + 1, z);
+						}
+//						new Exception().printStackTrace();
 					}
 				}
 			}
@@ -165,15 +171,72 @@ public class Block {
 		ChunkManager.dropItems();
 		ChunkManager.dropParticles();
 	}
-
+	
+	private static final int[] treeLeaveGrowPlaces = new int[10],
+			treeLeaveGrowDiameters = new int[10],
+			branchPlaces = new int[10];
+	
 	private static boolean growSapling(int x, int y, int z) {
 		boolean grown = false;
-		for (int i = 1; i <= 7; i++) {
+		int h;
+		switch(Meth.randomInt(0, 5, x*241+z)){
+		case 0:
+			h = 1;
+			treeLeaveGrowDiameters[0] = 2;
+			treeLeaveGrowPlaces[0] = 1;
+			break;
+		case 2:
+		case 3:
+		case 4:
+			h = 18;
+			treeLeaveGrowPlaces[0] = 10;
+			treeLeaveGrowPlaces[1] = 15;
+			treeLeaveGrowDiameters[0] = 5;
+			treeLeaveGrowDiameters[1] = 5;
+			break;
+		case 5:
+			h = 50;
+			treeLeaveGrowDiameters[0] = 4;
+			treeLeaveGrowDiameters[1] = 3;
+			treeLeaveGrowDiameters[2] = 5;
+			treeLeaveGrowDiameters[3] = 4;
+			treeLeaveGrowPlaces[0] = 30;
+			treeLeaveGrowPlaces[1] = 25;
+			treeLeaveGrowPlaces[2] = 39;
+			treeLeaveGrowPlaces[3] = 46;
+			branchPlaces[0] = 15;
+			branchPlaces[1] = 17;
+			branchPlaces[2] = 19;
+			break;
+		default:
+			h = 7;
+			treeLeaveGrowDiameters[0] = 3;
+			treeLeaveGrowPlaces[0] = 5;
+		}
+		for (int i = 1; i <= h; i++) {
 			if (ChunkManager.getBlockID(x, y - i, z) != WOOD) {
 				ChunkManager.setBlockID(x, y, z, WOOD);
 				ChunkManager.setBlockID(x, y + 1, z, SAPLING);
-				if (i == 5) {
-					SimpleConstructs.fillSphere(x, y, z, 3, LEAVES, false);
+				for(int i2 = 0; i2 < treeLeaveGrowPlaces.length; i2++){
+					if(i == treeLeaveGrowPlaces[i2]){
+						SimpleConstructs.fillSphere(x, y, z, treeLeaveGrowDiameters[i2], LEAVES, false);
+						break;
+					}else if(i == branchPlaces[i2]){
+						Vects.calcVect.set(0);
+						switch(Meth.randomInt(0, 3)){
+						case 0:Vects.calcVect.x++;break;
+						case 1:Vects.calcVect.x--;break;
+						case 2:Vects.calcVect.z++;break;
+						case 3:Vects.calcVect.z--;break;
+						}
+						int d = Meth.randomInt(2, 4);
+						for(int i3 = 0; i3 < d; i3++)
+							ChunkManager.setBlockID(x+i3*Vects.calcVect.x,
+									y+i3*Vects.calcVect.y,
+									z+i3*Vects.calcVect.z, WOOD);
+						SimpleConstructs.fillSphere(x+d*Vects.calcVect.x, 
+								y+d*Vects.calcVect.y, z+d*Vects.calcVect.z, 2, LEAVES, false);
+					}
 				}
 				grown = true;
 				break;
@@ -181,6 +244,10 @@ public class Block {
 		}
 		if (!grown) {
 			ChunkManager.setBlockID(x, y, z, LEAVES);
+		}
+		for(int i = 0; i < treeLeaveGrowPlaces.length; i++){
+			treeLeaveGrowPlaces[i] = -1;
+			branchPlaces[i] = -1;
 		}
 		return grown;
 	}

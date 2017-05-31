@@ -4,8 +4,10 @@ import static gameStuff.TM.*;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
+import controls.Keyboard;
 import data.Generator;
 import entities.Camera;
 import gameStuff.*;
@@ -105,6 +107,17 @@ public class SkyRenderer {
 	}
 
 	public void render(Matrix4f viewMat, float r, float g, float b) {
+		
+		if(Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_R)){
+			shader.cleanUp();
+			shader = new SkyboxShader();
+			shader.start();
+			shader.connectTextureUnits();
+			shader.loadProjectionMatrix(MasterRenderer.getProjectionMatrix());
+			shader.loadMoonStuff(ms);
+			shader.stop();
+		}
+		
 		shader.start();
 		shader.loadViewMatrix(viewMat);
 		shader.loadFogColor(r, g, b);

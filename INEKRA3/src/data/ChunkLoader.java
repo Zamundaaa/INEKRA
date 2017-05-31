@@ -45,7 +45,7 @@ public class ChunkLoader extends Thread {
 				if (ChunkManager.getWithChunkCoords(k2) == null// &&
 																// !added.contains(k2)
 				) {
-					Chunk c = new Chunk(k2.getX(), k2.getY(), k2.getZ(), false);
+					Chunk c = new Chunk(k2.getX(), k2.getY(), k2.getZ());
 					toAdd.add(c);
 					Meth.wartn(delayBetweenChunkLoads);
 				}

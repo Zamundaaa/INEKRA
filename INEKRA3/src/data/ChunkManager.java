@@ -9,6 +9,7 @@ import org.joml.Vector4i;
 
 import audio.AudioMaster;
 import audio.SourcesManager;
+import blockRendering.BlockRenderer;
 import cubyWater.WaterManager;
 import cubyWater.WaterUpdater;
 import cubyWaterNew.NewWaterUpdater;
@@ -64,7 +65,10 @@ public class ChunkManager {
 	 * in the WaterUpdater thread
 	 */
 	private static Key3D placeholder_WaterUpdater = new Key3D(0, 0, 0);
+	private static Key3D placeholder_WaterMapper = new Key3D(0, 0, 0);
 	private static Key3D placeholder2 = new Key3D(0, 0, 0);
+	private static Key3D placeholder_BlockMasker = new Key3D();
+	private static Key3D placeholder_ExplosionHelper = new Key3D();
 
 //	/**
 //	 * a placeholder Key3D for fast access of the chunks map. May only be used
@@ -120,7 +124,6 @@ public class ChunkManager {
 			generateAllAtOnce = false;
 		}
 		LightMaster.init();
-		BlockStuffUpdater.init();
 		SimpleConstructs.init();
 	}
 
@@ -155,7 +158,7 @@ public class ChunkManager {
 		int py = toChunkCoord(WorldObjects.player.getPosition().y);
 		int pz = toChunkCoord(WorldObjects.player.getPosition().z);
 		if (generateAllAtOnce) {
-			notAddingOrRemovingChunks = false;
+//			notAddingOrRemovingChunks = false;
 			for (float x = -range; x <= range; x++) {
 				for (float z = -range; z <= range; z++) {
 					for (float y = -yrange; y <= yrange; y++) {
@@ -182,7 +185,8 @@ public class ChunkManager {
 			// for(int i = 0; i < 5 && !toLoad.isEmpty(); i++){
 			// ChunkLoader.queue.add(toLoad.poll());
 			// }
-			notAddingOrRemovingChunks = false;
+			
+//			notAddingOrRemovingChunks = false;
 			int i = 0;
 			while (!toAdd.isEmpty() && i < 5) {
 				Chunk c = toAdd.poll();
@@ -192,7 +196,7 @@ public class ChunkManager {
 			}
 
 		}
-		notAddingOrRemovingChunks = false;
+//		notAddingOrRemovingChunks = false;
 		int i = 0;
 		for (int c = 0; c < clist.size(); c++) {
 			float X = clist.get(c).cx() - px;
@@ -212,16 +216,18 @@ public class ChunkManager {
 				clist.get(c).update();
 			}
 		}
-		notAddingOrRemovingChunks = true;
+//		notAddingOrRemovingChunks = true;
 		
 		FramePerformanceLogger.writeStoppedTime(key ,"ChunkManager Update Without BlockUpdates");
+		
+		BlockStuffUpdater.update();
 		
 //		blockUpdates(1 + blockUpdates.size() / 2);
 //		FramePerformanceLogger.writeStoppedTime("BlockUpdates...");// remove this then!
 
 	}
 	
-	private static volatile boolean notAddingOrRemovingChunks = false;
+//	private static volatile boolean notAddingOrRemovingChunks = false;
 
 	private static int numberOfChunksToUpdatePerFrame = 100;
 	private static int pointer = 0;
@@ -248,12 +254,20 @@ public class ChunkManager {
 //		if (Thread.currentThread() == LightMaster.lightUpdater) {
 //			key = placeholder_LightUpdater;
 //		} else 
-		if (Thread.currentThread() == WaterUpdater.updater || Thread.currentThread() == NewWaterUpdater.updater) {
+		if (Thread.currentThread() == NewWaterUpdater.updater) {
 			key = placeholder_WaterUpdater;
 			// } else if (Thread.currentThread() == listUpdater) {
 			// key = placeholder_ListUpdater;
-		}else if(!Thread.currentThread().getName().equals("main")){
+		}else if(Thread.currentThread() == NewWaterUpdater.modelUpdater){
+			key = placeholder_WaterMapper;
+//		}else if(!Thread.currentThread().getName().equals("main")){
+//			key = placeholder2;
+		}else if(Thread.currentThread() == BlockRenderer.masker){
+			key = placeholder_BlockMasker;
+		}else if(Thread.currentThread() == BlockStuffUpdater.worker){
 			key = placeholder2;
+		}else if(Thread.currentThread() == SimpleConstructs.explosionHelper){
+			key = placeholder_ExplosionHelper;
 		} else {
 			key = placeholder;
 		}
@@ -483,7 +497,7 @@ public class ChunkManager {
 		WaterUpdater.waitAndStop();
 		WaterUpdater.clearList();
 		WaterManager.cleanUp();
-		notAddingOrRemovingChunks = false;
+//		notAddingOrRemovingChunks = false;
 		while (clist.size() > 0) {
 			Chunk c = clist.get(clist.size() - 1);
 			unloadChunk(c.cx(), c.cy(), c.cz());
@@ -698,8 +712,12 @@ public class ChunkManager {
 	
 	protected static void doBlockUpdates(){
 		blockUpdates(1 + blockUpdates.size() / 2);
-		for(int i = 0; notAddingOrRemovingChunks && i < clist.size() && i < 5; i++){
-			clist.get(Meth.randomInt(0, clist.size()-1)).updateSomeBlocks();
+		for(int i = 0; i < clist.size(); i++){
+			clist.get(i).updateSomeBlocks();
+//			if(!notAddingOrRemovingChunks){
+//				System.out.println("interrupted!");
+//				break;
+//			}
 		}
 	}
 	

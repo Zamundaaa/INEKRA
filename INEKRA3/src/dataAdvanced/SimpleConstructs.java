@@ -103,10 +103,10 @@ public class SimpleConstructs {
 	
 	private static ArrayDeque<Vector4i> explosionQueue = new ArrayDeque<>();
 	
-	private static Thread runner;
+	public static Thread explosionHelper;
 	
 	public static void init(){
-		runner = new Thread("ExplosionHelper"){
+		explosionHelper = new Thread("ExplosionHelper"){
 			@Override
 			public void run(){
 				while(ThreadManager.running()){
@@ -118,7 +118,7 @@ public class SimpleConstructs {
 				}
 			}
 		};
-		runner.start();
+		explosionHelper.start();
 	}
 
 	public static void replaceAllAncients(Vector3f v, short repID, int CAP) {
@@ -180,6 +180,10 @@ public class SimpleConstructs {
 			counter++;
 			replaceHelp(x, y - 1, z, startID, repID, CAP);
 		}
+	}
+
+	public static void fillSphere(float x, float y, float z, int r, short id, boolean replace) {
+		fillSphere((int)Math.floor(x), (int)Math.floor(y), (int)Math.floor(z), r, id, replace);
 	}
 
 }

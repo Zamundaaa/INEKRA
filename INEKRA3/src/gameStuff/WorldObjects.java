@@ -178,7 +178,7 @@ public abstract class WorldObjects {
 
 		getSunDirection(Vects.calcVect, (float) TM.getDayTime());
 		float reddot = Vects.calcVect.dot(horizon);
-		float redcap = 0.97f;
+		float redcap = 0.95f;
 		if (reddot > redcap) {
 			Vects.blend(sun.getColour(), red, sun.getColour(), Meth.clamp((1 - (100 * (1 - reddot))) * 0.2f, 0, 0.1f));
 		} else {

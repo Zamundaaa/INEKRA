@@ -80,123 +80,95 @@ void main(void){
 	vec4 finalColor = vec4(0.0);
 	
     vec3 normTex = normalize(textureCoords);
-    
-    //float RAND = ((normTex.y+ normTex.x*4289*normTex.z ) * TIME/100);
-    	
-	//if(PIC > 0.5){
-	//    
-	//	vec4 tex1 = texture(cubeMap, textureCoords);
-	//	vec4 tex2 = texture(cubeMap2, textureCoords);
-	//	finalColor = mix(tex1, tex2, blendFactor);
-	//	finalColor = mix(finalColor, vec4(WC, 1.0), bF);
-	//	
-	//    float fact = (textureCoords.y - lowerLimit) / (upperLimit - lowerLimit);
-	//    fact = clamp(fact, 0.0, 1.0);
-	//    out_Color = mix(vec4(fogColor, 1.0), finalColor, fact);
-	//    out_BrightColor = 0.2*out_Color;//mix(out_Color, vec4(0.0), 0.5)
-    //}else{
-    	//float s = sin(TIME*PI/24); ?
-    	//float r = naturalNoise(s*(textureCoords.x*2+textureCoords.y*8.29*textureCoords.z)/100);
-    	//out_Color = vec4(r, r, r, 1.0);
-    	//out_Color = vec4(mix(vec3(0.01, 0.01, 0.2), vec3(0.01, 0.01, 0.35), (1+textureCoords.y/2)*0.1), 1.0);
-    	
-    	//out_Color = vec4(0.3, 0.3, 1, 1.0);
-    	//out_Color = mix(out_Color, vec4(0, 0, 0, 1.0), blendFactor); // WORKS PRETTY WELL
-    	out_Color = vec4(timeColor, 1.0);
-    	if(normTex.y < 0){
-    		if(normTex.y > -0.4){
-    			out_Color = mix(vec4(0.0, 0.0, 0.0, 1.0), out_Color, 1+(normTex.y*2.5));
-    		}else{
-    			out_Color = vec4(0.0, 0.0, 0.0, 1.0);
-    		}
-    	}
-    	
-    	if(false){// JUST FOR TESTS!!! Macht (fast) hypnotisierende Muster am Himmel
-    		float xfact = sin(TIME)*100;
-    		float yfact = sin(TIME*0.3+932.02)*100;
-    		float zfact = cos(TIME*0.93)*100;
-    		out_Color = mix(out_Color, vec4(1, 1, 1, 1.0),
-    		naturalNoise(sin(normTex.x*xfact)+cos(normTex.y*yfact)+sin(normTex.z*zfact+429.432) ) );
-    	}
-    	//float starval = 0;
-    	//for(float y = -0.01; y <= 0.01; y+=0.01){
-    	//	for(float x = -0.01; x <= 0.01; x+=0.01){
-    	//		for(float z = -0.01; z <= 0.01; z+=0.01){
-    	//			if(texture(startex, vec3(textureCoords.x+x, textureCoords.y+y, textureCoords.z+z)).x > 0.5){
-    	//				starval += 0.1;
-    	//			}
-    	//		}
-    	//	}
-    	//}
-    	//if(STARS > 0.5 && starval > 0.5){
-    	//	out_Color = vec4(1.0);
-    	//}
-    	
-    	//float sunangle = asin(sunDirection.y);
-    	//float texangle = asin(normTex.y);
-    	//if(normTex.x < 0){
-    	//	if(texangle < 0){
-    	//		texangle = PI+abs(texangle);
-    	//	}else{
-    	//		texangle = acos(normTex.x);
-    	//	}
-    	//}
-    	//float diff = sunangle+texangle-PI*0.5;
-    	
-    	vec3 starSampleCoords = (vec4(normTex, 1.0) * starCoordTransform).xyz;
-    	if(abs(starSampleCoords.x) >= abs(starSampleCoords.y) && abs(starSampleCoords.x) >= abs(starSampleCoords.z)){
-    		starSampleCoords *= 1/starSampleCoords.x;
-    	}else if(abs(starSampleCoords.y) >= abs(starSampleCoords.x) && abs(starSampleCoords.y) >= abs(starSampleCoords.z)){
-    		starSampleCoords *= 1/starSampleCoords.y;
-    	}else{
-    		starSampleCoords *= 1/starSampleCoords.z;
-    	}
-    	
-    	vec4 STEX = texture(startex, starSampleCoords);
-    	
-    	out_Color = mix(out_Color, STEX, blendFactor);
-    	
-    	out_Color = vec4(mix(out_Color.xyz, WC, bF), 1.0);
-    	//out_Color = vec4(WC, 1.0);
-   		
-    	finalColor = out_Color;
-    	out_BrightColor = vec4(0.0);
-   	//}
+	
+	out_Color = vec4(timeColor, 1.0);
+	if(normTex.y < 0){
+		if(normTex.y > -0.4){
+			out_Color = mix(vec4(0.0, 0.0, 0.0, 1.0), out_Color, 1+(normTex.y*2.5));
+		}else{
+			out_Color = vec4(0.0, 0.0, 0.0, 1.0);
+		}
+	}
+	
+	// JUST FOR TESTS!!! Macht (fast) hypnotisierende Muster am Himmel
+	//	float xfact = sin(TIME)*100;
+	//	float yfact = sin(TIME*0.3+932.02)*100;
+	//	float zfact = cos(TIME*0.93)*100;
+	//	out_Color = mix(out_Color, vec4(1, 1, 1, 1.0),
+	//	naturalNoise(sin(normTex.x*xfact)+cos(normTex.y*yfact)+sin(normTex.z*zfact+429.432) ) );
+	
+	const float offset = -0.1;
+	
+	float level = abs(sunDirection.y-offset);
+	if(level < 0.2){
+		level = 1-level*5;
+		vec2 ka = abs(normTex.xz-sunDirection.xz);
+		
+		float h = level*min(sqrt(1.0/(dot(ka, ka)*2)), 1.2);
+		float nty = 5*abs(normTex.y-offset);
+		if(nty < h){
+			out_Color = mix(
+				mix(vec4(1.0, 1.0, 153.0/255.0, 1.0), vec4(0.7, 0.15, 0.2, 1.0), level), 
+					out_Color, nty/h);
+		}
+	}
+	
+	vec3 starSampleCoords = (vec4(normTex, 1.0) * starCoordTransform).xyz;
+	if(abs(starSampleCoords.x) >= abs(starSampleCoords.y) && abs(starSampleCoords.x) >= abs(starSampleCoords.z)){
+		starSampleCoords *= 1/starSampleCoords.x;
+	}else if(abs(starSampleCoords.y) >= abs(starSampleCoords.x) && abs(starSampleCoords.y) >= abs(starSampleCoords.z)){
+		starSampleCoords *= 1/starSampleCoords.y;
+	}else{
+		starSampleCoords *= 1/starSampleCoords.z;
+	}
+	
+	vec4 STEX = texture(startex, starSampleCoords);
+	
+	out_Color = mix(out_Color, STEX, blendFactor);
+	
+	out_Color = vec4(mix(out_Color.xyz, WC, bF), 1.0);
+	
+	finalColor = out_Color;
+	out_BrightColor = vec4(0.0);
+	
+    float dotpr = dot(sunDirection, normTex);
    
-  	//if(normTex.y > -0.2){
-	    float dotpr = dot(sunDirection, normTex);
-	    if(dotpr >= 1-sunsize){
-	  	  	float vis = 1;
-	    	if(dotpr < 1-suncircle){
-		    	out_Color = sunColor;
-		    	vis = min(0, (1-sunsize)/dotpr);
-		    	//out_Color = vec4(1, 1, 0.7, 1.0);
-			}else{
-				out_Color = sunColor;
-			}
-		    float reddot = dot( normalize(vec3(1, redoffset, 0)), sunDirection);//normTex
-		   	const float redcap = 0.97;
-		    if(reddot > redcap){
-		    	out_Color = mix(out_Color, vec4(1, 0.2, 0.2, 1.0), 1-(100*(1-reddot)) );
-		    }else{
-		    	reddot = dot( normalize(vec3(-1, redoffset, 0)), sunDirection);//normTex
-		    	if(reddot > redcap){
-		    		out_Color = mix(out_Color, vec4(1, 0.2, 0.2, 1.0), 1-(100*(1-reddot)) );
-		    	}
-		    }
-		    if(vis < 1){
-		    	out_Color = mix(out_Color, finalColor, 1-vis);
-		    }
-		    out_BrightColor = out_Color*10;
-	    }else if(showMoon > 0.5 && dotpr <= moonSize-1){
-	    	float moondot = -dotpr;
-	    	vec3 texC = (vec4(normTex, 1.0) * -starCoordTransform).xyz;
-	    	vec2 tC = vec2((texC.z+dMoon)*dMoonM, (texC.x+dMoon)*dMoonM);
-	    	out_Color = texture(moonTex, tC);
-	    	out_BrightColor = 0.5*out_Color;
+    if(dotpr >= 1-sunsize){
+  	  	float vis = 1;
+    	if(dotpr < 1-suncircle){
+	    	out_Color = sunColor;
+	    	vis = min(0, (1-sunsize)/dotpr);
+	    	//out_Color = vec4(1, 1, 0.7, 1.0);
+		}else{
+			out_Color = sunColor;
+		}
+	    //float reddot = dot( normalize(vec3(1, redoffset, 0)), sunDirection);//normTex
+	   	//const float redcap = 0.95;
+	    //if(reddot > redcap){
+	   	// 	out_Color = mix(out_Color, vec4(1, 0.2, 0.2, 1.0), 1-(20*(1-reddot)));
+	    //}else{
+	    //	reddot = dot( normalize(vec3(-1, redoffset, 0)), sunDirection);//normTex
+	    //	if(reddot > redcap){
+	    //		out_Color = mix(out_Color, vec4(1, 0.2, 0.2, 1.0), 1-(20*(1-reddot)) );
+	    //	}
+	    //}
+	    float level = abs(sunDirection.y-redoffset);
+	    if(level < 0.2){
+	    	level = 1-5*level;
+	    	out_Color = mix(out_Color, vec4(1.0, 0.2, 0.2, 1.0), level);
+	    	//out_Color = vec4(1.0, 0.2, 0.2, 1.0);
 	    }
-	//}
-    
-    //out_Color = vec4(1.0, 1.0, 1.0, 1.0);
+	    
+	    if(vis < 1){
+	    	out_Color = mix(out_Color, finalColor, 1-vis);
+	    }
+	    out_BrightColor = out_Color;
+    }else if(showMoon > 0.5 && dotpr <= moonSize-1){
+    	float moondot = -dotpr;
+    	vec3 texC = (vec4(normTex, 1.0) * -starCoordTransform).xyz;
+    	vec2 tC = vec2((texC.z+dMoon)*dMoonM, (texC.x+dMoon)*dMoonM);
+    	out_Color = texture(moonTex, tC);
+    	out_BrightColor = 0.5*out_Color;
+    }
     
 }

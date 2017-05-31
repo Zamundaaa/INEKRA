@@ -49,7 +49,7 @@ public abstract class MainLoop {
 
 	public static void main(String[] args) {
 		new Thread("commandListener") {// REPLACE WITH UPDATE METHOD IN e.g.
-										// DISPLAYMANAGER.UPDATE
+										// DISPLAYMANAGER.UPDATE ? 
 			@Override
 			public void run() {
 				try {
@@ -242,8 +242,8 @@ public abstract class MainLoop {
 			if (Keyboard.isKeyDown(GLFW.GLFW_KEY_ESCAPE) && !Inv2D.open) {
 				playerGUI.hide();
 				debugPanel.hide();
-				Err.err.println("Show shown? " + show.visible() + " tv? " + show.getTex().visible());
-				Err.err.println("GUIManager.transparents().contains(show.getTex()): " + GUIManager.transparents().contains(show.getTex()));
+//				Err.err.println("Show shown? " + show.visible() + " tv? " + show.getTex().visible());
+//				Err.err.println("GUIManager.transparents().contains(show.getTex()): " + GUIManager.transparents().contains(show.getTex()));
 				Chat.hideCompletely();
 				MENUOPEN = true;
 				Frame.startInMenu();

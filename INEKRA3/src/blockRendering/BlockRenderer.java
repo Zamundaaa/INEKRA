@@ -8,6 +8,8 @@ import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
+import collectionsStuff.ArrayListF;
+import collectionsStuff.ArrayListI;
 import controls.Keyboard;
 import data.*;
 import entities.Camera;
@@ -15,6 +17,7 @@ import entities.Light;
 import gameStuff.*;
 import models.RawModel;
 import renderStuff.*;
+import threadingStuff.ThreadManager;
 import toolBox.*;
 import weather.WeatherController;
 
@@ -257,8 +260,8 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 	}
 
 	private static RawModel rm;
-	private static float[] verts, texcs, norms, light;
-	private static int[] indis;
+	private static float[] vertices, texCoords, normals, lightData;
+	private static int[] indices;
 	private static ArrayList<ChunkEntity> es = new ArrayList<ChunkEntity>();
 	
 //	private static ArrayList<ChunkEntity> cesOT = new ArrayList<ChunkEntity>();
@@ -267,71 +270,161 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 	public static int VERTICES = 0;
 
 	private static void renderAllAtOnce() {
-		if (!doneThisFrame) {
-			int key = FramePerformanceLogger.stopTime();
-			// if(!MainLoop.renderingRefraction){
-			doneThisFrame = true;
-			// long millis = System.currentTimeMillis();
-			
-			int indiCount = 0, vertCount = 0;
-			es = entities;
-			for (int i = 0; i < es.size(); i++) {
-				indiCount += es.get(i).indis().length;
-				vertCount += es.get(i).verts().length;
-			}
-			if(indis == null || indiCount != indis.length || vertCount != verts.length
-					|| !MasterRenderer.renderOrigin.equals(vergleich)){
-				vergleich.set(MasterRenderer.renderOrigin);
-				verts = new float[vertCount];
-				texcs = new float[vertCount];
-				norms = new float[vertCount];
-				light = new float[(vertCount / 3) * 4];
-				indis = new int[indiCount];
-				int pointer = 0, ipointer = 0, lpointer = 0;
-				int last = 0, ka = 0;
-				for (int i = 0; i < es.size(); i++) {
-					for (ka = 0; ka < es.get(i).verts().length; ka += 3) {
-						verts[pointer] = es.get(i).verts()[ka]
-								+ (es.get(i).getX() - (Camera.getPosition().x - MasterRenderer.renderOrigin.x));
-						verts[pointer + 1] = es.get(i).verts()[ka + 1]
-								+ (es.get(i).getY() - (Camera.getPosition().y - MasterRenderer.renderOrigin.y));
-						verts[pointer + 2] = es.get(i).verts()[ka + 2]
-								+ (es.get(i).getZ() - (Camera.getPosition().z - MasterRenderer.renderOrigin.z));
-	
-						texcs[pointer] = es.get(i).texCs()[ka];
-						texcs[pointer + 1] = es.get(i).texCs()[ka + 1];
-						texcs[pointer + 2] = es.get(i).texCs()[ka + 2];
-	
-						norms[pointer] = es.get(i).norms()[ka];
-						norms[pointer + 1] = es.get(i).norms()[ka + 1];
-						norms[pointer + 2] = es.get(i).norms()[ka + 2];
-						
-						pointer += 3;
-					}
-					for (ka = 0; ka < es.get(i).lightData().length; ka++) {
-						light[lpointer++] = es.get(i).lightData()[ka];
-					}
-					for (ka = 0; ka < es.get(i).indis().length; ka++) {
-						indis[ipointer++] = es.get(i).indis()[ka] + last;
-					}
-					last += es.get(i).verts().length / 3;
-				}
-				VERTICES = verts.length/3;
-			}
-			
-			if (rm == null) {
-				rm = Loader.loadToVAO3DTex(verts, texcs, norms, indis, light);
-			} else {
-				Loader.updateVAO3DTex(rm, verts, texcs, norms, indis, light);
-			}
-			FramePerformanceLogger.writeStoppedTime(key, keyword);
+		if(masker == null || !masker.isAlive()){
+			startMasker();
 		}
-		prepareModel(rm);
-		ls[0] = WorldObjects.sun;
-		shader.loadLights(ls);
-		GL11.glDrawElements(GL11.GL_TRIANGLES, rm.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+//		if (!doneThisFrame) {
+//			int key = FramePerformanceLogger.stopTime();
+//			// if(!MainLoop.renderingRefraction){
+//			doneThisFrame = true;
+//			// long millis = System.currentTimeMillis();
+//			
+//			int indiCount = 0, vertCount = 0;
+//			es = entities;
+//			for (int i = 0; i < es.size(); i++) {
+//				indiCount += es.get(i).indis().length;
+//				vertCount += es.get(i).verts().length;
+//			}
+//			if(indis == null || indiCount != indis.length || vertCount != verts.length
+//					|| !MasterRenderer.renderOrigin.equals(vergleich)){
+//				vergleich.set(MasterRenderer.renderOrigin);
+//				verts = new float[vertCount];
+//				texcs = new float[vertCount];
+//				norms = new float[vertCount];
+//				light = new float[(vertCount / 3) * 4];
+//				indis = new int[indiCount];
+//				int pointer = 0, ipointer = 0, lpointer = 0;
+//				int last = 0, ka = 0;
+//				for (int i = 0; i < es.size(); i++) {
+//					for (ka = 0; ka < es.get(i).verts().length; ka += 3) {
+//						verts[pointer] = es.get(i).verts()[ka]
+//								+ (es.get(i).getX() - (Camera.getPosition().x - MasterRenderer.renderOrigin.x));
+//						verts[pointer + 1] = es.get(i).verts()[ka + 1]
+//								+ (es.get(i).getY() - (Camera.getPosition().y - MasterRenderer.renderOrigin.y));
+//						verts[pointer + 2] = es.get(i).verts()[ka + 2]
+//								+ (es.get(i).getZ() - (Camera.getPosition().z - MasterRenderer.renderOrigin.z));
+//	
+//						texcs[pointer] = es.get(i).texCs()[ka];
+//						texcs[pointer + 1] = es.get(i).texCs()[ka + 1];
+//						texcs[pointer + 2] = es.get(i).texCs()[ka + 2];
+//	
+//						norms[pointer] = es.get(i).norms()[ka];
+//						norms[pointer + 1] = es.get(i).norms()[ka + 1];
+//						norms[pointer + 2] = es.get(i).norms()[ka + 2];
+//						
+//						pointer += 3;
+//					}
+//					for (ka = 0; ka < es.get(i).lightData().length; ka++) {
+//						light[lpointer++] = es.get(i).lightData()[ka];
+//					}
+//					for (ka = 0; ka < es.get(i).indis().length; ka++) {
+//						indis[ipointer++] = es.get(i).indis()[ka] + last;
+//					}
+//					last += es.get(i).verts().length / 3;
+//				}
+//				VERTICES = verts.length/3;
+//			}
+			if(newMaskAvailable){
+				if (rm == null) {
+					rm = Loader.loadToVAO3DTex(vertices, texCoords, normals, indices, lightData);
+				} else {
+					Loader.updateVAO3DTex(rm, vertices, texCoords, normals, indices, lightData);
+				}
+				privateRenderOrigin.set(vergleich);
+				newMaskAvailable = false;
+			}
+//			FramePerformanceLogger.writeStoppedTime(key, keyword);
+//		}
+		if(rm != null){
+			prepareModel(rm);
+			ls[0] = WorldObjects.sun;
+			shader.loadLights(ls);
+			shader.loadViewMatrix(Meth.createViewMatrix(viewMatrix, Camera.getYaw(), Camera.getPitch(), 
+					Camera.getPosition().x-privateRenderOrigin.x - 0.5f, 
+					Camera.getPosition().y-privateRenderOrigin.y - 0.5f, 
+					Camera.getPosition().z-privateRenderOrigin.z - 0.5f));
+			GL11.glDrawElements(GL11.GL_TRIANGLES, rm.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+		}
 	}
-
+	
+	private static Vector3f privateRenderOrigin = new Vector3f();
+	
+	private static final Matrix4f viewMatrix = new Matrix4f();
+	
+	private static boolean newMaskAvailable = false;
+	public static Thread masker;
+	
+	private static void startMasker(){
+		masker = new Thread("ChunkMasker"){
+			@Override
+			public void run(){
+//				try{
+					Err.err.println("ChunkMasker inited!");
+					ArrayListF verts = new ArrayListF(), norms = new ArrayListF(), texes = new ArrayListF(), lights = new ArrayListF();
+					ArrayListI indis = new ArrayListI();
+					ArrayList<Chunk> chunks = ChunkManager.getLoadedChunkList();
+					while(ThreadManager.running()){
+						boolean change = false;
+						while(!change){
+							for(int i = 0; i < chunks.size(); i++){
+								if(chunks.get(i).maskNeeded()){
+									change = true;
+									break;
+								}
+							}
+							Meth.wartn(20);
+						}
+						verts.clear();
+						norms.clear();
+						texes.clear();
+						lights.clear();
+						indis.clear();
+						ChunkEntity ce;
+						vergleich.set(MasterRenderer.renderOrigin);
+						for(int i = 0; i < chunks.size(); i++){
+							Chunk c = chunks.get(i);
+							ce = c.getMask();
+							if(ce != null){
+								int vl = verts.size()/3;
+								for(int I = 0; I < ce.verts().length; I+=3){// should probably replace the arrays of ChunkEntity with ArrayListX's
+									verts.add(ce.verts()[I]
+											+ (c.realX() - vergleich.x));
+									verts.add(ce.verts()[I+1]
+											+ (c.realY() - vergleich.y));
+									verts.add(ce.verts()[I+2]
+											+ (c.realZ() - vergleich.z));
+									norms.add(ce.norms()[I]);
+									norms.add(ce.norms()[I+1]);
+									norms.add(ce.norms()[I+2]);
+									texes.add(ce.texCs()[I]);
+									texes.add(ce.texCs()[I+1]);
+									texes.add(ce.texCs()[I+2]);
+								}
+								for(int I = 0; I < ce.lightData().length; I++)
+									lights.add(ce.lightData()[I]);
+								for(int I = 0; I < ce.indis().length; I++)
+									indis.add(vl+ce.indis()[I]);
+							}
+						}
+						vertices = verts.capToArray();
+						VERTICES = vertices.length;
+						normals = norms.capToArray();
+						texCoords = texes.capToArray();
+						lightData = lights.capToArray();
+						indices = indis.capToArray();
+						
+						newMaskAvailable = true;
+						while(newMaskAvailable)
+							Meth.wartn(5);
+					}
+//				}catch(Exception e){
+//					
+//				}
+			}
+		};
+		masker.start();
+	}
+	
 	public static void renderForShadowMap() {
 		if (!doneThisFrame) {
 			FramePerformanceLogger.stopTime();
@@ -357,50 +450,50 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 				vertCount += es.get(i).verts().length;
 			}
 			//
-			if (indis == null || indis.length != indiCount || verts.length != vertCount
+			if (indices == null || indices.length != indiCount || vertices.length != vertCount
 					|| MasterRenderer.renderOrigin.x != vergleich.x || MasterRenderer.renderOrigin.y != vergleich.y
 					|| MasterRenderer.renderOrigin.z != vergleich.z) {
 				vergleich.set(MasterRenderer.renderOrigin);
-				verts = new float[vertCount];
-				texcs = new float[vertCount];
-				norms = new float[vertCount];
-				light = new float[(vertCount / 3) * 4];
-				indis = new int[indiCount];
+				vertices = new float[vertCount];
+				texCoords = new float[vertCount];
+				normals = new float[vertCount];
+				lightData = new float[(vertCount / 3) * 4];
+				indices = new int[indiCount];
 				int pointer = 0, ipointer = 0, lpointer = 0;
 				int last = 0, ka = 0;
 				for (int i = 0; i < es.size(); i++) {
 					for (ka = 0; ka < es.get(i).verts().length; ka += 3) {
-						verts[pointer] = es.get(i).verts()[ka]
+						vertices[pointer] = es.get(i).verts()[ka]
 								+ (es.get(i).getX() - Camera.getPosition().x);//(Camera.getPosition().x - MasterRenderer.renderOrigin.x)
-						verts[pointer + 1] = es.get(i).verts()[ka + 1]
+						vertices[pointer + 1] = es.get(i).verts()[ka + 1]
 								+ (es.get(i).getY() - Camera.getPosition().y);//(Camera.getPosition().y - MasterRenderer.renderOrigin.y)
-						verts[pointer + 2] = es.get(i).verts()[ka + 2]
+						vertices[pointer + 2] = es.get(i).verts()[ka + 2]
 								+ (es.get(i).getZ() - Camera.getPosition().z);//(Camera.getPosition().z - MasterRenderer.renderOrigin.z)
 
-						texcs[pointer] = es.get(i).texCs()[ka];
-						texcs[pointer + 1] = es.get(i).texCs()[ka + 1];
-						texcs[pointer + 2] = es.get(i).texCs()[ka + 2];
+						texCoords[pointer] = es.get(i).texCs()[ka];
+						texCoords[pointer + 1] = es.get(i).texCs()[ka + 1];
+						texCoords[pointer + 2] = es.get(i).texCs()[ka + 2];
 
-						norms[pointer] = es.get(i).norms()[ka];
-						norms[pointer + 1] = es.get(i).norms()[ka + 1];
-						norms[pointer + 2] = es.get(i).norms()[ka + 2];
+						normals[pointer] = es.get(i).norms()[ka];
+						normals[pointer + 1] = es.get(i).norms()[ka + 1];
+						normals[pointer + 2] = es.get(i).norms()[ka + 2];
 						pointer += 3;
 					}
 					for (ka = 0; ka < es.get(i).lightData().length; ka++) {
-						light[lpointer++] = es.get(i).lightData()[ka];
+						lightData[lpointer++] = es.get(i).lightData()[ka];
 					}
 					for (ka = 0; ka < es.get(i).indis().length; ka++) {
-						indis[ipointer++] = es.get(i).indis()[ka] + last;
+						indices[ipointer++] = es.get(i).indis()[ka] + last;
 					}
 					last += es.get(i).verts().length / 3;
 				}
-				VERTICES = verts.length;
+				VERTICES = vertices.length;
 			}
 
 			if (rm == null) {
-				rm = Loader.loadToVAO3DTex(verts, texcs, norms, indis, light);
+				rm = Loader.loadToVAO3DTex(vertices, texCoords, normals, indices, lightData);
 			} else {
-				Loader.updateVAO3DTex(rm, verts, texcs, norms, indis, light);
+				Loader.updateVAO3DTex(rm, vertices, texCoords, normals, indices, lightData);
 			}
 			
 			FramePerformanceLogger.writeStoppedTime(keyword + " for ShadowMapping!");

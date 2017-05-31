@@ -9,8 +9,7 @@ import blockRendering.ChunkEntity;
 import collectionsStuff.*;
 import cubyWater.Water;
 import cubyWaterNew.NewWaterUpdater;
-import gameStuff.Err;
-import gameStuff.MainLoop;
+import gameStuff.*;
 import inventory.Item3D;
 import objConverter.ModelData;
 import particles.PTM;
@@ -79,22 +78,22 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		blocks = new short[SIZE][SIZE][SIZE];
 		light = new short[SIZE][SIZE][SIZE];
 		genBlocks();
-		genMask();
+//		genMask();
 	}
 
-	public Chunk(int x, int y, int z, boolean genMask) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		realX = this.x * SIZE;
-		realY = this.y * SIZE;
-		realZ = this.z * SIZE;
-		blocks = new short[SIZE][SIZE][SIZE];
-		light = new short[SIZE][SIZE][SIZE];
-		genBlocks();
-		if (genMask)
-			genMask();
-	}
+//	public Chunk(int x, int y, int z, boolean genMask) {
+//		this.x = x;
+//		this.y = y;
+//		this.z = z;
+//		realX = this.x * SIZE;
+//		realY = this.y * SIZE;
+//		realZ = this.z * SIZE;
+//		blocks = new short[SIZE][SIZE][SIZE];
+//		light = new short[SIZE][SIZE][SIZE];
+//		genBlocks();
+//		if (genMask)
+//			genMask();
+//	}
 
 	public Chunk() {
 		this.x = 0;
@@ -144,10 +143,9 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		for (int i = 0; i < specials.size(); i++) {
 			specials.get(i).update();
 		}
-		if (mask) {
-			mask = false;
-			genMask();
-		}
+//		if (mask) {
+//			genMask();
+//		}
 		unloadStart = 0;
 
 		if (needsSaving && Meth.systemTime() > lastSave + 30000
@@ -166,7 +164,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	private long lastSave = Meth.systemTime();
 
 	public void updateSomeBlocks() {
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 5*Math.max(0.2f, TM.TIMEFACT); i++) {
 			updateBlock(Meth.randomInt(0, SIZE - 1) + realX(), Meth.randomInt(0, SIZE - 1) + realY(),
 					Meth.randomInt(0, SIZE - 1) + realZ());
 		}
@@ -407,41 +405,70 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	private static final ArrayListI indices = new ArrayListI();
 	
 	private boolean hasNoBlocksButWater = true;
-
+	
+	public ChunkEntity getMask(){
+		if(mask){
+			return genMask();
+		}else{
+			return e;
+		}
+	}
+	
 	public ChunkEntity genMask() {
+		//if(!mask)return; ???
+		mask = false;
 		if(hasNoBlocksButWater)return null;
-		verts.clear();
-		indices.clear();
-		texes.clear();
-		lightValues.clear();
-		norms.clear();
-
+		
+		ArrayListF IMverts, IMtexes, IMlightValues, IMnorms;
+		ArrayListI IMindices;
+		
+		if(Thread.currentThread() == BlockRenderer.masker){
+			IMverts = verts;
+			IMtexes = texes;
+			IMlightValues = lightValues;
+			IMnorms = norms;
+			IMindices = indices;
+		}else{
+			IMverts = new ArrayListF();
+			IMtexes = new ArrayListF();
+			IMlightValues = new ArrayListF();
+			IMnorms = new ArrayListF();
+			IMindices = new ArrayListI();
+		}
+		
+		IMverts.clear();
+		IMindices.clear();
+		IMtexes.clear();
+		IMlightValues.clear();
+		IMnorms.clear();
+		
 		restMaskNeeded = false;
-		yMask(verts, indices, texes, lightValues, true);
-		yMask(verts, indices, texes, lightValues, false);
+		yMask(IMverts, IMindices, IMtexes, IMlightValues, true);
+		yMask(IMverts, IMindices, IMtexes, IMlightValues, false);
 
-		xMask(verts, indices, texes, lightValues, true);
-		xMask(verts, indices, texes, lightValues, false);
+		xMask(IMverts, IMindices, IMtexes, IMlightValues, true);
+		xMask(IMverts, IMindices, IMtexes, IMlightValues, false);
 
-		zMask(verts, indices, texes, lightValues, true);
-		zMask(verts, indices, texes, lightValues, false);
+		zMask(IMverts, IMindices, IMtexes, IMlightValues, true);
+		zMask(IMverts, IMindices, IMtexes, IMlightValues, false);
 
 		if (restMaskNeeded) {
-			restMask(verts, indices, texes, norms, lightValues);
+			restMask(IMverts, IMindices, IMtexes, IMnorms, IMlightValues);
 		}
-		if (verts.size() > 0) {
+		
+		if (IMverts.size() > 0) {
 
-			float[] vertices = new float[verts.size()];
-			float[] texcoords = new float[verts.size()];
-			for (int i = 0; i < verts.size(); i += 3) {
-				vertices[i] = verts.get(i);
-				vertices[i + 1] = verts.get(i + 1);
-				vertices[i + 2] = verts.get(i + 2);
-				texcoords[i] = texes.get(i);
-				texcoords[i + 1] = texes.get(i + 1);
-				texcoords[i + 2] = texes.get(i + 2);
+			float[] vertices = new float[IMverts.size()];
+			float[] texcoords = new float[IMverts.size()];
+			for (int i = 0; i < IMverts.size(); i += 3) {
+				vertices[i] = IMverts.get(i);
+				vertices[i + 1] = IMverts.get(i + 1);
+				vertices[i + 2] = IMverts.get(i + 2);
+				texcoords[i] = IMtexes.get(i);
+				texcoords[i + 1] = IMtexes.get(i + 1);
+				texcoords[i + 2] = IMtexes.get(i + 2);
 			}
-			float[] normals = new float[verts.size()];
+			float[] normals = new float[IMverts.size()];
 			int I = 0;
 			for (int i = 0; i < upcount; i++) {
 				normals[I++] = 0;
@@ -473,16 +500,16 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 				normals[I++] = 0;
 				normals[I++] = -1;
 			}
-			for (int i = 0; i < norms.size(); i++) {
-				normals[I++] = norms.get(i);
+			for (int i = 0; i < IMnorms.size(); i++) {
+				normals[I++] = IMnorms.get(i);
 			}
-			int[] indis = new int[indices.size()];
-			for (int i = 0; i < indices.size(); i++) {
-				indis[i] = indices.get(i);
+			int[] indis = new int[IMindices.size()];
+			for (int i = 0; i < IMindices.size(); i++) {
+				indis[i] = IMindices.get(i);
 			}
-			float[] lights = new float[lightValues.size()];
-			for (int i = 0; i < lightValues.size(); i++) {
-				lights[i] = lightValues.get(i);
+			float[] lights = new float[IMlightValues.size()];
+			for (int i = 0; i < IMlightValues.size(); i++) {
+				lights[i] = (float) Math.pow(IMlightValues.get(i), DisplayManager.GAMMA);
 			}
 			if (e == null) {
 				e = new ChunkEntity(vertices, texcoords, normals, indis, lights, realX + DISPLAYOFFSET,
@@ -518,9 +545,9 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		try {
 			return blocks[x - realX][y - realY][z - realZ];
 		} catch (ArrayIndexOutOfBoundsException a) {
-			a.printStackTrace(Err.err);
 			Err.err.println("X: " + x + " Y: " + y + " Z: " + z + " this.X: " + this.x + " this.Y: " + this.y
 					+ " this.Z: " + this.z);
+			a.printStackTrace(Err.err);
 			System.exit(-1);
 			return 0;
 		}
@@ -2106,6 +2133,10 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 					: ChunkManager.getBlockID(this.x * SIZE + x, this.y * SIZE + y - 1, this.z * SIZE + z);
 		}
 		return !Block.isWater(s) && Block.isTransparent(s);
+	}
+
+	public boolean maskNeeded() {
+		return mask;
 	}
 
 }

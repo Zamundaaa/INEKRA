@@ -87,6 +87,16 @@ public class Inv2D {
 						float my = Mouse.getAY() * 1000;
 						int sx = (int) (((mx + W / 2 - 500) / (space * W)) + 4.5f - ka);
 						int sy = (int) (((my + H / 2 - YO) / (space * H)) + yrows * 0.5f - ka);
+						
+						if(sx == cx && sy == cy){
+							setPosition(((X + ka - 4.5f) * space * W + 500) - W / 2,
+									((Y + ka - yrows * 0.5f) * space * H + YO) - H / 2);
+							buttonClick = false;
+							cb = null;
+							gtex.setDisplayLevel(GUIManager.DOWN);
+							return;
+						}
+						
 						if (sx >= 0 && sx < 9 && sy >= 0 && sy < yrows) {
 							ItemStack lastStack = stacks[sx][sy];
 							stacks[sx][sy] = stacks[cx][cy];

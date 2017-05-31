@@ -5,6 +5,7 @@ import static particles.PTM.*;
 import org.joml.Vector3f;
 
 import data.Generator;
+import gameStuff.SC;
 import gameStuff.TM;
 import particles.*;
 import renderStuff.DisplayManager;
@@ -90,15 +91,26 @@ public class Cloud {
 				// }
 				// }
 				int i = Meth.randomInt(0, particles.length - 1);
-				if (particles[i].isAlive() && Meth.doChance(2000.0f / Math.max(ParticleMaster.NOP(raindrop), 1))) {
+				if (particles[i].isAlive() && Meth.doChance(SC.particleMult*2000.0f / Math.max(ParticleMaster.NOP(raindrop), 1))) {
 					float lifeLength = 7;
-					Particle rain = ParticleMaster.addNewParticle(WeatherController.isSnowing() ? snowflake : raindrop,
+					float grav = WeatherController.rainGravity;
+					ParticleTexture tex = raindrop;
+					float maxv = WeatherController.maxVel;
+					float minv = WeatherController.minVel;
+					if(WeatherController.isSnowing()){
+						tex = snowflake;
+						grav = WeatherController.snowGravity;
+						maxv = WeatherController.maxSnowVel;
+						minv = WeatherController.minSnowVel;
+						lifeLength = 15;
+					}
+					Particle rain = ParticleMaster.addNewParticle(tex,
 							Vects.addRandom(
 									new Vector3f(Meth.randomFloat(-divergance, divergance), Meth.randomFloat(-10, 10),
 											Meth.randomFloat(-divergance, divergance)).add(particles[i].getPosition()),
 									particles[i].getScale()),
-							new Vector3f(vx, Meth.randomFloat(WeatherController.maxVel, WeatherController.minVel), vz),
-							WeatherController.rainGravity, lifeLength, 0, 1);
+							new Vector3f(vx, Meth.randomFloat(maxv, minv), vz),
+							grav, lifeLength, 0, 1);
 					// if(doBlockLookUp && rain != null){
 					// int y =
 					// ChunkManager.getUppestBlockY((int)rain.getPosition().x,

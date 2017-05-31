@@ -30,6 +30,7 @@ import toolBox.Tools;
 public class DisplayManager {
 
 	public static final boolean DEBUG = false;
+	public static final float GAMMA = 2.2f;
 	public static boolean VSYNC = Tools.loadBoolPreference("VSYNC", true);
 
 	/**

@@ -26,6 +26,8 @@ uniform sampler2DArray TEX;
 
 uniform int MODE;
 
+const float MIN_LIGHT = 0.01;
+
 void main(void){
 
 	vec4 textureColor = texture(TEX , pass_textureCoordinates);
@@ -34,29 +36,11 @@ void main(void){
 		discard;
 	}
 	
-	vec3 unitNormal = normalize(surfaceNormal);
-	//vec3 unitVectorToCamera = normalize(toCameraVector);
-	
-	//vec3 totalDiffuse = vec3(0.0);
-	//vec3 totalSpecular = vec3(0.0);
-	
-	//float distance = length(toLightVector[0]);
-	//float attFactor = attenuation[0].x + (attenuation[0].y * distance) + (attenuation[0].z * distance * distance);
+	vec3 unitNormal = surfaceNormal;//normalize(surfaceNormal);
 	vec3 unitLightVector = normalize(toLightVector[0]);
-	float nDotl = dot(unitNormal,unitLightVector);
-	float brightness = max(nDotl, 0.0);
-	//vec3 lightDirection = -unitLightVector;
-	//vec3 reflectedLightDirection = reflect(lightDirection, unitNormal);
-	//float specularFactor = abs(dot(reflectedLightDirection , unitVectorToCamera));
-	//specularFactor = max(specularFactor,0.0);
-	//float dampedFactor = pow(specularFactor,shineDamper);
-	//totalDiffuse = totalDiffuse + (brightness * lightColour[0])/attFactor;
-	//totalSpecular = totalSpecular + (dampedFactor * reflectivity * lightColour[0])/attFactor;
-	//totalDiffuse = max(totalDiffuse, 0.15);
-	//out_Color = clamp(((vec4(totalDiffuse,1.0) + vec4(totalSpecular,1.0))*LV.w + vec4(LV.xyz, 1.0)), max(LV.w*0.25, 0.1), 1)*textureColor;
-	
+	float brightness = max(dot(unitNormal,unitLightVector), 0.0);
 	vec3 diffuse = brightness * lightColour[0];
-	out_Color = clamp((vec4(diffuse,1.0)*LV.w + vec4(LV.xyz, 1.0)), max(LV.w*0.25, 0.1), 1)*textureColor;
+	out_Color = clamp((vec4(diffuse ,1.0)*LV.w + vec4(LV.xyz, 1.0)), max(LV.w*0.25, MIN_LIGHT), 1)*textureColor;
 	
 	out_BrightColor = vec4(0.0);
 	

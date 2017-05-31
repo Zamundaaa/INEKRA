@@ -30,6 +30,10 @@ public class Key3D {
 		this.z = z;
 	}
 
+	public Key3D() {
+		
+	}
+
 	public Key3D set(int x, int y, int z) {
 		this.x = x;
 		this.y = y;
