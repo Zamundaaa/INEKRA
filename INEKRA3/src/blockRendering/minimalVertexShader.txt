@@ -1,0 +1,93 @@
+#version 400 core
+
+in vec3 position;
+in vec3 textureCoordinates;
+in vec3 normal;
+in vec4 lightStuff;
+
+const int LIGHTS = 1;
+
+out vec3 pass_textureCoordinates;
+out vec3 surfaceNormal;
+out vec3 toLightVector[LIGHTS];
+out vec3 toCameraVector;
+out float visibility;
+out vec4 shadowCoords;
+
+out vec4 LV;
+
+out float verz;
+
+uniform mat4 transformationMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform vec3 lightPosition[LIGHTS];
+
+uniform float useFakeLightning;
+
+uniform float numberOfRows;
+uniform vec2 offSet;
+
+uniform vec4 plane;
+
+uniform float density;
+uniform float gradient;
+
+uniform float TIME;
+uniform int MODE;
+uniform float DIST;
+uniform float timesin;
+
+uniform float useLightingCalc;
+
+uniform vec3 sunDirection;
+
+uniform float shineDamper;
+uniform float reflectivity;
+
+const int LEAVES = 8, LEAVES_H = 16, LEAVES_W = 17;
+const int TALL_GRASS = 21;
+const int WOOD = 6, WOODY = 7;
+const int GLASS = 11;
+
+void main(void){
+	
+	vec4 worldPosition = transformationMatrix * vec4(position,1.0);//transformationMatrix * 
+	toCameraVector = (inverse(viewMatrix) * vec4(0.0,0.0,0.0,1.0)).xyz - worldPosition.xyz;
+	
+	vec4 posRelatToCam = viewMatrix * worldPosition;
+	float distance = length(posRelatToCam.xyz);
+	visibility = exp(-pow((distance * density), gradient));
+	visibility = clamp(visibility, 0.0, 1.0);
+	
+	float somesin = sin(1.5*TIME+worldPosition.x+worldPosition.y+worldPosition.z);
+	float teilDings = min((distance-DIST), 1);
+	if(teilDings <= 0.0){
+		if(textureCoordinates.z == LEAVES || textureCoordinates.z == LEAVES_H || textureCoordinates.z == LEAVES_W){
+			worldPosition.x += 0.04*somesin;
+			//worldPosition = transformationMatrix * vec4(shift > 0 ? position.x+shift : position.x, position.y, position.z,1.0);
+		}else if(textureCoordinates.z == TALL_GRASS){
+			worldPosition.x += 0.1*fract(worldPosition.y)*timesin;//sin(1.5*TIME+worldPosition.y+worldPosition.z);
+		}
+		verz = 0.0;
+	}
+	
+	gl_ClipDistance[0] = dot(worldPosition, plane);
+	
+	gl_Position = projectionMatrix * viewMatrix * worldPosition;
+	
+	pass_textureCoordinates = textureCoordinates;//(textureCoordinates/numberOfRows) + offSet;
+	
+	vec3 actualNormal = (transformationMatrix * vec4(normal, 0.0)).xyz;//normal;
+	if(useFakeLightning > 0.5){
+		actualNormal = vec3(0.0, 1.0, 0.0);
+	}
+	surfaceNormal = actualNormal;
+	
+	toLightVector[0] = sunDirection;
+	
+	LV = lightStuff;// premultiplied!!!
+	//const float gamma = 2.2;
+	//LV = pow(LV, vec4(gamma));
+	
+}
