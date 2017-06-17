@@ -22,6 +22,17 @@ public class Key3D {
 		}
 	}
 
+	public static Key3D getInstance(Key3D k) {
+		return getInstance(k.x, k.y, k.z);
+	}
+	
+	public Key3D add(int x, int y, int z){
+		this.x += x;
+		this.y += y;
+		this.z += z;
+		return this;
+	}
+
 	private int x, y, z;
 
 	public Key3D(int x, int y, int z) {

@@ -1,7 +1,5 @@
 package cubyWaterNew;
 
-import static cubyWater.WaterUpdater.RANDOMSHIFTPS;
-import static cubyWater.WaterUpdater.WATERSPEED;
 import static data.Chunk.SIZE;
 
 import java.util.ArrayList;
@@ -13,12 +11,16 @@ import collectionsStuff.ArrayListI;
 import data.*;
 import entities.Projectil;
 import gameStuff.TickManager;
+import mainInterface.CM;
 import particles.PTM;
 import renderStuff.DisplayManager;
 import threadingStuff.ThreadManager;
 import toolBox.Meth;
 
 public class NewWaterUpdater {
+	
+	public static final float WATERSPEED = 0.5f;// chance for a single water to be updated per update ... think about it!
+	public static final float RANDOMSHIFTPS = 0.1f;
 	
 	public static final boolean useWaterMesh = true;
 	public static Thread modelUpdater;
@@ -47,6 +49,17 @@ public class NewWaterUpdater {
 								c.mapWater(vertices, indices, normals);
 	//						}
 						}
+						double buff = 0;
+						int count = 0;
+						for(int i = 1; i < vertices.size(); i+=3){
+							if(normals.get(i) == 1)
+								count++;
+						}
+						for(int i = 1; i < vertices.size(); i+=3){
+							if(normals.get(i) == 1)
+								buff += ((double)vertices.get(i))/count;
+						}
+						NewWaterRenderer.absHeight = (float)buff;
 						while(NewWaterRenderer.change){
 							Meth.wartn(3);
 						}
@@ -64,6 +77,7 @@ public class NewWaterUpdater {
 			@Override
 			public void run(){
 				ArrayList<Chunk> chunks = ChunkManager.getLoadedChunkList();
+				Chunk last = null;
 				while(ThreadManager.running()){
 					if(chunks.size() > 0){
 						int i = Meth.randomInt(0, chunks.size()-1);
@@ -75,7 +89,10 @@ public class NewWaterUpdater {
 							c = chunks.get(i);
 							wc = c.giveWaterCopy();
 						}
-						if(wc != null)
+						if(c == last){
+							Meth.wartn(10);
+						}
+						if(wc != null){
 							for(int x = 0; x < SIZE; x++){
 								for(int y = 0; y < SIZE; y++){
 									for(int z = 0; z < SIZE; z++){
@@ -84,6 +101,8 @@ public class NewWaterUpdater {
 									}
 								}
 							}
+							last = c;
+						}
 					}
 //					if(watersUpdated > 500){
 //						watersUpdated -= 500;
@@ -113,10 +132,10 @@ public class NewWaterUpdater {
 //				watersUpdated++;
 				short downID = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 				if (downID == Block.AIR) {
-					ChunkManager.deleteWater(x, y, z);
+					CM.deleteWater(x, y, z);
 					// w.getSavedPos().y -= 1;
 					if (ChunkManager.getBlockID(x, y - 2, z) != 0) {
-						ChunkManager.setWaterID(x, y - 1, z, ID);
+						CM.setWaterID(x, y - 1, z, ID);
 					} else {
 						while (TickManager.updating) {
 							Meth.wartn(1);
@@ -136,7 +155,7 @@ public class NewWaterUpdater {
 				} else if (downID != Block.max_water && Block.isWater(downID)) {
 					int diff = Math.min(Block.max_water - downID, ID - 1000);
 					short i = (short) (downID + diff);
-					ChunkManager.setWaterID(x, y - 1, z, i);
+					CM.setWaterID(x, y - 1, z, i);
 					// if(!Block.isWater(i)){
 					// Err.err.println("a water block is set to " + i + " ???
 					// original ID: " + downID + " own ID: " + ID + " diff: " +
@@ -145,9 +164,9 @@ public class NewWaterUpdater {
 					// }
 					int newID = (ID - diff);
 					if (newID >= Block.min_water) {
-						ChunkManager.setWaterID(x, y, z, (short) newID);
+						CM.setWaterID(x, y, z, (short) newID);
 					} else {
-						ChunkManager.setWaterID(x, y, z, Block.AIR);
+						CM.setWaterID(x, y, z, Block.AIR);
 					}
 				} else {
 					if (ID > Block.evaporation_treshold) {
@@ -163,8 +182,8 @@ public class NewWaterUpdater {
 							if ((xp - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (xp - ID) % 2;
-							ChunkManager.setWaterID(x + 1, y, z, (short) (xp - hd));
-							ChunkManager.setWaterID(x, y, z, (short) (ID + hd));
+							CM.setWaterID(x + 1, y, z, (short) (xp - hd));
+							CM.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						if (xm != ID && Block.isWater(xm)) {
@@ -172,8 +191,8 @@ public class NewWaterUpdater {
 							if ((xm - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (xm - ID) % 2;
-							ChunkManager.setWaterID(x - 1, y, z, (short) (xm - hd));
-							ChunkManager.setWaterID(x, y, z, (short) (ID + hd));
+							CM.setWaterID(x - 1, y, z, (short) (xm - hd));
+							CM.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						if (zp != ID && Block.isWater(zp)) {
@@ -181,8 +200,8 @@ public class NewWaterUpdater {
 							if ((zp - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (zp - ID) % 2;
-							ChunkManager.setWaterID(x, y, z + 1, (short) (zp - hd));
-							ChunkManager.setWaterID(x, y, z, (short) (ID + hd));
+							CM.setWaterID(x, y, z + 1, (short) (zp - hd));
+							CM.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						if (zm != ID && Block.isWater(zm)) {
@@ -190,8 +209,8 @@ public class NewWaterUpdater {
 							if ((zm - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (zm - ID) % 2;
-							ChunkManager.setWaterID(x, y, z - 1, (short) (zm - hd));
-							ChunkManager.setWaterID(x, y, z, (short) (ID + hd));
+							CM.setWaterID(x, y, z - 1, (short) (zm - hd));
+							CM.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						int n = 1;
@@ -207,33 +226,33 @@ public class NewWaterUpdater {
 						if (aow > Block.min_water) {
 							n = 0;
 							if (xp == Block.AIR) {
-								ChunkManager.setWaterID(x + 1, y, z, aow);
+								CM.setWaterID(x + 1, y, z, aow);
 								n++;
 							}
 							if (xm == Block.AIR) {
-								ChunkManager.setWaterID(x - 1, y, z, aow);
+								CM.setWaterID(x - 1, y, z, aow);
 								n++;
 							}
 							if (zp == Block.AIR) {
-								ChunkManager.setWaterID(x, y, z + 1, aow);
+								CM.setWaterID(x, y, z + 1, aow);
 								n++;
 							}
 							if (zm == Block.AIR) {
-								ChunkManager.setWaterID(x, y, z - 1, aow);
+								CM.setWaterID(x, y, z - 1, aow);
 								n++;
 							}
 							if (n > 0) {
-								ChunkManager.setWaterID(x, y, z, aow);
+								CM.setWaterID(x, y, z, aow);
 							}
 						} else {
-							ChunkManager.setBlockID(x, y, z, Block.AIR);
+							CM.setBlock(x, y, z, Block.AIR);
 						}
 					} else {
 						ID--;
 						if (ID >= Block.min_water) {
-							ChunkManager.setWaterID(x, y, z, ID);
+							CM.setWaterID(x, y, z, ID);
 						} else {
-							ChunkManager.setBlockID(x, y, z, Block.AIR);
+							CM.setBlock(x, y, z, Block.AIR);
 						}
 					}
 				}

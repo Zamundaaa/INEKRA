@@ -1,6 +1,5 @@
 package gameStuff;
 
-import cubyWater.Water;
 import fontMeshCreator.FontType;
 import fontRendering.TextMaster;
 import models.RawModel;
@@ -26,10 +25,7 @@ public class SC {
 		playermod = getModel("person", "playerTexture");
 //		Err.err.println("-------------------Loading sand model");
 		sandmod = getModel("cube", "texPack/Sand");
-		if (Water.side == null) {
-//			Err.err.println("--------------------loading water model");
-			Water.side = getModelExtraLoad("cubeside");
-		}
+		
 //		Err.err.println("---------------------Loading Font1");
 		font = new FontType(Loader.loadTextureForFonts(fontTypes[chosenFont]),
 				SC.class.getClassLoader().getResourceAsStream("res/fonts/" + fontTypes[chosenFont] + ".fnt"));

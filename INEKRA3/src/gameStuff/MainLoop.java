@@ -14,7 +14,8 @@ import audio.SourcesManager;
 import blockRendering.BlockRenderer;
 import chatStuff.Chat;
 import controls.*;
-import cubyWater.*;
+import cubyWaterNew.NewWaterRenderer;
+import cubyWaterNew.WaterFrameBuffers;
 import data.Block;
 import data.ChunkManager;
 import entities.Camera;
@@ -25,6 +26,7 @@ import gameStuff2.CommandProcessor;
 import guis.*;
 import inventory.Inv2D;
 import inventory.ItemRenderer;
+import mainInterface.CM;
 import menuThings.*;
 import menuThings2.ProgressBar;
 import particles.ParticleMaster;
@@ -337,12 +339,12 @@ public abstract class MainLoop {
 			MasterRenderer.renderShadowMap(EntityManager.getList(), WorldObjects.sun);
 		}
 		
-		if (WaterRenderer.REFLECTIVE) {
+		if (NewWaterRenderer.REFLECTIVE) {
 			if (WHU == 0) {
 				for (int i = dwhs.length - 2; i >= 0; i--) {
 					dwhs[i + 1] = dwhs[i];
 				}
-				dwhs[0] = WaterManager.getAverageAbsHeight() + WaterRenderer.WAVEHEIGHT;
+				dwhs[0] = NewWaterRenderer.getAverageAbsHeight() + NewWaterRenderer.WAVEHEIGHT;
 				float X = 0;
 				for (int i = 0; i < dwhs.length; i++) {
 					X += dwhs[i];
@@ -452,13 +454,9 @@ public abstract class MainLoop {
 		// sounds/music
 		SourcesManager.update();
 		MusicManager.update();
-
-		// inGameStuff
-		WorldObjects.update();
 		
-		PlanetManager.update();
+		CM.update();
 		
-		TickManager.update();
 	}
 
 	public static void cleanUpGame() {

@@ -11,9 +11,9 @@ import org.lwjgl.glfw.GLFW;
 
 import audio.AudioMaster;
 import audio.MusicManager;
-import controls.*;
-import cubyWater.WaterManager;
-import cubyWater.WaterRenderer;
+import controls.Keyboard;
+import controls.Mouse;
+import cubyWaterNew.NewWaterRenderer;
 import data.ChunkSaver;
 import entities.Player;
 import fontMeshCreator.GUIText;
@@ -741,15 +741,15 @@ public class Frame {
 			}
 			bs.add(gain);
 
-			Button b = new Button("WaveMode: " + WaterRenderer.WAVEMODEL,
+			Button b = new Button("WaveMode: " + NewWaterRenderer.WAVEMODEL,
 					new Rectangle(VERYLEFT, 600 - offset, 200, 100)) {
 				@Override
 				public void leftClick() {
-					WaterRenderer.WAVEMODEL++;
-					if (WaterRenderer.WAVEMODEL > WaterRenderer.MAXWAVEMOD) {
-						WaterRenderer.WAVEMODEL = 1;
+					NewWaterRenderer.WAVEMODEL++;
+					if (NewWaterRenderer.WAVEMODEL > NewWaterRenderer.MAXWAVEMOD) {
+						NewWaterRenderer.WAVEMODEL = 1;
 					}
-					this.setText("WaveMode: " + WaterRenderer.WAVEMODEL);
+					this.setText("WaveMode: " + NewWaterRenderer.WAVEMODEL);
 				}
 			};
 			bs.add(b);
@@ -758,7 +758,7 @@ public class Frame {
 					"waveheight") {
 				@Override
 				public void valueChange(float value) {
-					WaterRenderer.WAVEHEIGHT = value;
+					NewWaterRenderer.WAVEHEIGHT = value;
 				}
 			};
 			bs.add(waveheight);
@@ -787,12 +787,12 @@ public class Frame {
 			bs.add(transdist);
 			transdist.setTextColor(1, 1, 1);
 
-			Button reflect = new Button("Reflective Water? " + WaterRenderer.REFLECTIVE,
+			Button reflect = new Button("Reflective Water? " + NewWaterRenderer.REFLECTIVE,
 					new Rectangle(VERYLEFT, 850 - offset, 200, 100)) {
 				@Override
 				public void leftClick() {
-					WaterRenderer.REFLECTIVE = !WaterRenderer.REFLECTIVE;
-					setText("Reflective Water? " + WaterRenderer.REFLECTIVE);
+					NewWaterRenderer.REFLECTIVE = !NewWaterRenderer.REFLECTIVE;
+					setText("Reflective Water? " + NewWaterRenderer.REFLECTIVE);
 					// if(WaterRenderer.REFLECTIVE){
 					// setTextColor(0, 1, 0);
 					// }else{
@@ -861,14 +861,14 @@ public class Frame {
 				}
 			});
 
-			bs.add(new Button("reflectionHeight Mode: " + WaterManager.refHMode(),
-					new Rectangle(VERYRIGHT, 350, 200, 100)) {
-				@Override
-				public void leftClick() {
-					WaterManager.incrementRefHMode();
-					setText("reflectionHeight Mode: " + WaterManager.refHMode());
-				}
-			});
+//			bs.add(new Button("reflectionHeight Mode: " + WaterManager.refHMode(),
+//					new Rectangle(VERYRIGHT, 350, 200, 100)) {
+//				@Override
+//				public void leftClick() {
+//					WaterManager.incrementRefHMode();
+//					setText("reflectionHeight Mode: " + WaterManager.refHMode());
+//				}
+//			});
 
 			// SchiebeRegler ms = new SchiebeRegler(new Rectangle(VERYLEFT, 475,
 			// 200, 100), SkyRenderer.getMoonSizeInDegrees()/90.0f, "moonSize" +

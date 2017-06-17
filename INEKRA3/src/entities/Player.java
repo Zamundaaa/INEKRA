@@ -2,6 +2,8 @@ package entities;
 
 import static particles.PTM.fire;
 
+import java.util.*;
+
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -24,7 +26,10 @@ import renderStuff.DisplayManager;
 import toolBox.*;
 
 public class Player extends Entity implements HittableThing {
-
+	
+	public static final Map<Integer, Player> playerIDs = new HashMap<Integer, Player>();
+	public static volatile ArrayList<Player> players = new ArrayList<Player>();
+	
 	private static final float RUNSPEED = 3, RUNSPEEDACCEL = 30, SIDESPEED = 2.5f;// ,
 																					// SIDESPEEDACCEL
 																					// =
@@ -58,7 +63,7 @@ public class Player extends Entity implements HittableThing {
 
 	public Entity e;// , e2
 
-	public Player(TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float scale) {
+	public Player(TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float scale, int ID) {
 		super(model, 0, position, rotX, rotY, rotZ, scale, false);
 		// Err.err.println();
 		hit = new PlayerHitbox(position, scale);
@@ -87,8 +92,14 @@ public class Player extends Entity implements HittableThing {
 
 		inv = new Inv2D();
 		nerdscope.show();
+		
+		playerIDs.put(ID, this);
+		players.add(this);
+		this.playerID = ID;
 
 	}
+	
+	private final int playerID;
 
 	private float water = 0;
 
@@ -136,7 +147,7 @@ public class Player extends Entity implements HittableThing {
 		// if (Mouse.isButtonDown(0)) {
 		// Vector3f b = MousePicker.getNextFilledBlockCoord(100, false);
 		// if (b != null && Meth.systemTime() > lastShot + 500) {
-		// ChunkManager.deleteBlockWithNoise(b);
+		// CM.deleteBlockWithNoise(b);
 		// lastShot = Meth.systemTime();
 		// }
 		// ParticleMaster.addNewParticle(PTM.projectile, b != null ?
@@ -147,13 +158,13 @@ public class Player extends Entity implements HittableThing {
 		// short id = ChunkManager.getBlockID(b);
 		// if(b != null && Block.isSlab(id)){
 		// if(Meth.systemTime() > lastShot + 500){
-		// ChunkManager.setBlockID(b, Block.holeVersion(id));
+		// CM.setBlock(b, Block.holeVersion(id));
 		// lastShot = Meth.systemTime();
 		// }
 		// }else{
 		// b = MousePicker.getLastEmptyBlockCoord(5);
 		// if (b != null && Meth.systemTime() > lastShot + 500) {
-		// ChunkManager.setBlockID(b, Block.STONESLAB_UP);
+		// CM.setBlock(b, Block.STONESLAB_UP);
 		// lastShot = Meth.systemTime();
 		// }else if(b == null){
 		// lastShot = Meth.systemTime();
@@ -820,6 +831,10 @@ public class Player extends Entity implements HittableThing {
 
 	public Inv2D getInventory() {
 		return inv;
+	}
+	
+	public int playerID() {
+		return playerID;
 	}
 
 }

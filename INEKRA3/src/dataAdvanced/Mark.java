@@ -9,6 +9,7 @@ import collectionsStuff.SmartByteBuffer;
 import controls.Keyboard;
 import data.*;
 import line.Quad;
+import mainInterface.CM;
 import particles.PTM;
 import particles.ParticleMaster;
 import renderStuff.DisplayManager;
@@ -25,7 +26,7 @@ public class Mark extends SpecialBlock {
 		// TODO
 		if (currentMarks.size() == 3) {
 			Mark m = currentMarks.get(0);
-			ChunkManager.deleteBlock(m.x, m.y, m.z);
+			CM.deleteBlock(m.x, m.y, m.z);
 		}
 		currentMarks.add(this);
 		q = new Quad(x, y, z, x + 1, y + 1, z + 1);

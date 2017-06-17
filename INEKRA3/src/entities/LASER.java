@@ -9,6 +9,7 @@ import audio.SourcesManager;
 import data.ChunkManager;
 import gameStuff.*;
 import line.Line;
+import mainInterface.CM;
 import particles.PTM;
 import particles.ParticleMaster;
 import renderStuff.DisplayManager;
@@ -76,13 +77,13 @@ public class LASER implements TickingThing {
 		// if(DESTROYS){
 		short b = ChunkManager.getBlockID(x, y, z);
 		if (b != 0) {
-			// ChunkManager.setBlock(Meth.toInt(x), Meth.toInt(y),
+			// CM.setBlock(Meth.toInt(x), Meth.toInt(y),
 			// Meth.toInt(z), null);
 			if (dest) {
-				// ChunkManager.deleteBlockWithDrops(x, y, z);
-				// ChunkManager.BlockUpdate((int)x, (int)y-1, (int)z);
-				// ChunkManager.LightUpdate((int)x, (int)y-1, (int)z);
-				ChunkManager.deleteBlock(x, y, z);
+				// CM.deleteBlockWithDrops(x, y, z);
+				// CM.BlockUpdate((int)x, (int)y-1, (int)z);
+				// CM.LightUpdate((int)x, (int)y-1, (int)z);
+				CM.deleteBlock(x, y, z);
 			}
 			ParticleMaster.addNewParticle(PTM.fire, new Vector3f(x, y, z), Vects.NULL, 0, 0.5f, 0,
 					Meth.randomFloat(0.5f, 1));
@@ -95,10 +96,10 @@ public class LASER implements TickingThing {
 				y += yspeed * delta * 0.5f;
 				z += zspeed * delta * 0.5f;
 				if (dest) {
-					// ChunkManager.deleteBlockWithDrops(x, y, z);
-					// ChunkManager.BlockUpdate((int)x, (int)y-1, (int)z);
-					// ChunkManager.LightUpdate((int)x, (int)y-1, (int)z);
-					ChunkManager.deleteBlock(x, y, z);
+					// CM.deleteBlockWithDrops(x, y, z);
+					// CM.BlockUpdate((int)x, (int)y-1, (int)z);
+					// CM.LightUpdate((int)x, (int)y-1, (int)z);
+					CM.deleteBlock(x, y, z);
 				}
 				ParticleMaster.addNewParticle(PTM.fire, new Vector3f(x, y, z), Vects.NULL, 0, 0.5f, 0,
 						Meth.randomFloat(0.5f, 1));

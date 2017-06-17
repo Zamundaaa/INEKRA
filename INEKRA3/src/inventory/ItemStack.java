@@ -14,6 +14,7 @@ import entities.*;
 import gameStuff.SC;
 import gameStuff.WorldObjects;
 import line.Quad;
+import mainInterface.CM;
 import mobs.Cube;
 import network.MultiplayerData;
 import particles.PTM;
@@ -193,7 +194,7 @@ public class ItemStack {
 						lastTime = Meth.systemTime();
 					}
 				} else if (pos != null && Meth.systemTime() >= lastTime + Block.getBreakCool(lookAtB)) {
-					ChunkManager.deleteBlockWithNoise(pos);
+					CM.deleteBlock(pos);
 					lastTime = Meth.systemTime();
 					lastL = false;
 				} else if (pos != null) {
@@ -211,7 +212,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoordWithOrientation(5);
 					if (pos != null) {
-						ChunkManager.setBlockID(pos,
+						CM.setBlock(pos,
 								MousePicker.calcVect.y < 0 ? Block.STONESLAB_UP : Block.STONESLAB_DOWN);
 						size--;
 						if (size <= 0) {
@@ -346,7 +347,7 @@ public class ItemStack {
 					if (v != null) {
 						Vects.floor(v);
 						for (short id = 0; id <= Block.lastNormalBlock(); id++) {
-							ChunkManager.setBlockID(v, id);
+							CM.setBlock(v, id);
 							v.x++;
 						}
 						lastTime = Meth.systemTime();
@@ -357,7 +358,7 @@ public class ItemStack {
 			if (Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_5)) {
 				v = MousePicker.getLastEmptyBlockCoord(100);
 				if (v != null) {
-					ChunkManager.setBlockID(v, Block.MARK);
+					CM.setBlock(v, Block.MARK);
 				}
 			}
 		} else if (this.ID == TORCH) {
@@ -372,7 +373,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoord(5);
 					if (pos != null) {
-						ChunkManager.setBlockID(pos, Block.LAMP);
+						CM.setBlock(pos, Block.LAMP);
 						size--;
 						if (size <= 0) {
 							return false;
@@ -396,7 +397,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoord(5);
 					if (pos != null) {
-						ChunkManager.setBlockID(pos, Block.TORCH);
+						CM.setBlock(pos, Block.TORCH);
 						size--;
 						if (size <= 0) {
 							return false;
@@ -424,7 +425,7 @@ public class ItemStack {
 						lastTime = Meth.systemTime();
 					}
 				} else if (pos != null && Meth.systemTime() >= lastTime + Block.getBreakCool(lookAtB)) {
-					ChunkManager.deleteBlockWithNoise(pos);
+					CM.deleteBlock(pos);
 					lastTime = Meth.systemTime();
 					lastL = false;
 				} else if (pos != null) {
@@ -450,7 +451,7 @@ public class ItemStack {
 						lastTime = Meth.systemTime();
 					}
 				} else if (pos != null && Meth.systemTime() >= lastTime + Block.getBreakCool(lookAtB)) {
-					ChunkManager.deleteBlockWithNoise(pos);
+					CM.deleteBlock(pos);
 					lastTime = Meth.systemTime();
 					lastL = false;
 				} else if (pos != null) {
@@ -469,7 +470,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoord(5);
 					if (pos != null) {
-						ChunkManager.setBlockID(pos, blockID(ID));
+						CM.setBlock(pos, blockID(ID));
 						size--;
 						if (size <= 0) {
 							return false;

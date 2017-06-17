@@ -8,6 +8,7 @@ import data.ChunkManager;
 import dataAdvanced.SimpleConstructs;
 import entities.Projectil;
 import gameStuff.SC;
+import mainInterface.CM;
 import models.TexturedModel;
 import particles.*;
 import renderStuff.DisplayManager;
@@ -48,7 +49,7 @@ public class Meteorite extends Projectil{
 		change.z *= DisplayManager.getFrameTimeSeconds();
 		position.add(change.x, change.y, change.z);
 		if (ChunkManager.getBlockID(position) != 0) {
-			ChunkManager.deleteBlock(position);
+			CM.deleteBlock(position);
 			numberOfDestroyBlocks--;
 			if (numberOfDestroyBlocks == 0) {
 //				ChunkManager.dontDropItems();

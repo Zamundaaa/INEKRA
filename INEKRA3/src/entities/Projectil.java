@@ -9,9 +9,9 @@ import audio.*;
 import data.ChunkManager;
 import dataAdvanced.SimpleConstructs;
 import gameStuff.*;
+import mainInterface.CM;
 import models.TexturedModel;
-import particles.ParticleMaster;
-import particles.ParticleTexture;
+import particles.*;
 import renderStuff.DisplayManager;
 import toolBox.Meth;
 import toolBox.Vects;
@@ -238,7 +238,7 @@ public class Projectil implements TickingThing, HarmingThing {
 		if (blockDestroying) {
 			if (ChunkManager.getBlockID(position) != 0) {
 
-				ChunkManager.deleteBlock(position);
+				CM.deleteBlock(position);
 
 				numberOfDestroyBlocks--;
 				if (numberOfDestroyBlocks == 0) {
@@ -254,7 +254,7 @@ public class Projectil implements TickingThing, HarmingThing {
 			if (ChunkManager.getBlockID(Vects.calcVect.add(position)) != 0) {
 				for (int i = 0; i < 3; i++) {
 					if (ChunkManager.getBlockID(position.x, position.y + i, position.z) == 0) {
-						ChunkManager.setBlockID(position.x, position.y + i, position.z, setBlock);
+						CM.setBlock(position.x, position.y + i, position.z, setBlock);
 						break;
 					}
 				}
@@ -262,6 +262,9 @@ public class Projectil implements TickingThing, HarmingThing {
 				return true;
 			}
 		}
+		if(flare)
+			ParticleMaster.addNewParticle(PTM.fireworks, Vects.addRandom(new Vector3f(position), 0.2f), 
+					Vects.addRandom(new Vector3f(velocity).negate().mul(0.1f), 0.1f), 0, 2, 0, Meth.randomFloat(0.01f, 0.15f));
 		if (flare && position.y > Camera.getPosition().y + desiredFlareHeight) {
 			if (fireworkstack == 1) {
 				Vector3f addvel = Meth.doChance(0.5f) ? Vects.NULL : velocity;

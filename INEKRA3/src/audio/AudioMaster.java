@@ -19,7 +19,7 @@ import toolBox.Tools;
 
 public class AudioMaster {
 
-	public static final float sounddistmult = 5;
+	public static final float sounddistmult = 10;
 	public static final float soundvelmult = 0.1f;
 
 	private static float GAIN = Tools.loadFloatPreference("GAIN", 1);

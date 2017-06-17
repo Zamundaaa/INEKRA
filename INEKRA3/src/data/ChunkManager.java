@@ -10,12 +10,12 @@ import org.joml.Vector4i;
 import audio.AudioMaster;
 import audio.SourcesManager;
 import blockRendering.BlockRenderer;
-import cubyWater.WaterManager;
-import cubyWater.WaterUpdater;
 import cubyWaterNew.NewWaterUpdater;
+import data.chunkLoading.ChunkLoader;
 import dataAdvanced.SimpleConstructs;
 import gameStuff.Err;
 import gameStuff.WorldObjects;
+import mainInterface.CM;
 import renderStuff.DisplayManager;
 import renderStuff.FramePerformanceLogger;
 import toolBox.Meth;
@@ -218,7 +218,7 @@ public class ChunkManager {
 		}
 //		notAddingOrRemovingChunks = true;
 		
-		FramePerformanceLogger.writeStoppedTime(key ,"ChunkManager Update Without BlockUpdates");
+		FramePerformanceLogger.writeStoppedTime(key ,"CM Update Without BlockUpdates");
 		
 		BlockStuffUpdater.update();
 		
@@ -283,9 +283,9 @@ public class ChunkManager {
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @return basically calls {@link ChunkManager#toChunkCoord(float)} for each
+	 * @return basically calls {@link CM#toChunkCoord(float)} for each
 	 *         parameter and then
-	 *         {@link ChunkManager#getWithChunkCoords(int, int, int)}
+	 *         {@link CM#getWithChunkCoords(int, int, int)}
 	 */
 	public static Chunk getWithBlockCoords(float x, float y, float z) {
 		int cx = toChunkCoord(x);// ...-32-(-17); // -16-(-1); 0-15:0; //
@@ -494,9 +494,11 @@ public class ChunkManager {
 	 */
 	public static void cleanUp() {
 		unloadingAll = true;
-		WaterUpdater.waitAndStop();
-		WaterUpdater.clearList();
-		WaterManager.cleanUp();
+		
+//		WaterUpdater.waitAndStop();
+//		WaterUpdater.clearList();
+//		WaterManager.cleanUp();#
+		
 //		notAddingOrRemovingChunks = false;
 		while (clist.size() > 0) {
 			Chunk c = clist.get(clist.size() - 1);
@@ -560,7 +562,7 @@ public class ChunkManager {
 	}
 
 	/**
-	 * @see ChunkManager#setBlockIDWithNoise(float, float, float, short)
+	 * @see CM#setBlockIDWithNoise(float, float, float, short)
 	 */
 	public static void setBlockIDWithNoise(Vector3f vect, short id) {
 		setBlockIDWithNoise(vect.x, vect.y, vect.z, id);
@@ -790,6 +792,10 @@ public class ChunkManager {
 	
 	public static void dontDropParticles(){
 		DP.put(Thread.currentThread(), false);
+	}
+
+	public static void markChunkForLoading(int x, int y, int z) {
+		chunkLoader.loadChunk(x, y, z);
 	}
 	
 //	public static int getHighestNonEmptyChunk(float x, float y, float z){

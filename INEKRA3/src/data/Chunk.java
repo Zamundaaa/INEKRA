@@ -631,7 +631,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 					c.mask = true;
 			}
 			ChunkManager.scheduleBlockUpdate(x, y, z);
-			// ChunkManager.blockUpdate(x, y, z);
+			// CM.blockUpdate(x, y, z);
 			// if (Block.isLightSource(ID)) {// && !Block.isLightSource(old)
 			// // LightMaster.
 			// } else
@@ -730,7 +730,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			if (blockUpdate)
 				ChunkManager.scheduleBlockUpdate(x, y, z);
 			// if (blockUpdate)
-			// ChunkManager.blockUpdate(x, y, z);
+			// CM.blockUpdate(x, y, z);
 			if (!Block.isLightSource(old) && Block.isTransparent(old) != Block.isTransparent(ID)) {
 				LightMaster.checkForLightUpdates(x, y, z);
 			}
@@ -2137,6 +2137,10 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 
 	public boolean maskNeeded() {
 		return mask;
+	}
+
+	public short getLightValueIC(int x, int y, int z) {
+		return light[x][y][z];
 	}
 
 }

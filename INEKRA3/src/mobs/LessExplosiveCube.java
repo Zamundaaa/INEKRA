@@ -7,6 +7,7 @@ import data.ChunkManager;
 import dataAdvanced.SimpleConstructs;
 import entities.Entity;
 import gameStuff.*;
+import mainInterface.CM;
 import models.TexturedModel;
 import renderStuff.DisplayManager;
 import toolBox.*;
@@ -215,7 +216,7 @@ public class LessExplosiveCube extends Entity {
 			if (Vects.calcVect2D.lengthSquared() != 0) {
 				Vects.calcVect2D.normalize();
 			}
-			ChunkManager.deleteBlock(position.x + Vects.calcVect2D.x, position.y, position.z + Vects.calcVect2D.y);
+			CM.deleteBlock(position.x + Vects.calcVect2D.x, position.y, position.z + Vects.calcVect2D.y);
 		}
 		water = 0;
 

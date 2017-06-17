@@ -1,6 +1,6 @@
 package data;
 
-public class CM {
+public class SomeCodeTrash {
 
 	// if (px != cx || py != cy || pz != cz || listUpdater == null ||
 	// !listUpdater.isAlive()) {

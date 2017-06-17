@@ -7,11 +7,10 @@ import java.util.List;
 
 import org.joml.Vector3f;
 
-import cubyWater.WaterUpdater;
-import data.ChunkManager;
 import data.LightMaster;
 import entities.*;
 import gameStuff2.CommandProcessor;
+import mainInterface.CM;
 import mobs.MobMaster;
 import toolBox.*;
 import weather.WeatherController;
@@ -34,10 +33,7 @@ public abstract class WorldObjects {
 
 		sun = new Light(new Vector3f(200000, 300000, 200000), new Vector3f(0.5f, 0.5f, 0.5f));
 		ltr.add(sun);
-		ChunkManager.init();
-
-		if (WaterUpdater.MULTITHREADING)
-			WaterUpdater.init();
+		CM.init();
 
 		MousePicker.init();
 
@@ -68,8 +64,6 @@ public abstract class WorldObjects {
 
 		EntityManager.updateAll();
 		TickManager.update();
-
-		ChunkManager.update();
 		
 //		System.out.println("WorldObjects updated!");
 
@@ -129,7 +123,7 @@ public abstract class WorldObjects {
 		spawnPoint.y = y;
 		spawnPoint.z = z;
 		if (player == null) {
-			player = new Player(SC.playermod, spawnPoint, 0, 0, 0, 0.15f);
+			player = new Player(SC.playermod, spawnPoint, 0, 0, 0, 0.15f, (int)Tools.loadLongPreference("playerID", 0));
 			hits.add(player);
 			players.add(player);
 		} else {
@@ -213,7 +207,7 @@ public abstract class WorldObjects {
 			Tools.setFloatPreference("PY", player.getPosition().y);
 			Tools.setFloatPreference("PZ", player.getPosition().z);
 			Tools.setBoolPreference("flight", player.flight());
-			// ChunkManager.saveAll();
+			// CM.saveAll();
 		}
 	}
 
@@ -233,8 +227,8 @@ public abstract class WorldObjects {
 
 	public static void cleanUp() {
 		// long millis = System.currentTimeMillis();
-		ChunkManager.cleanUp();
-		// System.err.println("Time to clean up ChunkManager: " +
+		CM.cleanUp();
+		// System.err.println("Time to clean up CM: " +
 		// (System.currentTimeMillis()-millis));
 		EntityManager.cleanUp();
 		if (player != null) {

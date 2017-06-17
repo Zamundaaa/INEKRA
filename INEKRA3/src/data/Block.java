@@ -10,6 +10,7 @@ import controls.Keyboard;
 import dataAdvanced.SimpleConstructs;
 import entities.Projectil;
 import gameStuff.*;
+import mainInterface.CM;
 import objConverter.ModelData;
 import particles.PTM;
 import particles.ParticleMaster;
@@ -52,7 +53,7 @@ public class Block {
 				if (growTallGrass) {
 					if (TM.jahresZeit() == TM.FRÜHLING || TM.jahresZeit() == TM.SOMMER) {
 						if (over == AIR && Meth.doChance(0.01f * TM.TIMEFACT * DisplayManager.getFrameTimeSeconds())) {
-							ChunkManager.setBlockID(x, y + 1, z, TALL_GRASS);
+							CM.setBlock(x, y + 1, z, TALL_GRASS);
 						}
 					}
 				}
@@ -89,9 +90,9 @@ public class Block {
 			short d = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 			if (d == Block.AIR) {
 				ChunkManager.chanceToDo = chanceForNextFallingBlockToFall;
-				ChunkManager.deleteBlock(x, y, z);
+				CM.deleteBlock(x, y, z);
 				ChunkManager.chanceToDo = 0;
-				// ChunkManager.setBlockID(x, y-1, z, ID);
+				// CM.setBlock(x, y-1, z, ID);
 				Projectil p = new Projectil(new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f), new Vector3f(), null, false);
 				p.setPT(PTM.sand);
 				p.setBlock(ID);
@@ -101,8 +102,8 @@ public class Block {
 				p.setParticleGravity(1);
 				p.attatch(SC.sandmod);
 			} else if (Block.isWater(d)) {
-				ChunkManager.deleteBlock(x, y, z);
-				ChunkManager.setBlockID(x, y - 1, z, ID);
+				CM.deleteBlock(x, y, z);
+				CM.setBlock(x, y - 1, z, ID);
 				for (int i = 0; i < 5; i++) {
 					ParticleMaster.addNewParticle(PTM.raindrop, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
 							Vects.randomVector3f(-1, 1, 2, 2, -1, 1), 1, 2, 0, 0.1f);
@@ -152,9 +153,9 @@ public class Block {
 			short d = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 			if (d == Block.AIR) {
 				ChunkManager.chanceToDo = chanceForNextFallingBlockToFall;
-				ChunkManager.deleteBlock(x, y, z);
+				CM.deleteBlock(x, y, z);
 				ChunkManager.chanceToDo = 0;
-				// ChunkManager.setBlockID(x, y-1, z, ID);
+				// CM.setBlock(x, y-1, z, ID);
 				Projectil p = new Projectil(new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f), new Vector3f(), null, false);
 				p.setPT(PTM.sand);
 				p.setBlock(ID);
@@ -164,8 +165,8 @@ public class Block {
 				p.setParticleGravity(1);
 				p.attatch(SC.sandmod);
 			} else if (Block.isWater(d)) {
-				ChunkManager.deleteBlock(x, y, z);
-				ChunkManager.setBlockID(x, y - 1, z, ID);
+				CM.deleteBlock(x, y, z);
+				CM.setBlock(x, y - 1, z, ID);
 				for (int i = 0; i < 5; i++) {
 					ParticleMaster.addNewParticle(PTM.raindrop, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
 							Vects.randomVector3f(-1, 1, 2, 2, -1, 1), 1, 2, 0, 0.1f);
@@ -219,8 +220,8 @@ public class Block {
 		}
 		for (int i = 1; i <= h; i++) {
 			if (ChunkManager.getBlockID(x, y - i, z) != WOOD) {
-				ChunkManager.setBlockID(x, y, z, WOOD);
-				ChunkManager.setBlockID(x, y + 1, z, SAPLING);
+				CM.setBlock(x, y, z, WOOD);
+				CM.setBlock(x, y + 1, z, SAPLING);
 				for(int i2 = 0; i2 < treeLeaveGrowPlaces.length; i2++){
 					if(i == treeLeaveGrowPlaces[i2]){
 						SimpleConstructs.fillSphere(x, y, z, treeLeaveGrowDiameters[i2], LEAVES, false);
@@ -235,7 +236,7 @@ public class Block {
 						}
 						int d = Meth.randomInt(2, 4);
 						for(int i3 = 0; i3 < d; i3++)
-							ChunkManager.setBlockID(x+i3*Vects.calcVect.x,
+							CM.setBlock(x+i3*Vects.calcVect.x,
 									y+i3*Vects.calcVect.y,
 									z+i3*Vects.calcVect.z, WOOD);
 						SimpleConstructs.fillSphere(x+d*Vects.calcVect.x, 
@@ -247,7 +248,7 @@ public class Block {
 			}
 		}
 		if (!grown) {
-			ChunkManager.setBlockID(x, y, z, LEAVES);
+			CM.setBlock(x, y, z, LEAVES);
 		}
 		for(int i = 0; i < treeLeaveGrowPlaces.length; i++){
 			treeLeaveGrowPlaces[i] = -1;

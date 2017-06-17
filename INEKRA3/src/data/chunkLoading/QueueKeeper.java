@@ -1,4 +1,4 @@
-package data;
+package data.chunkLoading;
 
 import static data.ChunkManager.genDistYSq;
 import static data.ChunkManager.genRadSq;
@@ -6,61 +6,40 @@ import static data.ChunkManager.genRadSq;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
+import data.*;
 import entities.Camera;
-import threadingStuff.ThreadManager;
-import toolBox.Meth;
 import toolBox.Queues;
 
-public class ChunkLoader extends Thread {
-
-	public static long delayBetweenChunkLoads = 10;
-
-	public static final ArrayDeque<Key3D> queue = new ArrayDeque<>();
+public class QueueKeeper {
+	
 	private static ArrayList<Key3D> toLoad = new ArrayList<Key3D>();
-	private final ArrayDeque<Chunk> toAdd;
-	// private final ArrayDeque<Key3D> added;
-	private int pointer = 0;
-
-	public ChunkLoader(ArrayDeque<Chunk> toAdd) {
-		super("ChunkLoader");
-		queue.clear();
-		this.toAdd = toAdd;
-		// added = new ArrayDeque<>();
+	private static int pointer = 0;
+	
+	public static Key3D next(){
+		Chunk c = ChunkManager.getWithChunkCoords(ChunkManager.toChunkCoord(Camera.getPosition().x), 
+				ChunkManager.toChunkCoord(Camera.getPosition().y), ChunkManager.toChunkCoord(Camera.getPosition().z));
+		pointer = 0;
+		while(c != null && pointer < toLoad.size()-1){
+			pointer++;
+			Key3D k = toLoad.get(pointer);
+			c = ChunkManager.getWithChunkCoords(k.getX()+ChunkManager.toChunkCoord(Camera.getPosition().x), 
+					k.getY()+ChunkManager.toChunkCoord(Camera.getPosition().y), 
+					k.getZ()+ChunkManager.toChunkCoord(Camera.getPosition().z));
+		}
+		if(pointer >= toLoad.size())
+			return null;
+		else
+			return Key3D.getInstance(toLoad.get(pointer)).add(ChunkManager.toChunkCoord(Camera.getPosition().x), 
+					ChunkManager.toChunkCoord(Camera.getPosition().y), ChunkManager.toChunkCoord(Camera.getPosition().z));
+	}
+	
+	private static final Key3D somePlaceholder = new Key3D(0, 0, 0);
+	
+	static{
 		buildQueue();
 	}
 
-	@Override
-	public void run() {
-		while (ThreadManager.running()) {
-			pointer = 0;
-			int X = ChunkManager.toChunkCoord(Camera.getPosition().x);
-			int Y = ChunkManager.toChunkCoord(Camera.getPosition().y);
-			int Z = ChunkManager.toChunkCoord(Camera.getPosition().z);
-			while (ThreadManager.running() && pointer < toLoad.size()
-					&& ChunkManager.toChunkCoord(Camera.getPosition().x) == X
-					&& ChunkManager.toChunkCoord(Camera.getPosition().y) == Y
-					&& ChunkManager.toChunkCoord(Camera.getPosition().z) == Z) {
-				Key3D k = toLoad.get(pointer++);
-				Key3D k2 = new Key3D(k.getX() + X, k.getY() + Y, k.getZ() + Z);
-				if (ChunkManager.getWithChunkCoords(k2) == null// &&
-																// !added.contains(k2)
-				) {
-					Chunk c = new Chunk(k2.getX(), k2.getY(), k2.getZ());
-					toAdd.add(c);
-					Meth.wartn(delayBetweenChunkLoads);
-				}
-			}
-			while (ThreadManager.running() && ChunkManager.toChunkCoord(Camera.getPosition().x) == X
-					&& ChunkManager.toChunkCoord(Camera.getPosition().y) == Y
-					&& ChunkManager.toChunkCoord(Camera.getPosition().z) == Z) {
-				Meth.wartn(delayBetweenChunkLoads);
-			}
-		}
-	}
-
-	private final Key3D somePlaceholder = new Key3D(0, 0, 0);
-
-	private void buildQueue() {
+	private static void buildQueue() {
 		ArrayDeque<Key3D> xq = Queues.help1;
 		xq.add(new Key3D(0, 0, 0));
 		toLoad.clear();
@@ -114,5 +93,5 @@ public class ChunkLoader extends Thread {
 			}
 		}
 	}
-
+	
 }

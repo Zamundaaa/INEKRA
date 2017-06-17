@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL13;
 
 import audio.AudioMaster;
 import blockRendering.BlockRenderer;
-import cubyWater.WaterRenderer;
+import cubyWaterNew.NewWaterRenderer;
 import entities.*;
 import gameStuff.MainLoop;
 import gameStuff.TickManager;
@@ -85,7 +85,7 @@ public abstract class MasterRenderer {
 //		Err.err.println("---------creating BlockRenderer");
 		BlockRenderer.init();
 //		Err.err.println("---------creating WaterRenderer");
-		WaterRenderer.init();
+		NewWaterRenderer.init();
 //		Err.err.println("---------creating ParticleRenderer");
 		if (!ParticleRenderer.inited)
 			ParticleMaster.init(projectionMatrix);
@@ -191,7 +191,7 @@ public abstract class MasterRenderer {
 		// if(!WeatherController.isRaining()){
 
 		if (!MainLoop.renderForWater) {
-			WaterRenderer.render(viewMatrix);
+			NewWaterRenderer.render(viewMatrix);
 		}
 
 		// }
@@ -324,7 +324,7 @@ public abstract class MasterRenderer {
 			ShadowMapMasterRenderer.cleanUp();
 		
 		BlockRenderer.cleanUp();
-		WaterRenderer.cleanUp();
+		NewWaterRenderer.cleanUp();
 
 		ParticleMaster.cleanUp();
 
@@ -347,8 +347,8 @@ public abstract class MasterRenderer {
 			skyRenderer.setProjectionMatrix(projectionMatrix);
 		if (LineRenderer.inited)
 			LineRenderer.setProjectionMatrix(projectionMatrix);
-		if (WaterRenderer.inited)
-			WaterRenderer.setProjectionMatrix(projectionMatrix);
+//		if (NewWaterRenderer.inited)
+//			NewWaterRenderer.setProjectionMatrix(projectionMatrix);
 		if (ParticleRenderer.inited)
 			ParticleRenderer.setProjectionMatrix(projectionMatrix);
 		BlockRenderer.setProjectionMatrix(projectionMatrix);

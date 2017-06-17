@@ -1,6 +1,7 @@
 package dataAdvanced;
 
 import data.ChunkManager;
+import mainInterface.CM;
 
 public class Builder {
 
@@ -14,7 +15,7 @@ public class Builder {
 					break;
 				}
 			case Script.SET:
-				ChunkManager.setBlockID(px + x + script.x.get(i), py + y + script.y.get(i), pz + z + script.z.get(i),
+				CM.setBlock(px + x + script.x.get(i), py + y + script.y.get(i), pz + z + script.z.get(i),
 						script.ids.get(i));
 				break;
 			case Script.FILL:
@@ -24,7 +25,7 @@ public class Builder {
 				// {
 				// for (int Z = script.z.get(i); Z <= script.z.get(i + 1); Z++)
 				// {
-				// ChunkManager.setBlockIDCG(px + x + X, py + y + Y, pz + z + Z,
+				// CM.setBlockIDCG(px + x + X, py + y + Y, pz + z + Z,
 				// script.ids.get(i));
 				// }
 				// }
@@ -42,7 +43,7 @@ public class Builder {
 				// {
 				// if (ChunkManager.getBlockID(px + x + X, py + y + Y, pz + z +
 				// Z) == 0) {
-				// ChunkManager.setBlockIDCG(px + x + X, py + y + Y, pz + z + Z,
+				// CM.setBlockIDCG(px + x + X, py + y + Y, pz + z + Z,
 				// script.ids.get(i));
 				// }
 				// }

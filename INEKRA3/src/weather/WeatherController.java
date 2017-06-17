@@ -15,6 +15,7 @@ import entities.*;
 import fontRendering.Out;
 import gameStuff.TM;
 import gameStuff.WorldObjects;
+import mainInterface.CM;
 import particles.*;
 import renderStuff.DisplayManager;
 import renderStuff.MasterRenderer;
@@ -115,7 +116,7 @@ public class WeatherController {
 					int y = ChunkManager.getUppestBlockY(x, z);
 					if (y != Integer.MIN_VALUE) {
 						y += 5;
-						ChunkManager.setBlockID(x, y, z, Block.getWater(0.2f));
+						CM.setBlock(x, y, z, Block.getWater(0.2f));
 					}
 				}
 			} else {
@@ -155,8 +156,8 @@ public class WeatherController {
 				// !b.isLeaves()){
 				// if(b.id() == Block.WATER){
 				// int y = b.getY();
-				// if(ChunkManager.blockAncientBut(x, y, z, Block.WATER)){
-				// ChunkManager.setBlock(x, y, z, new Block(Block.ICE, x, y, z,
+				// if(CM.blockAncientBut(x, y, z, Block.WATER)){
+				// CM.setBlock(x, y, z, new Block(Block.ICE, x, y, z,
 				// false));
 				// }
 				// // else{
@@ -166,7 +167,7 @@ public class WeatherController {
 				// break;
 				// }else if(snowLayers && b.id() != Block.FERN){
 				// int y = b.getY() + 1;
-				// ChunkManager.setBlock(x, y, z, new Block(Block.SNOWLAYER, x,
+				// CM.setBlock(x, y, z, new Block(Block.SNOWLAYER, x,
 				// y, z, false));
 				// break;
 				// }
@@ -411,12 +412,12 @@ public class WeatherController {
 	private static void doFlashsThing() {
 		boolean f = flashPresent();
 		// if(!startFlashLightUpdate && f){
-		// ChunkManager.LightUpdate((int)lastFlashPos.x, (int)lastFlashPos.y,
+		// CM.LightUpdate((int)lastFlashPos.x, (int)lastFlashPos.y,
 		// (int)lastFlashPos.z);
 		// startFlashLightUpdate = true;
 		// }
 		// if(!f && !endFlashLightUpdate){
-		// ChunkManager.LightUpdate((int)lastFlashPos.x, (int)lastFlashPos.y,
+		// CM.LightUpdate((int)lastFlashPos.x, (int)lastFlashPos.y,
 		// (int)lastFlashPos.z);
 		// endFlashLightUpdate = true;
 		// }
@@ -512,7 +513,8 @@ public class WeatherController {
 	public static void lstrikeback(Vector3f struckpoint) {
 		Vector3f pos = new Vector3f(struckpoint);
 		lastFlashPos = new Vector3f(pos);
-		if (ChunkManager.deleteBlock(pos)) {
+//		if (CM.deleteBlock(pos)) {
+		CM.deleteBlock(pos);
 			// for(int i = 0; i < 30; i++){
 			// Item3D I = Item3D.getInstance(Meth.doChance(0.5f) ? "cube" :
 			// "dragonSkin",
@@ -523,9 +525,9 @@ public class WeatherController {
 				ParticleMaster.addNewParticle(lightning, new Vector3f(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f),
 						Vects.randomVector3f(-3f, 3f, -3f, 3f, -3f, 3f), 0, 1, 0, 0.2f);
 			}
-		}
+//		}
 		 if(Meth.doChance(lightningFire)){
-			 ChunkManager.setBlockID(pos, Block.FIRE);
+			 CM.setBlock(pos, Block.FIRE);
 		 }
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);
@@ -580,7 +582,8 @@ public class WeatherController {
 			
 			b = ChunkManager.getBlockID(pos);
 		}
-		if (ChunkManager.deleteBlock(pos)) {
+//		if (CM.deleteBlock(pos)) {
+		CM.deleteBlock(pos);
 			// for(int i = 0; i < 30; i++){
 			// Item3D I = Item3D.getInstance(Meth.doChance(0.5f) ? "cube" :
 			// "dragonSkin",
@@ -591,9 +594,9 @@ public class WeatherController {
 				ParticleMaster.addNewParticle(lightning, new Vector3f(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f),
 						Vects.randomVector3f(-3f, 3f, -3f, 3f, -3f, 3f), 0, 1, 0, 0.25f);
 			}
-		}
+//		}
 		 if(Meth.doChance(lightningFire)){
-		 ChunkManager.setBlockID(pos, Block.FIRE);
+		 CM.setBlock(pos, Block.FIRE);
 		 }
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);
@@ -627,7 +630,8 @@ public class WeatherController {
 			
 			b = ChunkManager.getBlockID(pos);
 		}
-		if (ChunkManager.deleteBlock(pos)) {
+//		if (CM.deleteBlock(pos)) {
+		CM.deleteBlock(pos);
 			// for(int i = 0; i < 30; i++){
 			// Item3D I = Item3D.getInstance(Meth.doChance(0.5f) ? "cube" :
 			// "dragonSkin",
@@ -638,9 +642,9 @@ public class WeatherController {
 				ParticleMaster.addNewParticle(lightning, new Vector3f(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f),
 						Vects.randomVector3f(-3f, 3f, -3f, 3f, -3f, 3f), 0, 1, 0, 0.25f);
 			}
-		}
+//		}
 		 if(Meth.doChance(lightningFire)){
-			 ChunkManager.setBlockID(pos, Block.FIRE);
+			 CM.setBlock(pos, Block.FIRE);
 		 }
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);
@@ -653,14 +657,15 @@ public class WeatherController {
 	public static void lstrike(Vector3f startPos, Vector3f endPos){
 //		Vector3f pos = new Vector3f(endPos);
 		lastFlashPos = new Vector3f(startPos);
-		if (ChunkManager.deleteBlock(endPos)) {
+//		if (CM.deleteBlock(endPos)) {
+		CM.deleteBlock(endPos);
 			for (int i = 0; i < 15; i++) {
 				ParticleMaster.addNewParticle(lightning, new Vector3f(endPos.x + 0.5f, endPos.y + 0.5f, endPos.z + 0.5f),
 						Vects.randomVector3f(-3f, 3f, -3f, 3f, -3f, 3f), 0, 1, 0, 0.2f);
 			}
-		}
+//		}
 		if(Meth.doChance(lightningFire)){
-			ChunkManager.setBlockID(endPos, Block.FIRE);
+			CM.setBlock(endPos, Block.FIRE);
 		}
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);

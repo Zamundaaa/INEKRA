@@ -6,9 +6,9 @@ import collectionsStuff.SmartByteBuffer;
 import data.*;
 import entities.Camera;
 import entities.Projectil;
-import gameStuff.Err;
 import gameStuff.TM;
 import inventory.Item3D;
+import mainInterface.CM;
 import particles.PTM;
 import particles.ParticleMaster;
 import renderStuff.DisplayManager;
@@ -43,8 +43,9 @@ public class Fire extends SpecialBlock{
 		}
 		
 		if(TM.inGameDays() > creationTime + burnTime){
-			if(!ChunkManager.deleteBlock(x, y, z))
-				Err.err.println("could not delete fire at " + x + " " + y + " " + z);
+			CM.deleteBlock(x, y, z);
+//			if(!CM.deleteBlock(x, y, z))
+//				Err.err.println("could not delete fire at " + x + " " + y + " " + z);
 		}else{
 			if(Meth.doChance(15*DisplayManager.getFrameTimeSeconds()*fact*(1000f/ParticleMaster.NOP(PTM.fire)))){
 				Vector3f vel = Vects.randomVector3f(-0.1f, 0.1f, -0.1f, 0, -0.1f, 0.1f);
@@ -90,7 +91,7 @@ public class Fire extends SpecialBlock{
 				if(underme == FIRE){
 					burnTime = Math.min(0.05f/60/24, burnTime);
 //					if(Meth.doChance(DisplayManager.getFrameTimeSeconds())){
-						ChunkManager.deleteBlock(x, y, z);
+						CM.deleteBlock(x, y, z);
 						Vector3f pos = new Vector3f(x+0.5f, y+0.5f, z+0.5f);
 						Projectil p = new Projectil(pos, Vects.randomVector3f(-5, 5, 1, 5, -5, 5), null, false);
 						p.setNumberOfDestroyBlocks(2);
@@ -129,7 +130,7 @@ public class Fire extends SpecialBlock{
 						underme = ChunkManager.getBlockForBlocksOnly(remx, remy, remz);
 					short burned = Block.burnedID(underme);
 					if(burned != underme){
-						ChunkManager.setBlockID(remx, remy, remz, burned == 0 ? FIRE : burned);
+						CM.setBlock(remx, remy, remz, burned == 0 ? FIRE : burned);
 						creationTime = Meth.systemTime();
 						burnTime = Block.getBurnTimeInDays(underme);
 						if(Meth.doChance(TM.TIMEFACT*0.5f)){
