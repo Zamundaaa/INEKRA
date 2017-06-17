@@ -14,5 +14,12 @@ public class KeyManager {
 	public static boolean switchDebugPanel(){
 		return Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && Keyboard.keyPressedThisFrame(SWITCH_DEBUGPANEL);
 	}
+	
+	public static boolean escapeEquivalentPressed(){
+		if(Controller.USECONTROLLER && Controller.buttonTippedThisFrame(Controller.X)){
+			return true;
+		}
+		return Keyboard.isKeyDown(GLFW.GLFW_KEY_ESCAPE);
+	}
 
 }

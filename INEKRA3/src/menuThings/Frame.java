@@ -11,8 +11,7 @@ import org.lwjgl.glfw.GLFW;
 
 import audio.AudioMaster;
 import audio.MusicManager;
-import controls.Keyboard;
-import controls.Mouse;
+import controls.*;
 import cubyWater.WaterManager;
 import cubyWater.WaterRenderer;
 import data.ChunkSaver;
@@ -81,9 +80,12 @@ public class Frame {
 			for (int i = 0; i < menus.size(); i++) {
 				menus.get(i).update();
 			}
-			if (running)
+			if (running){
 				MainLoop.renderMenuWithSkyBox();
-
+				Mouse.updateControllerInputForMouse();
+//				Mouse.setCursorPosition(Mouse.getX()+Controller.getAxis(Controller.LR_LEFT_STICKER), 
+//						Mouse.getY()+Controller.getAxis(Controller.UD_LEFT_STICKER));
+			}
 			if (!running || DisplayManager.isCloseRequested()) {
 				running = false;
 				MainLoop.cleanUp();

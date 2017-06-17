@@ -17,7 +17,6 @@ public class SC {
 	private static int chosenFont = (int) Tools.loadLongPreference("Font", 0);
 
 	public static TexturedModel playermod, sandmod;
-	public static Loader loader;
 	public static FontType font;
 	public static FontType specialFont;
 	public static float particleMult = 0.7f;

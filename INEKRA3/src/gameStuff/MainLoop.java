@@ -42,6 +42,7 @@ public abstract class MainLoop {
 
 	public static int GUISWITCHKEY = GLFW.GLFW_KEY_X;
 	public static boolean running = true, firstRender = true, MENUOPEN = false, CLEANUPNOW = false, alive = true;
+	public static boolean ANYMENUOPEN = true;
 	public static Fbo outputFbo, outputFbo2, multisampledFbo, guiFbo;
 	public static WaterFrameBuffers wfbo;
 
@@ -213,6 +214,8 @@ public abstract class MainLoop {
 	
 	public static void runGame() {
 		MENUOPEN = false;
+		ANYMENUOPEN = false;
+		
 		Projectil.GAIN = Projectil.NORMGAIN;
 		icon16.hide();
 		ThreadManager.goOn();
@@ -239,17 +242,19 @@ public abstract class MainLoop {
 				cleanUp();
 				break;
 			}
-			if (Keyboard.isKeyDown(GLFW.GLFW_KEY_ESCAPE) && !Inv2D.open) {
+			if (KeyManager.escapeEquivalentPressed() && !Inv2D.open) {
 				playerGUI.hide();
 				debugPanel.hide();
 //				Err.err.println("Show shown? " + show.visible() + " tv? " + show.getTex().visible());
 //				Err.err.println("GUIManager.transparents().contains(show.getTex()): " + GUIManager.transparents().contains(show.getTex()));
 				Chat.hideCompletely();
 				MENUOPEN = true;
+				ANYMENUOPEN = true;
 				Frame.startInMenu();
 				DisplayManager.setFrameTimeSeconds(0.000000000001f);
 				WorldObjects.player.setCooldowns();
 				MENUOPEN = false;
+				ANYMENUOPEN = false;
 				resetDMouse = true;
 				Mouse.getDX();
 				Mouse.getDY();
@@ -300,6 +305,8 @@ public abstract class MainLoop {
 		icon16.show();
 
 		Projectil.GAIN = Projectil.MENGAIN;
+		
+		ANYMENUOPEN = true;
 		
 
 	}

@@ -55,11 +55,14 @@ public class Mouse {
 					setGrabbed(!grabbed);
 					setGrabbed(!grabbed);
 				}
+				mouseInWindow = entered;
 			}
 		});
 
 		Err.err.println("Mouse inited!");
 	}
+	
+	private static boolean mouseInWindow;
 
 	public static float getDX() {
 		float ret = (float) (x - lastX);
@@ -98,6 +101,12 @@ public class Mouse {
 	}
 
 	public static boolean isButtonDown(int button) {
+		if(Controller.USECONTROLLER){
+			if(button == 0)
+				return buttons[0] || Controller.isButtonDown(Controller.RIGHT_SHOULDER);
+			else if(button == 1)
+				return buttons[1] || Controller.isButtonDown(Controller.LEFT_SHOULDER);
+		}
 		return buttons[button];
 	}
 
@@ -108,13 +117,13 @@ public class Mouse {
 	public static void setGrabbed(boolean b) {
 		grabbed = b;
 		if (grabbed) {
-			// glfwSetInputMode(DisplayManager.getWindow(),
-			// GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//			 glfwSetInputMode(DisplayManager.getWindow(),
+//			 GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			hideCursor();
 		} else {
 			showCursor();
-			// glfwSetInputMode(DisplayManager.getWindow(),
-			// GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+//			 glfwSetInputMode(DisplayManager.getWindow(),
+//			 GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 		Tools.mouseGrabbed = grabbed;
 	}
@@ -127,7 +136,7 @@ public class Mouse {
 		glfwSetInputMode(DisplayManager.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
-	public static void setCursorPosition(int newx, int newy) {
+	public static void setCursorPosition(double newx, double newy) {
 		glfwSetCursorPos(DisplayManager.getWindow(), newx, newy);
 		x = newx;
 		y = newy;
@@ -154,6 +163,14 @@ public class Mouse {
 	}
 
 	public static boolean buttonClickedThisFrame(int button) {
+		if(!buttonsTipped[button] && Controller.USECONTROLLER){
+			if(button == 0){
+				return Controller.buttonTippedThisFrame(Controller.RIGHT_SHOULDER);
+			}else if(button == 1){
+				return Controller.buttonTippedThisFrame(Controller.LEFT_SHOULDER);
+			}
+			return false;
+		}
 		return buttonsTipped[button];
 	}
 
@@ -175,6 +192,27 @@ public class Mouse {
 				sensorB = false;
 			}
 		}
+		
+//		if(Controller.USECONTROLLER && MainLoop.ANYMENUOPEN && (Controller.getAxis(Controller.LR_RIGHT_STICKER) != 0
+//				|| Controller.getAxis(Controller.UD_RIGHT_STICKER) != 0)){
+//			setCursorPosition(x+400*Controller.getAxis(Controller.LR_RIGHT_STICKER)*DisplayManager.getFrameTimeSeconds(), 
+//					y+400*Controller.getAxis(Controller.UD_RIGHT_STICKER)*DisplayManager.getFrameTimeSeconds());
+//		}
+		
+	}
+	
+	public static void updateControllerInputForMouse(){
+		if(Controller.USECONTROLLER && mouseInWindow){
+			setCursorPosition(x+400*Controller.getAxis(Controller.LR_RIGHT_STICKER)*DisplayManager.getFrameTimeSeconds(), 
+					y+400*Controller.getAxis(Controller.UD_RIGHT_STICKER)*DisplayManager.getFrameTimeSeconds());
+//			glfwPollEvents();
+//			x += 400*Controller.getAxis(Controller.LR_RIGHT_STICKER)*DisplayManager.getFrameTimeSeconds();
+//			y += 400*Controller.getAxis(Controller.UD_RIGHT_STICKER)*DisplayManager.getFrameTimeSeconds();
+		}
+	}
+	
+	public static boolean mouseInWindow(){
+		return mouseInWindow;
 	}
 
 	private static boolean sensorB;

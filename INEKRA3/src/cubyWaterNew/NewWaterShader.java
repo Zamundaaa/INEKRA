@@ -1,6 +1,7 @@
 package cubyWaterNew;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import shaders.ShaderProgram;
 
@@ -14,6 +15,7 @@ public class NewWaterShader extends ShaderProgram{
 	private int refract;
 	private int refractDepth;
 	private int reflections;
+	private int sunLight;
 	
 	public NewWaterShader() {
 		super(vertex, fragment);
@@ -28,6 +30,7 @@ public class NewWaterShader extends ShaderProgram{
 		refract = super.getUniformLocation("refractionTexture");
 		refractDepth = super.getUniformLocation("refractDepth");
 		reflections = super.getUniformLocation("reflections");
+		sunLight = super.getUniformLocation("sunLight");
 	}
 
 	@Override
@@ -43,6 +46,10 @@ public class NewWaterShader extends ShaderProgram{
 		super.loadInt(reflect, 2);
 		super.loadInt(refract, 3);
 		super.loadInt(refractDepth, 4);
+	}
+	
+	public void loadSunLight(Vector3f sunLight){
+		super.loadVector(this.sunLight, sunLight);
 	}
 	
 	public void loadReflections(boolean reflect){

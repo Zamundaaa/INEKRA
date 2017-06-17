@@ -29,7 +29,11 @@ public class Block {
 	public static final float BLOCKSIZE = 1;
 
 	public static boolean growTallGrass = false;
-
+	
+	public static short firstBlock(){
+		return FIRE;
+	}
+	
 	public static short lastNormalBlock() {
 		return BLACK;
 	}
@@ -630,6 +634,16 @@ public class Block {
 			return 30f/60/24;
 		default:
 			return 0;
+		}
+	}
+
+	public static short jahresZeitID(short s) {
+		if(isGrass(s)){
+			return jahresZeitGras();
+		}else if(isLeaves(s)){
+			return jahresZeitLeaves();
+		}else{
+			return s;
 		}
 	}
 

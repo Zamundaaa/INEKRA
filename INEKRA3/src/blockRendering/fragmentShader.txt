@@ -40,7 +40,7 @@ void main(void){
 	vec3 unitLightVector = normalize(toLightVector[0]);
 	float brightness = max(dot(unitNormal,unitLightVector), 0.0);
 	vec3 diffuse = brightness * lightColour[0];
-	out_Color = clamp((vec4(diffuse ,1.0)*LV.w + vec4(LV.xyz, 1.0)), max(LV.w*0.25, MIN_LIGHT), 1)*textureColor;
+	out_Color = clamp((vec4(diffuse ,1.0)*LV.w + vec4(LV.xyz, 1.0)), max((LV.w-1)*0.25, MIN_LIGHT), 1)*textureColor;
 	
 	out_BrightColor = vec4(0.0);
 	

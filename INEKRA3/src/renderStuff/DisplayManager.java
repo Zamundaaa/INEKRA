@@ -20,8 +20,7 @@ import org.lwjgl.system.MemoryStack;
 import blockRendering.BlockRenderer;
 import chatStuff.Chat;
 import chatStuff.Message;
-import controls.Keyboard;
-import controls.Mouse;
+import controls.*;
 import gameStuff.Err;
 import gameStuff.MainLoop;
 import toolBox.Meth;
@@ -125,6 +124,7 @@ public class DisplayManager {
 		}
 
 		setFullscreen(FULLSCREEN);
+		
 		Keyboard.init();
 		Mouse.init();
 
@@ -228,6 +228,7 @@ public class DisplayManager {
 		ldelta = millis - lastMillis;
 		lastMillis = millis;
 		
+		Controller.update();
 		Mouse.updateSomething();
 		Keyboard.updateSomething();
 		
@@ -241,6 +242,8 @@ public class DisplayManager {
 			glfwPollEvents();
 			timesToPollEvents--;
 		}while(timesToPollEvents >= 0);
+		
+//		Mouse.updateControllerInputForMouse();
 		
 		Loader.updateCursor(window);
 		

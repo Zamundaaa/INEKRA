@@ -1,23 +1,23 @@
 package data;
 
-import java.util.*;
+import static data.Block.AIR;
+
+import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
 import blockRendering.BlockRenderer;
 import blockRendering.ChunkEntity;
 import collectionsStuff.*;
-import cubyWater.Water;
 import cubyWaterNew.NewWaterUpdater;
-import gameStuff.*;
+import gameStuff.Err;
+import gameStuff.TM;
 import inventory.Item3D;
 import objConverter.ModelData;
 import particles.PTM;
 import particles.ParticleMaster;
 import renderStuff.*;
 import toolBox.Meth;
-
-import static data.Block.*;
 
 /**
  * represents a certain chunk of space, contains all the blocks of that area and
@@ -50,7 +50,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	// ALS NÄCHSTES WIEDER BÄUME, AUCH MAL HÖHLEN, ETC. ( Häuser durch Skript
 	// vllt? versch.Modelle? )
 
-	private static final ArrayList<Water> buffer = new ArrayList<Water>();
+//	private static final ArrayList<Water> buffer = new ArrayList<Water>();
 	public static final int MINTREEHEIGHT = -9, MAXTREEHEIGHT = 80;
 	public static boolean genWater = true, SAVE = true, LOAD = true;
 
@@ -59,7 +59,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	private static final short[][][] copy = new short[SIZE][SIZE][SIZE], lightCopy = new short[SIZE][SIZE][SIZE];
 
 	private ArrayList<SpecialBlock> specials = new ArrayList<SpecialBlock>();
-	private Map<Integer, Water> waters;
+//	private Map<Integer, Water> waters;
 
 	private ChunkEntity e;
 	private boolean mask = true;// ob beim nächsten Update genMask() neu
@@ -114,8 +114,7 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	public boolean waterChanged() {
 		return uw;
 	}
-
-	@SuppressWarnings("unused")
+	
 	public void update() {// boolean updateSomeBlocks
 		// TODO: GROWTH Sapling (+later plant) growth rate !!! change to :
 		// questioned constant OR: !extra update method!
@@ -128,10 +127,10 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		// }
 		
 		// dead code because !NewWaterUpdater.useWaterMesh is *false*
-		if (!NewWaterUpdater.useWaterMesh && uw && Meth.doChance(100 * DisplayManager.getFrameTimeSeconds())) {
-			updateWaters();
-			uw = false;
-		}
+//		if (!NewWaterUpdater.useWaterMesh && uw && Meth.doChance(100 * DisplayManager.getFrameTimeSeconds())) {
+//			updateWaters();
+//			uw = false;
+//		}
 
 		if (!specialsInited) {
 			for (int i = 0; i < specials.size(); i++) {
@@ -184,74 +183,74 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		// }
 	}
 
-	public void updateWaters() {
-		if (NewWaterUpdater.useWaterMesh)
-			return;
-		int key = FramePerformanceLogger.stopTime();
-		for (int y = 0; y < SIZE; y++) {
-			for (int x = 0; x < SIZE; x++) {
-				for (int z = 0; z < SIZE; z++) {
-					int wi = waterIndex(x, y, z);
-					if (wi != -1) {
-						if (Block.isWater(blocks[x][y][z])) {
-							waters.get(wi).setHeight(0.01f * (blocks[x][y][z] - 1000));
-						} else {
-							if (buffer.size() < 200) {
-								Water w = waters.remove(wi);
-								// w.hide();
-								w.cleanUp();
-								buffer.add(w);
-							} else {
-								Water w = waters.remove(wi);
-								w.cleanUp();
-							}
-						}
-					} else if (Block.isWater(blocks[x][y][z])) {
-						Water w;
-						if (buffer.isEmpty()) {
-							w = new Water(new Vector3f(x + realX, y + realY, z + realZ),
-									(blocks[x][y][z] - 1000) * 0.01f);
-							w.setUp();
-						} else {
-							w = buffer.get(buffer.size() - 1);
-							buffer.remove(buffer.size() - 1);
-							w.setPosition(x + realX, y + realY, z + realZ);
-							w.setHeight((blocks[x][y][z] - 1000) * 0.01f);
-							// w.show();
-							w.setUp();
-						}
-						add(x, y, z, w);
-					}
-				}
-			}
-		}
-		if (waters != null) {
-			for (int i : waters.keySet()) {
-				waters.get(i).update();
-			}
-		}
-		FramePerformanceLogger.writeStoppedTime(key, "Chunk.updateWaters()");
-	}
-
-	private int waterIndex(int x, int y, int z) {
-		if (waters == null) {
-			return -1;
-		}
-		int i = x + 100 * y + 10000 * z;
-		if (waters.get(i) == null) {
-			return -1;
-		} else {
-			return i;
-		}
-	}
-
-	private void add(int x, int y, int z, Water w) {
-		if (waters == null) {
-			waters = new HashMap<Integer, Water>();
-		}
-		waters.put(x + y * 100 + z * 10000, w);
-		// waters.put(k, w);
-	}
+//	public void updateWaters() {
+//		if (NewWaterUpdater.useWaterMesh)
+//			return;
+//		int key = FramePerformanceLogger.stopTime();
+//		for (int y = 0; y < SIZE; y++) {
+//			for (int x = 0; x < SIZE; x++) {
+//				for (int z = 0; z < SIZE; z++) {
+//					int wi = waterIndex(x, y, z);
+//					if (wi != -1) {
+//						if (Block.isWater(blocks[x][y][z])) {
+//							waters.get(wi).setHeight(0.01f * (blocks[x][y][z] - 1000));
+//						} else {
+//							if (buffer.size() < 200) {
+//								Water w = waters.remove(wi);
+//								// w.hide();
+//								w.cleanUp();
+//								buffer.add(w);
+//							} else {
+//								Water w = waters.remove(wi);
+//								w.cleanUp();
+//							}
+//						}
+//					} else if (Block.isWater(blocks[x][y][z])) {
+//						Water w;
+//						if (buffer.isEmpty()) {
+//							w = new Water(new Vector3f(x + realX, y + realY, z + realZ),
+//									(blocks[x][y][z] - 1000) * 0.01f);
+//							w.setUp();
+//						} else {
+//							w = buffer.get(buffer.size() - 1);
+//							buffer.remove(buffer.size() - 1);
+//							w.setPosition(x + realX, y + realY, z + realZ);
+//							w.setHeight((blocks[x][y][z] - 1000) * 0.01f);
+//							// w.show();
+//							w.setUp();
+//						}
+//						add(x, y, z, w);
+//					}
+//				}
+//			}
+//		}
+//		if (waters != null) {
+//			for (int i : waters.keySet()) {
+//				waters.get(i).update();
+//			}
+//		}
+//		FramePerformanceLogger.writeStoppedTime(key, "Chunk.updateWaters()");
+//	}
+//
+//	private int waterIndex(int x, int y, int z) {
+//		if (waters == null) {
+//			return -1;
+//		}
+//		int i = x + 100 * y + 10000 * z;
+//		if (waters.get(i) == null) {
+//			return -1;
+//		} else {
+//			return i;
+//		}
+//	}
+//
+//	private void add(int x, int y, int z, Water w) {
+//		if (waters == null) {
+//			waters = new HashMap<Integer, Water>();
+//		}
+//		waters.put(x + y * 100 + z * 10000, w);
+//		// waters.put(k, w);
+//	}
 
 	/**
 	 * unloads the chunk model and saves the data of this chunk, if something's
@@ -267,11 +266,11 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		if (SAVE && needsSaving)
 			ChunkSaver.saveChunk(this);
 		FramePerformanceLogger.writeStoppedTimeAndStopTime(key, "saving Chunk");
-		if (waters != null && MainLoop.running) {
-			for (int i : waters.keySet()) {
-				waters.get(i).cleanUp();
-			}
-		}
+//		if (waters != null && MainLoop.running) {
+//			for (int i : waters.keySet()) {
+//				waters.get(i).cleanUp();
+//			}
+//		}
 		FramePerformanceLogger.writeStoppedTime(key, "cleaning up waters");
 		unloaded = true;
 	}
@@ -281,11 +280,11 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 			BlockRenderer.entities.remove(e);
 			Loader.unload(e.getModel().getRawMod());
 		}
-		if (waters != null && MainLoop.running) {
-			for (int i : waters.keySet()) {
-				waters.get(i).cleanUp();
-			}
-		}
+//		if (waters != null && MainLoop.running) {
+//			for (int i : waters.keySet()) {
+//				waters.get(i).cleanUp();
+//			}
+//		}
 		unloaded = true;
 		// if(borders != null)
 		// borders.cleanUp();
@@ -314,12 +313,13 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 							// hi = data[counter++];
 							// id = bytesToShort(hi, lo);
 							count = d.read();
-							id = d.readShort();
+							id = Block.jahresZeitID(d.readShort());
 							if(Block.isWater(id)){
 								already = true;
 							}else{
 								hasNoBlocksButWater = false;
 							}
+							
 							// try{
 							for (i = 0; i < count; i++) {
 								blocks[x][currY][z] = id;

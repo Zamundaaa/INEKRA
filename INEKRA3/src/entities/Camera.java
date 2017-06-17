@@ -3,6 +3,8 @@ package entities;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import blockRendering.BlockRenderer;
+import controls.Controller;
 import controls.Mouse;
 import data.Block;
 import data.ChunkManager;
@@ -62,10 +64,13 @@ public abstract class Camera {
 		// calcZoom();
 		// angleAroundPlayer = 0;
 		if (!Player.NOCONTROL) {
-			float pC = Mouse.getDY() * Mouse.sensitivity * 0.017f;
-			// if (Mouse.isButtonDown(1)) {
+			float pC;
+			if(!Controller.USECONTROLLER)
+				pC = Mouse.getDY() * Mouse.sensitivity * 0.017f;
+			else
+				pC = DisplayManager.getFrameTimeSeconds()*100*Controller.getAxis(Controller.UD_RIGHT_STICKER);
+			
 			pitch += pC;
-			// }
 			
 		}
 		
@@ -81,6 +86,11 @@ public abstract class Camera {
 		// if(WorldObjects.player != null){
 		position = WorldObjects.player.getHeadPosition();
 		yaw = (180 - WorldObjects.player.getRotY());
+		
+
+		BlockRenderer.sonarRadius += DisplayManager.getFrameTimeSeconds()*BlockRenderer.sonarSpeed;
+		BlockRenderer.sonarRadius %= BlockRenderer.sonarSpeed*5;
+		
 		// }else{
 		//
 		// }
@@ -112,8 +122,8 @@ public abstract class Camera {
 
 		} else if (cam == 3) {
 			Mouse.setGrabbed(false);
-			// Mouse.setCursorPosition(DisplayManager.width/2,
-			// DisplayManager.height/2);
+//			 Mouse.setCursorPosition(DisplayManager.width/2,
+//			 DisplayManager.height/2);
 			distanceFromPlayer = 5;
 		} else {
 			cam = 3;

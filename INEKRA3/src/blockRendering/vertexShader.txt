@@ -53,6 +53,12 @@ const int TALL_GRASS = 21;
 const int WOOD = 6, WOODY = 7;
 const int GLASS = 11;
 
+uniform float sonar;
+uniform float sonarRadius;
+
+const float maxSonarDist = 20.0;
+const float oneThroughMaxSonarDist = 1.0/maxSonarDist;
+
 void main(void){
 	
 	vec4 worldPosition = transformationMatrix * vec4(position,1.0);//transformationMatrix * 
@@ -114,6 +120,17 @@ void main(void){
 	toLightVector[0] = sunDirection;
 	
 	LV = lightStuff;
+	
+	if(sonar > 0.5){
+		float x = abs(distance - sonarRadius);
+		if(x < maxSonarDist){
+			x = (maxSonarDist-x)*oneThroughMaxSonarDist;
+			LV.g = max(LV.g, 0.7*x);
+			LV.r = max(LV.r, 0.1*x);
+			LV.b = max(LV.b, 0.1*x);
+		}
+	}
+	
 	//const float gamma = 2.2;
 	//LV = pow(LV, vec4(gamma));
 	

@@ -80,6 +80,11 @@ public class ArrayListB extends PrimitiveList{
 		return newValues;
 	}
 	
+	public void addAll(byte[] data) {
+		for(int i = 0; i < data.length; i++)
+			add(data[i]);
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

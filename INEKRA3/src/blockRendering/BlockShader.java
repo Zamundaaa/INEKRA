@@ -46,6 +46,9 @@ public class BlockShader extends ShaderProgram {
 
 	private int location_timesin;
 	private int location_sunDirection;
+	
+	private int location_sonar;
+	private int location_sonarRadius;
 
 	public BlockShader(String vertexFile, String fragmentFile) {
 		super(vertexFile, fragmentFile);
@@ -102,6 +105,10 @@ public class BlockShader extends ShaderProgram {
 		location_timesin = super.getUniformLocation("timesin");
 		
 		location_sunDirection = super.getUniformLocation("sunDirection");
+		
+		location_sonar = super.getUniformLocation("sonar");
+		location_sonarRadius = super.getUniformLocation("sonarRadius");
+		
 	}
 
 	public void connectTextureUnits() {
@@ -206,6 +213,14 @@ public class BlockShader extends ShaderProgram {
 
 	public void loadTime(float TIME) {
 		super.loadFloat(location_TIME, TIME);
+	}
+	
+	public void loadSonar(boolean sonar){
+		super.loadBoolean(location_sonar, sonar);
+	}
+	
+	public void loadSonarRadius(float r){
+		super.loadFloat(location_sonarRadius, r);
 	}
 
 	public static BlockShader getNewBlockShaderWithShadows() {

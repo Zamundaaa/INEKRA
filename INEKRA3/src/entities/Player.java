@@ -8,8 +8,7 @@ import org.lwjgl.glfw.GLFW;
 
 import audio.AudioMaster;
 import chatStuff.Chat;
-import controls.Keyboard;
-import controls.Mouse;
+import controls.*;
 import data.Block;
 import data.ChunkManager;
 import gameStuff.*;
@@ -430,39 +429,58 @@ public class Player extends Entity implements HittableThing {
 
 	private void checkInputs() {
 
-		float rotYChange = 0.017f * Mouse.sensitivity * Mouse.getDX();
-		// if (Mouse.isButtonDown(0)) {
+		float rotYChange;
+		if(!Controller.USECONTROLLER){
+			float dx = Mouse.getDX();
+			rotYChange = 0.017f * Mouse.sensitivity * dx;
+		}else{
+			rotYChange = DisplayManager.getFrameTimeSeconds()*100*Controller.getAxis(Controller.LR_RIGHT_STICKER);
+		}
 		rotY -= rotYChange;
 		rotY %= 360;
-		// }
-
-		if (Meth.systemTime() > lastSwitch + cooldown && Keyboard.isKeyDown(GLFW.GLFW_KEY_F)) {
-			lastSwitch = Meth.systemTime();
-			flight = !flight;
-		}
-
-		float runspeedfact = speedMul * (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) ? (flight ? 20 : 2.5f) : 1);
-
+		
+		float runspeedfact;
 		float forwardspeed = 0;
-		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) {
-			forwardspeed += RUNSPEED * runspeedfact;
-		}
-		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) {
-			forwardspeed -= RUNSPEED * runspeedfact;
+		if(!Controller.USECONTROLLER){
+			if (Meth.systemTime() > lastSwitch + cooldown && Keyboard.isKeyDown(GLFW.GLFW_KEY_F)) {
+				lastSwitch = Meth.systemTime();
+				flight = !flight;
+			}
+	
+			runspeedfact = speedMul * (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) ? (flight ? 20 : 2.5f) : 1);
+			
+			if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) {
+				forwardspeed += RUNSPEED * runspeedfact;
+			}
+			if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) {
+				forwardspeed -= RUNSPEED * runspeedfact;
+			}
+		}else{
+			if (Meth.systemTime() > lastSwitch + cooldown && Controller.isButtonDown(Controller.Y)) {
+				lastSwitch = Meth.systemTime();
+				flight = !flight;
+			}
+			
+			runspeedfact = speedMul * (Controller.isButtonDown(Controller.RIGHT_BACK) ? (flight ? 20 : 2.5f) : 1);
+			
+			forwardspeed = RUNSPEED * runspeedfact * -Controller.getAxis(Controller.UD_LEFT_STICKER);
+			
 		}
 		ysin = (float) Math.sin(Math.toRadians(super.getRotY()));
 		ycos = (float) Math.cos(Math.toRadians(super.getRotY()));
 		// float ysin = (float) Math.sin(super.getRotY()*Meth.PI/180);
 		// float ycos = (float) Math.cos(super.getRotY()*Meth.PI/180);
-
 		float sidespeed = 0;
-		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) {
-			sidespeed -= SIDESPEED * runspeedfact;
+		if(!Controller.USECONTROLLER) {
+			if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) {
+				sidespeed -= SIDESPEED * runspeedfact;
+			}
+			if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) {
+				sidespeed += SIDESPEED * runspeedfact;
+			}
+		}else{
+			sidespeed = SIDESPEED*runspeedfact* Controller.getAxis(Controller.LR_LEFT_STICKER);
 		}
-		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) {
-			sidespeed += SIDESPEED * runspeedfact;
-		}
-
 		ysin1 = (float) Math.sin(Math.toRadians(super.getRotY() - 90));
 		ycos1 = (float) Math.cos(Math.toRadians(super.getRotY() - 90));
 		float accel = RUNSPEEDACCEL * runspeedfact;
@@ -495,7 +513,8 @@ public class Player extends Entity implements HittableThing {
 		// Vects.setCalcVect(Vects.NULL);
 		// }
 
-		if (Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE)) {
+		if ((!Controller.USECONTROLLER && Keyboard.isKeyDown(GLFW.GLFW_KEY_SPACE)) || 
+				(Controller.USECONTROLLER && Controller.isButtonDown(Controller.LEFT_BACK))) {
 			if (JETPACK && inAir) {
 				if (position.y >= TERRAINHEIGHT + 1) {
 					fly();

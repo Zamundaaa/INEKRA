@@ -4,8 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import controls.Keyboard;
-import controls.Mouse;
+import controls.*;
 import data.ChunkSaver;
 import entities.*;
 import gameStuff.*;
@@ -247,7 +246,7 @@ public class Inv2D {
 				chosenItemStackIndicator.show();
 				Player.setNOCONTROL(false);
 			}
-		} else if (open && Keyboard.isKeyDown(GLFW.GLFW_KEY_ESCAPE)) {
+		} else if (open && KeyManager.escapeEquivalentPressed()) {
 			open = false;
 			for (int x = 0; x < 9; x++) {
 				for (int y = 0; y < yrows; y++) {
@@ -265,7 +264,15 @@ public class Inv2D {
 		}
 		
 		if (!open) {
-			chosen -= Mouse.getDWheelFrame();
+			if(Controller.USECONTROLLER){
+				if(Controller.buttonTippedThisFrame(Controller.B))
+					chosen += 1;
+				else if(Controller.buttonTippedThisFrame(Controller.A))
+					chosen -= 1;
+			}else{
+				chosen -= Mouse.getDWheelFrame();
+			}
+			
 			if (chosen < 0) {
 				chosen = 8;
 			} else if (chosen > 8) {
@@ -321,7 +328,19 @@ public class Inv2D {
 			} else {
 				handcontents.hide();
 			}
+			if(Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_Q)){
+				final float push = 3;
+				Item3D I = Item3D.getBlockInstance(stacks[chosen][exy].blockID(), MousePicker.getPoint(3, new Vector3f()), true);
+				I.influence(push*(I.getPosition().x-Camera.getPosition().x),
+						push*(I.getPosition().y-Camera.getPosition().y),
+						push*(I.getPosition().z-Camera.getPosition().z));
+				I.setNOB(stacks[chosen][exy].size());
+				stacks[chosen][exy] = null;
+				buttons[chosen][exy].setTex(emptyStackTex);
+				buttons[chosen][exy].setText("");
+			}
 		} else {
+			Mouse.updateControllerInputForMouse();
 			if (!buttonClick) {
 				for (int x = 0; x < 9; x++) {
 					for (int y = 0; y < yrows; y++) {
@@ -334,7 +353,7 @@ public class Inv2D {
 			} else {
 				cb.leftLeft();
 			}
-			if(Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_Q)){
+			if(Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_Q) || (Controller.USECONTROLLER && Controller.buttonTippedThisFrame(Controller.Y))){
 				float mx = Mouse.getAX() * 1000;
 				float my = Mouse.getAY() * 1000;
 				int sx = (int) (((mx + W / 2 - 500) / (space * W)) + 4.5f - ka);

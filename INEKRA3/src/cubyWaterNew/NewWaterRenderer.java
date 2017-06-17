@@ -5,8 +5,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
 import cubyWater.WaterRenderer;
-import gameStuff.MainLoop;
-import gameStuff.TM;
+import gameStuff.*;
 import models.RawModel;
 import renderStuff.Loader;
 import renderStuff.MasterRenderer;
@@ -41,6 +40,7 @@ public class NewWaterRenderer {
 		w.loadProjMat(MasterRenderer.getProjectionMatrix());
 		w.loadTime((float)TM.getDayTime());
 		w.loadReflections(WaterRenderer.REFLECTIVE);
+		w.loadSunLight(WorldObjects.sun.getColour());
 		
 		if (WaterRenderer.REFLECTIVE) {
 			GL13.glActiveTexture(GL13.GL_TEXTURE2);

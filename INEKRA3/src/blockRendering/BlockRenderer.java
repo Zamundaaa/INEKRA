@@ -43,6 +43,9 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 
 	private static int texArray;
 	private static final Light[] ls = new Light[BlockShader.MAX_LIGHTS];
+	
+	public static float sonarRadius;
+	public static boolean sonar = true;
 
 	public static void render(Matrix4f toShadowSpace, Vector4f clipPlane, List<Light> lights, Matrix4f viewMatrix) {
 		checkForShaderSwap();
@@ -343,9 +346,15 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 					Camera.getPosition().x-privateRenderOrigin.x - 0.5f, 
 					Camera.getPosition().y-privateRenderOrigin.y - 0.5f, 
 					Camera.getPosition().z-privateRenderOrigin.z - 0.5f));
+			shader.loadSonar(sonar);
+			if(sonar){
+				shader.loadSonarRadius(sonarRadius);
+			}
 			GL11.glDrawElements(GL11.GL_TRIANGLES, rm.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
 		}
 	}
+	
+	public static final float sonarSpeed = 33*1.5f;
 	
 	private static Vector3f privateRenderOrigin = new Vector3f();
 	
@@ -366,13 +375,13 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 					while(ThreadManager.running()){
 						boolean change = false;
 						while(!change){
+							Meth.wartn(20);
 							for(int i = 0; i < chunks.size(); i++){
 								if(chunks.get(i).maskNeeded()){
 									change = true;
 									break;
 								}
 							}
-							Meth.wartn(20);
 						}
 						verts.clear();
 						norms.clear();
@@ -381,7 +390,8 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 						indis.clear();
 						ChunkEntity ce;
 						vergleich.set(MasterRenderer.renderOrigin);
-						for(int i = 0; i < chunks.size(); i++){
+//						int first = chunks.size();
+						for(int i = 0; i < chunks.size(); i++){// && chunks.size() >= first
 							Chunk c = chunks.get(i);
 							ce = c.getMask();
 							if(ce != null){
@@ -406,6 +416,9 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 									indis.add(vl+ce.indis()[I]);
 							}
 						}
+//						if(chunks.size() < first){
+//							continue;
+//						}
 						vertices = verts.capToArray();
 						VERTICES = vertices.length;
 						normals = norms.capToArray();

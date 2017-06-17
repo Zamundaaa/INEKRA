@@ -12,6 +12,8 @@ uniform sampler2D refractionTexture;
 uniform sampler2D refractDepth;
 uniform float reflections;
 
+uniform vec3 sunLight;
+
 void main(){
 
 	vec3 norm = normal;
@@ -58,9 +60,10 @@ void main(){
 		refractiveFactor = clamp(pow(refractiveFactor, 0.75), 0, 1);
 		
 		out_Color = mix(reflectColour, refractColour, refractiveFactor);
-		out_Color = mix(out_Color, mixColor, mixFact);
+		out_Color = mix(out_Color, mixColor*vec4(sunLight, 1.0), mixFact);
+		
 	}else{
-		out_Color = mixColor;
+		out_Color = mixColor*vec4(sunLight, 1.0);
 	}
 	
 }
