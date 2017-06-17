@@ -141,4 +141,12 @@ public class ArrayListB extends PrimitiveList{
 		} while (i < k);
 	}
 	
+	/**
+	 * Be cautious! When bytes are added, this Array may be changed to fit, and then the reference doesn't work anymore
+	 * @return the current array of this ArrayListB
+	 */
+	public byte[] getArray(){
+		return values;
+	}
+	
 }

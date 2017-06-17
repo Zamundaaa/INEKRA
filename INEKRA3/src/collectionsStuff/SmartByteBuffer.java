@@ -20,7 +20,10 @@ public class SmartByteBuffer extends ArrayListB {
 	 * reads a byte at the current position and increments the position
 	 */
 	public byte read() {
-		return values[pos++];
+		if(pos < size)
+			return values[pos++];
+		else
+			throw new IndexOutOfBoundsException("pos (" + pos + ") is bigger than size (" + size + ") !");
 	}
 	
 	public void addChar(char c){
@@ -125,7 +128,7 @@ public class SmartByteBuffer extends ArrayListB {
 			return (((values[pos++] & 0xFF) << 24) | ((values[pos++] & 0xFF) << 16) | ((values[pos++] & 0xFF) << 8) | (values[pos++] & 0xFF));
 		}else{
 			pos = p;
-			throw new IndexOutOfBoundsException("Failed to read a char! Index: " + pos + " size: " + size);
+			throw new IndexOutOfBoundsException("Failed to read an int! Index: " + pos + " size: " + size);
 		}
 	}
 	
@@ -155,6 +158,29 @@ public class SmartByteBuffer extends ArrayListB {
 		}
 	}
 	
+	/**
+	 * only Strings with a length less than a short are permitted (for now)
+	 */
+	public void addString(String s){
+		addShort((short)s.length());
+		for(int i = 0; i < s.length(); i++){
+			addChar(s.charAt(i));
+		}
+	}
+	
+	/**
+	 * reads a short, this is the length of the returned string. 
+	 * This string is then read by a consecutive array of readChar() and returned
+	 */
+	public String readString(){
+		short l = readShort();
+		StringBuilder ret = new StringBuilder(l);
+		for(int i = 0; i < l; i++){
+			ret.append(readChar());
+		}
+		return ret.toString();
+	}
+	
 	public int position(){
 		return pos;
 	}
@@ -169,6 +195,22 @@ public class SmartByteBuffer extends ArrayListB {
 
 	public void setPosition(int pos) {
 		this.pos = pos;
+	}
+	
+	@Override
+	public void clear(){
+		super.clear();
+		resetPos();
+	}
+
+	/**
+	 * sets size to s, or if s is bigger than this Buffers internal array's length, to the internal array's length
+	 */
+	public void setSize(int s) {
+		this.size = s;
+		if(this.size > values.length){
+			this.size = values.length;
+		}
 	}
 	
 //	public static void main(String[] args){
