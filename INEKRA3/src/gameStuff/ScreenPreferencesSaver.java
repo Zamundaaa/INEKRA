@@ -3,7 +3,7 @@ package gameStuff;
 import renderStuff.DisplayManager;
 import toolBox.Tools;
 
-public class PreferenceSaver {
+public class ScreenPreferencesSaver {
 
 	public static void applyPrefs() {
 		if (!DisplayManager.FULLSCREEN && !DisplayManager.searchBiggest) {

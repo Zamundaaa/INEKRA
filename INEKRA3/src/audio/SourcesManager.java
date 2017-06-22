@@ -5,20 +5,33 @@ import java.util.ArrayList;
 import org.joml.Vector3f;
 
 public class SourcesManager {
+	
+	// TODO remove loading of audio files. Do that on client only. Constants shall be standard here... then convertion!
 
 	private static ArrayList<Source> sources = new ArrayList<Source>();
 	private static ArrayList<Source> nis = new ArrayList<Source>();
 
-	public static final int missle3 = AudioMaster.loadSound("audio/missile 3.ogg");
+	public static int missle3;
 	// public static final int shotgunReload =
 	// AudioMaster.loadSound("shotreload.ogg");
-	public static final int thundersound = AudioMaster.loadSound("audio/thunder3.ogg");
-	public static final int boom = AudioMaster.loadSound("audio/bomb-03.ogg");
-	public static final int block = AudioMaster.loadSound("blockStuff/dropsound.ogg");
-	public static final int glass = AudioMaster.loadSound("blockStuff/dropsound_glass.ogg");
+	public static int thundersound;
+	public static int boom;
+	public static int block;
+	public static int glass;
 	// public static final int LUCIFERWATCHTOWER =
 	// AudioMaster.loadSound("audio/Lucifer - All Along the Watchtower.ogg");
-
+	
+	public static int BLASTERSOUND;
+	
+	public static void init() {
+		missle3 = AudioMaster.loadSound("audio/missile 3.ogg");
+		thundersound = AudioMaster.loadSound("audio/thunder3.ogg");
+		boom = AudioMaster.loadSound("audio/bomb-03.ogg");
+		block = AudioMaster.loadSound("blockStuff/dropsound.ogg");
+		glass = AudioMaster.loadSound("blockStuff/dropsound_glass.ogg");
+		BLASTERSOUND = AudioMaster.loadSound("audio/Laser_Blaster-SoundBible.ogg");
+	}
+	
 	public static Source getSource() {
 		if (nis.size() == 0) {
 			return new Source();
@@ -93,13 +106,6 @@ public class SourcesManager {
 
 	public static void removeSource(Source s) {
 		sources.remove(s);
-	}
-
-	/**
-	 * empty init Method for static values
-	 */
-	public static void init() {
-
 	}
 
 	public static void cleanUp() {

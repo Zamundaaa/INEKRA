@@ -5,13 +5,15 @@ import static data.Block.AIR;
 import org.joml.Vector3f;
 
 import data.ChunkManager;
+import entities.MWBE;
+import entities.graphicsParts.ModelGraphics;
 
-public abstract class CM {
+public abstract class Intraface {
 	
 	public static boolean isServer = false;
-	public static boolean singlePlayer = true;
+	public static boolean singlePlayer = false;
 	
-	private static CM instance;
+	private static Intraface instance;
 	
 	public static void singlePlayer(){
 		instance = new SingleCM();
@@ -87,17 +89,25 @@ public abstract class CM {
 	}
 	
 	public abstract void setWater(float x, float y, float z, short ID);
-
+	
+	public abstract ModelGraphics getMG(MWBE m, short modelID, short texID);
+	
+	public static ModelGraphics getModelGraphics(MWBE m, short modelID, short texID){
+		return instance.getMG(m, modelID, texID);
+	}
+	
 	public static void init() {
 		if(isServer){
 			server();
-			ChunkManager.init();
 		}else if(singlePlayer){
 			singlePlayer();
-			ChunkManager.init();
 		}else{
 			multiPlayer();
 		}
+	}
+	
+	public static void finishInit(){
+		instance.initSpecifics();
 	}
 
 	public static void update() {
@@ -105,10 +115,13 @@ public abstract class CM {
 	}
 
 	public static void cleanUp() {
-		if(isServer || singlePlayer)
+		if(isServer || singlePlayer){
 			ChunkManager.cleanUp();
+		}
 	}
 	
 	protected abstract void updateSpecifics();
+
+	protected abstract void initSpecifics();
 	
 }

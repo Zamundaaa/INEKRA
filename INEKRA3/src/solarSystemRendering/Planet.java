@@ -3,15 +3,25 @@ package solarSystemRendering;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import gameStuff.SC;
 import models.RawModel;
-import models.TexturedModel;
+import objConverter.ModelData;
+import objConverter.OBJFileLoader;
 import renderStuff.DisplayManager;
+import renderStuff.Loader;
 
 public class Planet {
 	
-	protected static final TexturedModel four = SC.getModel("../planets/Models/icosphere4", "../planets/Texes/first");
+//	protected static final TexturedModel four = SC.getModel("../planets/Models/icosphere4", "../planets/Texes/first");
+	
 //	private static final RawModel five = SC.getModelExtraLoad("../planets/Models/icosphere5");
+	
+	protected static final RawModel four;
+	static{
+		ModelData m = OBJFileLoader.loadOBJ("../planets/Models/icosphere4");
+		four = Loader.loadToVAO(m.getVertices(), m.getTextureCoords(), m.getTextureCoords(), m.getIndices());
+	}
+	
+	protected static final int texture = Loader.loadTexture("../planets/Texes/first");
 	
 	protected Vector3f rotationAxis = new Vector3f(0.1f, 0.7f, 0).normalize();
 	protected float scale = 10;
@@ -40,7 +50,8 @@ public class Planet {
 	public RawModel getLODModel(){
 //		float distsq = Camera.getPosition().distanceSquared(x, y, z);
 //		if(distsq > 10*10){
-			return four.getRawMod();
+//			return four.getRawMod();
+		return four;
 //		}else{
 //			return five;
 //		}
@@ -48,7 +59,8 @@ public class Planet {
 	
 	public int getTex(){
 		if(tex == 0)
-			return four.getTex().getID();
+//			return four.getTex().getID();
+			return texture;
 		else
 			return tex;
 	}

@@ -12,6 +12,7 @@ import org.lwjgl.glfw.GLFW;
 import controls.Keyboard;
 import dataAdvanced.*;
 import entities.Player;
+import entities.graphicsParts.Texes;
 import fontMeshCreator.GUIText;
 import fontRendering.Out;
 import gameStuff.*;
@@ -22,7 +23,7 @@ import weather.WeatherController;
 
 public class Chat {
 
-	private static GuiTexture background = new GuiTexture(SC.getTex("button").getID(), new Vector2f(0, -0.9f),
+	private static GuiTexture background = new GuiTexture(Models.getLoadedTex(Texes.button), new Vector2f(0, -0.9f),
 			new Vector2f(0.5f, 0.025f), false);
 
 	private static boolean open = false;
@@ -76,8 +77,8 @@ public class Chat {
 					} else if (input.equals(HELP1) || input.equals(HELP2)) {
 						showAllCommands();
 					} else if (input.equals(toggleBurn)) {
-						WorldObjects.player.GHOSTRIDER = !WorldObjects.player.GHOSTRIDER;
-						Tools.setBoolPreference("burn", WorldObjects.player.GHOSTRIDER);
+						Player.players.get(0).GHOSTRIDER = !Player.players.get(0).GHOSTRIDER;
+						Tools.setBoolPreference("burn", Player.players.get(0).GHOSTRIDER);
 						// } else if (input.startsWith(speedup)) {
 						// Sapling.GROWSPEED = 5;
 						// } else if (input.startsWith(slowdown)) {
@@ -93,9 +94,9 @@ public class Chat {
 							if (is.length < 3) {
 								Out.println("no valid input! what you probably wanted is: /tp X Y Z");
 							} else {
-								WorldObjects.player.getPosition().x = Integer.parseInt(is[0]);
-								WorldObjects.player.getPosition().y = Integer.parseInt(is[1]);
-								WorldObjects.player.getPosition().z = Integer.parseInt(is[2]);
+								Player.players.get(0).getPosition().x = Integer.parseInt(is[0]);
+								Player.players.get(0).getPosition().y = Integer.parseInt(is[1]);
+								Player.players.get(0).getPosition().z = Integer.parseInt(is[2]);
 							}
 						} catch (Exception e) {
 							Out.println("no valid input! what you probably wanted is: /tp X Y Z");
@@ -109,8 +110,8 @@ public class Chat {
 						try {
 							input = input.substring(script.length() + 1);
 							Script s = Script.loadScript(input);
-							Builder.build(WorldObjects.player.getPosition().x, WorldObjects.player.getPosition().y,
-									WorldObjects.player.getPosition().z, s);
+							Builder.build(Player.players.get(0).getPosition().x, Player.players.get(0).getPosition().y,
+									Player.players.get(0).getPosition().z, s);
 							Out.println("Order 66 ausgeführt!");
 						} catch (Exception e) {
 							Out.println("No such script available! " + input);

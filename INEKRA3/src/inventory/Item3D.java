@@ -1,18 +1,24 @@
 package inventory;
 
+import static entities.graphicsParts.RawMods.*;
+import static entities.graphicsParts.Texes.gun;
+import static entities.graphicsParts.Texes.pick;
+
 import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
-import blockRendering.BlockRenderer;
 import data.Block;
 import data.ChunkManager;
 import entities.Entity;
+import entities.graphicsParts.RawMods;
+import entities.graphicsParts.Texes;
 import gameStuff.EntityManager;
-import gameStuff.SC;
+import gameStuff.Models;
 import models.TexturedModel;
 import renderStuff.DisplayManager;
 import toolBox.Meth;
+
 
 /**
  * a entity representing a Item in 3D. Is rendered using the
@@ -51,7 +57,7 @@ public class Item3D extends Entity {
 	public static Item3D getBlockInstance(short blockID, Vector3f position, boolean moving) {
 		float size = 0.075f;
 		float plusrot = 0;
-		Item3D i = new Item3D(SC.getModel("cube", BlockRenderer.ordner + Block.getFileName(blockID)), position, size,
+		Item3D i = new Item3D(Models.getModel(RawMods.cube, Texes.getBlockTex(blockID)), position, size,
 				plusrot);
 		i.bID = blockID;
 		i.moving = moving;
@@ -65,55 +71,53 @@ public class Item3D extends Entity {
 		boolean[] rots = new boolean[3];
 		switch (id) {
 		case "pick":
-			m = SC.getModel("pick-90", id);
+			m = Models.getModel(pick90, pick);
 			size = 0.3f;
 			rots[0] = false;
 			rots[1] = true;
 			rots[2] = false;
 			plusrot = -90;
 			break;
-		case "treeplanter":
-			m = SC.getModel("lowPolyTree", "tree");
-			size = 0.02f;
-			rots[0] = false;
-			rots[1] = true;
-			rots[2] = false;
-			break;
+//		case "treeplanter":
+//			m = SC.getModel("lowPolyTree", "tree");
+//			size = 0.02f;
+//			rots[0] = false;
+//			rots[1] = true;
+//			rots[2] = false;
+//			break;
 		case "gun":
-			m = SC.getModel("gun-90", "gun");
+			m = Models.getModel(gun90, gun);
 			size = 0.3f;
 			rots[0] = true;
 			rots[1] = true;
 			rots[2] = true;
 			plusrot = 180;
 			break;
-		case "snowlayer":
-			m = SC.getModel(id, id);
-			size = 0.2f;
-			rots[0] = true;
-			rots[1] = true;
-			rots[2] = true;
-			break;
-		case "waterbucket":
-			m = SC.getModel("fern", "WATER");
-			size = 0.05f;
-			rots[0] = true;
-			rots[1] = true;
-			rots[2] = true;
-			break;
-		case "bucket":
-			m = SC.getModel("fern", "heal");
-			size = 0.05f;
-			rots[0] = true;
-			rots[1] = true;
-			rots[2] = true;
-			break;
-		// case "chainsaw":
-		// m = SC.getModel("Playerthing", "playerTexture");
-		// size = 0.01f;
-		// rots[1] = true;
+//		case "snowlayer":
+//			m = SC.getModel(id, id);
+//			size = 0.2f;
+//			rots[0] = true;
+//			rots[1] = true;
+//			rots[2] = true;
+//			break;
+//		case "waterbucket":
+//			m = SC.getModel("fern", "WATER");
+//			size = 0.05f;
+//			rots[0] = true;
+//			rots[1] = true;
+//			rots[2] = true;
+//			break;
+//		case "bucket":
+//			m = SC.getModel("fern", "heal");
+//			size = 0.05f;
+//			rots[0] = true;
+//			rots[1] = true;
+//			rots[2] = true;
+//			break;
+			
 		default:
-			m = SC.getModel("cube", id);
+//			m = SC.getModel("cube", id);
+			m = Models.getModel(cube, Texes.NONE);
 			rots[0] = true;
 			rots[1] = true;
 			rots[2] = true;

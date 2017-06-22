@@ -1,15 +1,16 @@
 package entities;
 
+import static audio.SourcesManager.BLASTERSOUND;
+
 import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
-import audio.AudioMaster;
 import audio.SourcesManager;
 import data.ChunkManager;
 import gameStuff.*;
 import line.Line;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import particles.PTM;
 import particles.ParticleMaster;
 import renderStuff.DisplayManager;
@@ -17,8 +18,7 @@ import toolBox.Meth;
 import toolBox.Vects;
 
 public class LASER implements TickingThing {
-
-	private static final int BLASTERSOUND = AudioMaster.loadSound("audio/Laser_Blaster-SoundBible.ogg");
+	
 	private static final float BLASTERVOLUME = 0.2f;
 	public static final boolean DESTROYS = true;
 	public static boolean hitsthings = false;
@@ -83,7 +83,7 @@ public class LASER implements TickingThing {
 				// CM.deleteBlockWithDrops(x, y, z);
 				// CM.BlockUpdate((int)x, (int)y-1, (int)z);
 				// CM.LightUpdate((int)x, (int)y-1, (int)z);
-				CM.deleteBlock(x, y, z);
+				Intraface.deleteBlock(x, y, z);
 			}
 			ParticleMaster.addNewParticle(PTM.fire, new Vector3f(x, y, z), Vects.NULL, 0, 0.5f, 0,
 					Meth.randomFloat(0.5f, 1));
@@ -99,7 +99,7 @@ public class LASER implements TickingThing {
 					// CM.deleteBlockWithDrops(x, y, z);
 					// CM.BlockUpdate((int)x, (int)y-1, (int)z);
 					// CM.LightUpdate((int)x, (int)y-1, (int)z);
-					CM.deleteBlock(x, y, z);
+					Intraface.deleteBlock(x, y, z);
 				}
 				ParticleMaster.addNewParticle(PTM.fire, new Vector3f(x, y, z), Vects.NULL, 0, 0.5f, 0,
 						Meth.randomFloat(0.5f, 1));

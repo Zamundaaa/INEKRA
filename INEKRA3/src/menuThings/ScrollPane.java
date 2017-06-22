@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import org.joml.Vector2f;
 
 import controls.Mouse;
-import gameStuff.SC;
+import entities.graphicsParts.Texes;
+import gameStuff.Models;
 import guis.GuiTexture;
 import renderStuff.DisplayManager;
 import toolBox.Meth;
@@ -38,7 +39,7 @@ public class ScrollPane extends MenuThing {
 				new Vector2f(scrwidth * 0.001f, scrheight * 0.001f), displayLevel+1, false);
 //		attach(scr);
 //		scroller.setDisplayLevel(displayLevel+1);
-		background = new GuiTexture(SC.getTex("BlackBorder").getID(), Inputthing.toGUITexCoords(bounds.x, bounds.y, bounds.w+scrwidth, bounds.h, new Vector2f()), new Vector2f((bounds.w+scrwidth)*0.001f, bounds.h*0.001f), displayLevel, true);
+		background = new GuiTexture(Models.getLoadedTex(Texes.blackBorder), Inputthing.toGUITexCoords(bounds.x, bounds.y, bounds.w+scrwidth, bounds.h, new Vector2f()), new Vector2f((bounds.w+scrwidth)*0.001f, bounds.h*0.001f), displayLevel, true);
 		background.setDisplayLevel(displayLevel);
 	}
 

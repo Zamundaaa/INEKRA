@@ -1,5 +1,6 @@
 package gameStuff;
 
+import mainInterface.Intraface;
 import renderStuff.DisplayManager;
 import renderStuff.MasterRenderer;
 import skybox.SkyRenderer;
@@ -130,7 +131,8 @@ public class TM {
 
 	private static void updateSkyboxColorUSW() {
 		// MainLoop.time((float) time);
-		WorldObjects.timeUpdate();
+		if(!Intraface.isServer)
+			WorldObjects.timeUpdate();
 //		if (!SkyRenderer.SKYBOXPIC) {
 			if ((time >= night || time >= 0) && time < morningstart) {
 				MasterRenderer.setFogColor(nightr, nightg, nightb);

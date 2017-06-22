@@ -5,11 +5,15 @@ import static data.Block.AIR;
 import data.ChunkManager;
 import data.Key3D;
 import data.chunkLoading.QueueKeeper;
+import entities.MWBE;
+import entities.graphicsParts.ModelGraphics;
+import gameStuff.SC;
 import gameStuff.WorldObjects;
+import particles.ParticleMaster;
 import solarSystemRendering.PlanetManager;
 
-public class SingleCM extends CM {
-
+public class SingleCM extends Intraface {
+	
 	@Override
 	public void setB(int x, int y, int z, short ID) {
 		ChunkManager.setBlockID(x, y, z, ID);
@@ -37,6 +41,18 @@ public class SingleCM extends CM {
 		ChunkManager.update();
 		Key3D k = QueueKeeper.next();
 		ChunkManager.markChunkForLoading(k.getX(), k.getY(), k.getZ());
+//		System.out.println("marked " + k.getX() + ", " + k.getY() + ", " + k.getZ());
+	}
+	
+	@Override
+	protected void initSpecifics(){
+		ParticleMaster.particlesEnabled = true;
+		ChunkManager.init();
+	}
+
+	@Override
+	public ModelGraphics getMG(MWBE m, short modelID, short texID) {
+		return new ModelGraphics(m, SC.getModel(modelID, texID));
 	}
 
 }

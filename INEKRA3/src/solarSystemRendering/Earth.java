@@ -5,9 +5,7 @@ import org.lwjgl.glfw.GLFW;
 
 import controls.Keyboard;
 import entities.Camera;
-import gameStuff.SC;
 import models.RawModel;
-import models.TexturedModel;
 import renderStuff.DisplayManager;
 import renderStuff.Loader;
 import toolBox.Meth;
@@ -15,8 +13,9 @@ import toolBox.Vects;
 
 public class Earth extends Planet {
 
-	private static final TexturedModel earth = SC.getModel("../planets/Models/icosphere6",
-			"../planets/Texes/blue planet");// remove this eventually
+//	private static final TexturedModel earth = SC.getModel("../planets/Models/icosphere6",
+//			"../planets/Texes/blue planet");// remove this eventually
+	private static final int texture = Loader.loadTexture("../planets/Texes/blue planet");
 
 	private RawModel raw;
 
@@ -52,7 +51,7 @@ public class Earth extends Planet {
 
 	@Override
 	public int getTex() {
-		return earth.getTex().getID();
+		return texture;
 		// return 0;
 	}
 

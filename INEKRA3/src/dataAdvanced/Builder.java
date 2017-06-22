@@ -1,7 +1,7 @@
 package dataAdvanced;
 
 import data.ChunkManager;
-import mainInterface.CM;
+import mainInterface.Intraface;
 
 public class Builder {
 
@@ -15,7 +15,7 @@ public class Builder {
 					break;
 				}
 			case Script.SET:
-				CM.setBlock(px + x + script.x.get(i), py + y + script.y.get(i), pz + z + script.z.get(i),
+				Intraface.setBlock(px + x + script.x.get(i), py + y + script.y.get(i), pz + z + script.z.get(i),
 						script.ids.get(i));
 				break;
 			case Script.FILL:

@@ -29,7 +29,7 @@ import weather.WeatherController;
 
 public abstract class MasterRenderer {
 	
-	public static final boolean lenseFlare = true;
+//	public static final boolean lenseFlare = true;
 
 	public static int POLYLINES = GLFW.GLFW_KEY_COMMA;
 
@@ -52,14 +52,13 @@ public abstract class MasterRenderer {
 
 	private static Matrix4f projectionMatrix;
 
-	private static StaticShader shader = new StaticShader();
+	private static StaticShader shader;
 	private static EntityRenderer renderer;
 	// private CubeSideRenderer csrenderer;
 	// private CubeSideShader csshader;
 	private static SkyRenderer skyRenderer;
-	private static LenseFlare lf;
-	// private NormalMappingRenderer nmr;
-	// private MeshRenderer mr;
+	
+//	private static LenseFlare lf;
 
 	// private static ShadowMapMasterRenderer smmr;
 
@@ -70,6 +69,9 @@ public abstract class MasterRenderer {
 	public static FrustumIntersection FI;
 
 	public static void init() {
+		
+		shader = new StaticShader();
+		
 		enableCulling();
 		createProjectionMatrix();
 //		Err.err.println("---------creating EntityRenderer");
@@ -92,8 +94,8 @@ public abstract class MasterRenderer {
 
 		FI = new FrustumIntersection();
 		
-		if(lenseFlare)
-			lf = new LenseFlare(1, 1.1f);
+//		if(lenseFlare)
+//			lf = new LenseFlare(1, 1.1f);
 
 	}
 
@@ -150,8 +152,9 @@ public abstract class MasterRenderer {
 //				MousePicker.getPoint(ZOOMDIST, Vects.calcVect);
 //				Camera.setPosition(Vects.calcVect.x, Vects.calcVect.y, Vects.calcVect.z);
 //			}
-			if(lenseFlare)
-				lf.update();
+			
+//			if(lenseFlare)
+//				lf.update();
 		}
 
 		viewMatrix = Meth.createViewMatrix();// build in to all to
@@ -293,7 +296,7 @@ public abstract class MasterRenderer {
 	}
 
 	public static void processEntity(MWBE ent) {
-		TexturedModel entModel = ent.getModel();
+		TexturedModel entModel = ent.getModelGraphics().getModel();
 		List<MWBE> batch = entities.get(entModel);
 		if (batch != null) {
 			batch.add(ent);
@@ -305,7 +308,7 @@ public abstract class MasterRenderer {
 	}
 
 	public static void processNormalMapEntity(Entity ent) {
-		TexturedModel entModel = ent.getModel();
+		TexturedModel entModel = ent.getModelGraphics().getModel();
 		List<MWBE> batch = entities.get(entModel);
 		if (batch != null) {
 			batch.add(ent);
@@ -333,8 +336,8 @@ public abstract class MasterRenderer {
 		if(!dontUseShadowsAtAll)
 			Tools.setBoolPreference("SHADOWS", SHADOWS);
 		
-		if(lenseFlare)
-			lf.cleanUp();
+//		if(lenseFlare)
+//			lf.cleanUp();
 		
 	}
 

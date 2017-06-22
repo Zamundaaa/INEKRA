@@ -8,8 +8,11 @@ import org.joml.Vector3f;
 
 import entities.Camera;
 import gameStuff.Err;
+import gameStuff2.ServerLoop;
 
 public class ParticleMaster {
+	
+	public static boolean particlesEnabled = false;
 
 	private static Map<ParticleTexture, List<Particle>> particles = new HashMap<ParticleTexture, List<Particle>>();
 	private static volatile ArrayDeque<Particle> deadParticles = new ArrayDeque<Particle>();
@@ -130,6 +133,7 @@ public class ParticleMaster {
 	
 	public static Particle addNewParticle(ParticleTexture tex, Vector3f position, Vector3f velocity,
 			float gravityEffect, float lifeLength, float rotation, float scale) {
+		if(ServerLoop.isServer)return null;
 		Particle ret;
 		if (NOP(tex) <= ParticleRenderer.MAX_INSTANCES) {
 			if (!deadParticles.isEmpty()) {
@@ -150,6 +154,7 @@ public class ParticleMaster {
 
 	public static Particle addNewParticle(ParticleTexture tex, Vector3f position, Vector3f velocity,
 			float gravityEffect, float lifeLength, float rotation, float scale, float elapsedTime) {
+		if(ServerLoop.isServer)return null;
 		Particle ret;
 		if (NOP(tex) <= ParticleRenderer.MAX_INSTANCES) {
 			if (!deadParticles.isEmpty()) {

@@ -1,6 +1,7 @@
 package inventory;
 
-import static blockRendering.BlockRenderer.ordner;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -11,10 +12,10 @@ import data.Block;
 import data.ChunkManager;
 import dataAdvanced.SimpleConstructs;
 import entities.*;
-import gameStuff.SC;
-import gameStuff.WorldObjects;
+import entities.graphicsParts.Texes;
+import gameStuff.*;
 import line.Quad;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import mobs.Cube;
 import network.MultiplayerData;
 import particles.PTM;
@@ -30,53 +31,61 @@ public class ItemStack {
 	public static final int STONE = 0, SAND = 1, GRASS = 2, DIRT = 3, LEAVES = 4, SAPLING = 5, STONESLAB = 6,
 			GRAVEL = 7, TNT = 8, GLASS = 9, WATER = 10, MARBLE = 11, WOOD = 12, TORCH = 13, BOOM = 14, KA = 15,
 			NONE = Integer.MAX_VALUE;
-
+	
+	private static final Map<Integer, Short> texes = new HashMap<Integer, Short>();
+	
 	public int get3DTex() {
-		String path;
-		switch (ID) {
-		case STONE:
-			path = ordner + "Stone";
-			break;
-		case SAND:
-			path = ordner + "Sand";
-			break;
-		case DIRT:
-			path = ordner + "Dirt";
-			break;
-		case GRASS:
-			path = ordner + "GrassTop";
-			break;
-		case GLASS:
-			path = ordner + "Glass";
-			break;
-		case MARBLE:
-			path = ordner + "Marble";
-			break;
-		case STONESLAB:
-			path = ordner + "unique";
-			break;
-		case WOOD:
-			path = ordner + "WoodSide";
-			break;
-		case GRAVEL:
-			path = ordner + "Gravel";
-			break;
-		case TORCH:
-			path = "button";
-			break;
-		case BOOM:
-			path = "boom";
-			break;
-		case KA:
-			path = ordner + "ka";
-			break;
-		case LEAVES:
-			path = ordner + "Leave";
-			break;
-		default:
-			path = "water";
+//		String path;
+//		switch (ID) {
+//		case STONE:
+//			path = ordner + "Stone";
+//			break;
+//		case SAND:
+//			path = ordner + "Sand";
+//			break;
+//		case DIRT:
+//			path = ordner + "Dirt";
+//			break;
+//		case GRASS:
+//			path = ordner + "GrassTop";
+//			break;
+//		case GLASS:
+//			path = ordner + "Glass";
+//			break;
+//		case MARBLE:
+//			path = ordner + "Marble";
+//			break;
+//		case STONESLAB:
+//			path = ordner + "unique";
+//			break;
+//		case WOOD:
+//			path = ordner + "WoodSide";
+//			break;
+//		case GRAVEL:
+//			path = ordner + "Gravel";
+//			break;
+//		case TORCH:
+//			path = "button";
+//			break;
+//		case BOOM:
+//			path = "boom";
+//			break;
+//		case KA:
+//			path = ordner + "ka";
+//			break;
+//		case LEAVES:
+//			path = ordner + "Leave";
+//			break;
+//		default:
+//			path = "water";
+//		}
+//		return SC.getTex(path).getID();
+		Short ret = texes.get(ID);
+		if(ret == null){
+			return Models.getLoadedTex(Texes.NONE);// TODO put some "unknown" Texture in there!
+		}else{
+			return Models.getLoadedTex(ret);
 		}
-		return SC.getTex(path).getID();
 	}
 	
 	public int getTex(){
@@ -149,14 +158,14 @@ public class ItemStack {
 				if(!Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL)){
 					Vector3f p = MousePicker.getPoint(30).sub(Camera.getPosition());
 					Projectil pro = new Projectil(new Vector3f(Camera.getPosition()), p, PTM.projectile,
-							WorldObjects.player, 5, 10, 1, true);
+							Player.players.get(0), 5, 10, 1, true);
 					pro.setGravity(0.2f);
 					pro.setFlare();
-					WorldObjects.player.influence(new Vector3f(-p.x / 10, -p.y / 10, -p.z / 10));
+					Player.players.get(0).influence(new Vector3f(-p.x / 10, -p.y / 10, -p.z / 10));
 				}else{
 					Vector3f p = MousePicker.getPoint(50).sub(Camera.getPosition());
 					new Meteorite(new Vector3f(Camera.getPosition()), p);
-					WorldObjects.player.influence(new Vector3f(-p.x / 10, -p.y / 10, -p.z / 10));
+					Player.players.get(0).influence(new Vector3f(-p.x / 10, -p.y / 10, -p.z / 10));
 				}
 				lastTime = Meth.systemTime();
 				
@@ -174,7 +183,7 @@ public class ItemStack {
 //				LASER l = new LASER(ipos.x, ipos.y, ipos.z, p.x, p.y, p.z);
 //				l.setDestroying(true);
 //				p.normalize();
-//				WorldObjects.player.influence(new Vector3f(-p.x, -p.y, -p.z));
+//				Player.players.get(0).influence(new Vector3f(-p.x, -p.y, -p.z));
 //				// ParticleMaster.addNewParticle(PTM.l, new Vector3f(ipos), new
 //				// Vector3f(p), 0, 5, 0, 1);
 			}
@@ -194,7 +203,7 @@ public class ItemStack {
 						lastTime = Meth.systemTime();
 					}
 				} else if (pos != null && Meth.systemTime() >= lastTime + Block.getBreakCool(lookAtB)) {
-					CM.deleteBlock(pos);
+					Intraface.deleteBlock(pos);
 					lastTime = Meth.systemTime();
 					lastL = false;
 				} else if (pos != null) {
@@ -212,7 +221,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoordWithOrientation(5);
 					if (pos != null) {
-						CM.setBlock(pos,
+						Intraface.setBlock(pos,
 								MousePicker.calcVect.y < 0 ? Block.STONESLAB_UP : Block.STONESLAB_DOWN);
 						size--;
 						if (size <= 0) {
@@ -347,7 +356,7 @@ public class ItemStack {
 					if (v != null) {
 						Vects.floor(v);
 						for (short id = 0; id <= Block.lastNormalBlock(); id++) {
-							CM.setBlock(v, id);
+							Intraface.setBlock(v, id);
 							v.x++;
 						}
 						lastTime = Meth.systemTime();
@@ -358,7 +367,7 @@ public class ItemStack {
 			if (Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_5)) {
 				v = MousePicker.getLastEmptyBlockCoord(100);
 				if (v != null) {
-					CM.setBlock(v, Block.MARK);
+					Intraface.setBlock(v, Block.MARK);
 				}
 			}
 		} else if (this.ID == TORCH) {
@@ -373,7 +382,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoord(5);
 					if (pos != null) {
-						CM.setBlock(pos, Block.LAMP);
+						Intraface.setBlock(pos, Block.LAMP);
 						size--;
 						if (size <= 0) {
 							return false;
@@ -397,7 +406,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoord(5);
 					if (pos != null) {
-						CM.setBlock(pos, Block.TORCH);
+						Intraface.setBlock(pos, Block.TORCH);
 						size--;
 						if (size <= 0) {
 							return false;
@@ -425,7 +434,7 @@ public class ItemStack {
 						lastTime = Meth.systemTime();
 					}
 				} else if (pos != null && Meth.systemTime() >= lastTime + Block.getBreakCool(lookAtB)) {
-					CM.deleteBlock(pos);
+					Intraface.deleteBlock(pos);
 					lastTime = Meth.systemTime();
 					lastL = false;
 				} else if (pos != null) {
@@ -451,7 +460,7 @@ public class ItemStack {
 						lastTime = Meth.systemTime();
 					}
 				} else if (pos != null && Meth.systemTime() >= lastTime + Block.getBreakCool(lookAtB)) {
-					CM.deleteBlock(pos);
+					Intraface.deleteBlock(pos);
 					lastTime = Meth.systemTime();
 					lastL = false;
 				} else if (pos != null) {
@@ -470,7 +479,7 @@ public class ItemStack {
 				} else if (Meth.systemTime() >= lastTime + 200) {
 					pos = MousePicker.getLastEmptyBlockCoord(5);
 					if (pos != null) {
-						CM.setBlock(pos, blockID(ID));
+						Intraface.setBlock(pos, blockID(ID));
 						size--;
 						if (size <= 0) {
 							return false;

@@ -8,7 +8,7 @@ import org.joml.Vector4i;
 import audio.SourcesManager;
 import data.Block;
 import data.ChunkManager;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import particles.PTM;
 import particles.ParticleMaster;
 import threadingStuff.ThreadManager;
@@ -21,7 +21,7 @@ public class SimpleConstructs {
 		for (int x = sx; x <= ex; x++) {
 			for (int y = sy; y <= ey; y++) {
 				for (int z = sz; z <= ez; z++) {
-					CM.setBlock(x, y, z, ID);
+					Intraface.setBlock(x, y, z, ID);
 				}
 			}
 		}
@@ -32,7 +32,7 @@ public class SimpleConstructs {
 			for (int y = sy; y <= ey; y++) {
 				for (int z = sz; z <= ez; z++) {
 					if (ersetzen || ChunkManager.getBlockID(x, y, z) == Block.AIR)
-						CM.setBlock(x, y, z, ID);
+						Intraface.setBlock(x, y, z, ID);
 				}
 			}
 		}
@@ -44,7 +44,7 @@ public class SimpleConstructs {
 			for (int y = -r; y <= r; y++) {
 				for (int z = -r; z <= r; z++) {
 					if (x * x + y * y + z * z <= r2) {
-						CM.setBlock(x + sx, y + sy, z + sz, ID);
+						Intraface.setBlock(x + sx, y + sy, z + sz, ID);
 					}
 				}
 			}
@@ -58,7 +58,7 @@ public class SimpleConstructs {
 				for (int z = -r; z <= r; z++) {
 					if (x * x + y * y + z * z <= r2
 							&& (ersetzen || ChunkManager.getBlockID(x + sx, y + sy, z + sz) == Block.AIR)) {
-						CM.setBlock(x + sx, y + sy, z + sz, ID);
+						Intraface.setBlock(x + sx, y + sy, z + sz, ID);
 					}
 				}
 			}
@@ -111,9 +111,12 @@ public class SimpleConstructs {
 			@Override
 			public void run(){
 				while(ThreadManager.running()){
-					while(explosionQueue.isEmpty()){
+					while(explosionQueue.isEmpty() && ThreadManager.running()){
 						Meth.wartn(5);
 					}
+
+					if(!ThreadManager.running())
+						break;
 					Vector4i v = explosionQueue.pop();
 					EXPLOSION(v.x, v.y, v.z, v.w);
 				}
@@ -131,7 +134,7 @@ public class SimpleConstructs {
 		if (id != Block.AIR) {
 			ChunkManager.dontDropItems();
 			counter = 0;
-			CM.setBlock(x, y, z, repID);
+			Intraface.setBlock(x, y, z, repID);
 			replaceHelp(x, y, z, id, repID, CAP);
 			ChunkManager.dropItems();
 		}
@@ -145,39 +148,39 @@ public class SimpleConstructs {
 		}
 		short b = ChunkManager.getBlockID(x + 1, y, z);
 		if (b == startID) {
-			CM.setBlock(x + 1, y, z, repID);
+			Intraface.setBlock(x + 1, y, z, repID);
 			counter++;
 			replaceHelp(x + 1, y, z, startID, repID, CAP);
 		}
 		b = ChunkManager.getBlockID(x - 1, y, z);
 		if (b == startID) {
-			CM.setBlock(x - 1, y, z, repID);
+			Intraface.setBlock(x - 1, y, z, repID);
 			counter++;
 			replaceHelp(x - 1, y, z, startID, repID, CAP);
 		}
 
 		b = ChunkManager.getBlockID(x, y, z + 1);
 		if (b == startID) {
-			CM.setBlock(x, y, z + 1, repID);
+			Intraface.setBlock(x, y, z + 1, repID);
 			counter++;
 			replaceHelp(x, y, z + 1, startID, repID, CAP);
 		}
 		b = ChunkManager.getBlockID(x, y, z - 1);
 		if (b == startID) {
-			CM.setBlock(x, y, z - 1, repID);
+			Intraface.setBlock(x, y, z - 1, repID);
 			counter++;
 			replaceHelp(x, y, z - 1, startID, repID, CAP);
 		}
 
 		b = ChunkManager.getBlockID(x, y + 1, z);
 		if (b == startID) {
-			CM.setBlock(x, y + 1, z, repID);
+			Intraface.setBlock(x, y + 1, z, repID);
 			counter++;
 			replaceHelp(x, y + 1, z, startID, repID, CAP);
 		}
 		b = ChunkManager.getBlockID(x, y - 1, z);
 		if (b == startID) {
-			CM.setBlock(x, y - 1, z, repID);
+			Intraface.setBlock(x, y - 1, z, repID);
 			counter++;
 			replaceHelp(x, y - 1, z, startID, repID, CAP);
 		}

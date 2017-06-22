@@ -46,8 +46,8 @@ public class EntityRenderer {
 		for (TexturedModel model : entities.keySet()) {
 			prepareTexturedModel(model);
 			List<MWBE> batch = entities.get(model);
-			for (MWBE entity : batch) {
-				prepareInstance(entity);
+			for (int i = 0; i < batch.size(); i++) {
+				prepareInstance(batch.get(i));
 				GL11.glDrawElements(GL11.GL_TRIANGLES, model.getRawMod().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
 			}
 			unbindTexturedModel();
@@ -91,7 +91,7 @@ public class EntityRenderer {
 				entity.getRotX(), entity.getRotY(), entity.getRotZ(), entity.getScale(), Vects.mat4);
 		shader.loadTransformationMatrix(transformationMatrix);
 		// shader.loadHighlight(entity.highlighted());
-		shader.loadOffSet(entity.getTextureXOffset(), entity.getTextureYOffset());
+		shader.loadOffSet(entity.getModelGraphics().getTextureXOffset(), entity.getModelGraphics().getTextureYOffset());
 	}
 
 	public void render(Map<TexturedModel, List<Entity>> entities) {

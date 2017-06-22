@@ -15,6 +15,7 @@ import org.lwjgl.stb.STBVorbis;
 import org.lwjgl.system.libc.LibCStdlib;
 
 import gameStuff.Err;
+import mainInterface.Intraface;
 import toolBox.Tools;
 
 public class AudioMaster {
@@ -35,6 +36,7 @@ public class AudioMaster {
 	private static long device;
 
 	public static void init() throws Exception {
+		if(Intraface.isServer)return;
 		device = ALC10.alcOpenDevice((ByteBuffer) null);
 		ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 		IntBuffer contextAttribList = BufferUtils.createIntBuffer(16);
@@ -67,6 +69,7 @@ public class AudioMaster {
 
 	public static void setGain(float gain) {
 		GAIN = gain;
+		if(Intraface.isServer)return;
 		if (GAIN > 0) {
 			alListenerf(AL_GAIN, gain);
 			if (!soundEnabled) {
@@ -104,6 +107,7 @@ public class AudioMaster {
 	}
 
 	public static int loadSound(String file) {
+		if(Intraface.isServer)return 0;
 		int buffer = AL10.alGenBuffers();
 		buffers.add(buffer);
 		// WaveData wd = WaveData.create(file);
@@ -172,6 +176,7 @@ public class AudioMaster {
 	}
 
 	public static void setListenerData(Vector3f pos, Vector3f velocity, float rotY) {
+		if(Intraface.isServer)return;
 		AL10.alListener3f(AL10.AL_POSITION, pos.x * sounddistmult, pos.y * sounddistmult, pos.z * sounddistmult);
 		AL10.alListener3f(AL10.AL_VELOCITY, velocity.x * soundvelmult, velocity.y * soundvelmult,
 				velocity.z * soundvelmult);
@@ -179,6 +184,7 @@ public class AudioMaster {
 	}
 
 	public static void cleanUp() {
+		if(Intraface.isServer)return;
 		for (int buffer : buffers) {
 			AL10.alDeleteBuffers(buffer);
 		}

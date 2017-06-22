@@ -15,7 +15,7 @@ import entities.*;
 import fontRendering.Out;
 import gameStuff.TM;
 import gameStuff.WorldObjects;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import particles.*;
 import renderStuff.DisplayManager;
 import renderStuff.MasterRenderer;
@@ -116,7 +116,7 @@ public class WeatherController {
 					int y = ChunkManager.getUppestBlockY(x, z);
 					if (y != Integer.MIN_VALUE) {
 						y += 5;
-						CM.setBlock(x, y, z, Block.getWater(0.2f));
+						Intraface.setBlock(x, y, z, Block.getWater(0.2f));
 					}
 				}
 			} else {
@@ -514,7 +514,7 @@ public class WeatherController {
 		Vector3f pos = new Vector3f(struckpoint);
 		lastFlashPos = new Vector3f(pos);
 //		if (CM.deleteBlock(pos)) {
-		CM.deleteBlock(pos);
+		Intraface.deleteBlock(pos);
 			// for(int i = 0; i < 30; i++){
 			// Item3D I = Item3D.getInstance(Meth.doChance(0.5f) ? "cube" :
 			// "dragonSkin",
@@ -527,7 +527,7 @@ public class WeatherController {
 			}
 //		}
 		 if(Meth.doChance(lightningFire)){
-			 CM.setBlock(pos, Block.FIRE);
+			 Intraface.setBlock(pos, Block.FIRE);
 		 }
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);
@@ -583,7 +583,7 @@ public class WeatherController {
 			b = ChunkManager.getBlockID(pos);
 		}
 //		if (CM.deleteBlock(pos)) {
-		CM.deleteBlock(pos);
+		Intraface.deleteBlock(pos);
 			// for(int i = 0; i < 30; i++){
 			// Item3D I = Item3D.getInstance(Meth.doChance(0.5f) ? "cube" :
 			// "dragonSkin",
@@ -596,7 +596,7 @@ public class WeatherController {
 			}
 //		}
 		 if(Meth.doChance(lightningFire)){
-		 CM.setBlock(pos, Block.FIRE);
+		 Intraface.setBlock(pos, Block.FIRE);
 		 }
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);
@@ -631,7 +631,7 @@ public class WeatherController {
 			b = ChunkManager.getBlockID(pos);
 		}
 //		if (CM.deleteBlock(pos)) {
-		CM.deleteBlock(pos);
+		Intraface.deleteBlock(pos);
 			// for(int i = 0; i < 30; i++){
 			// Item3D I = Item3D.getInstance(Meth.doChance(0.5f) ? "cube" :
 			// "dragonSkin",
@@ -644,7 +644,7 @@ public class WeatherController {
 			}
 //		}
 		 if(Meth.doChance(lightningFire)){
-			 CM.setBlock(pos, Block.FIRE);
+			 Intraface.setBlock(pos, Block.FIRE);
 		 }
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);
@@ -658,14 +658,14 @@ public class WeatherController {
 //		Vector3f pos = new Vector3f(endPos);
 		lastFlashPos = new Vector3f(startPos);
 //		if (CM.deleteBlock(endPos)) {
-		CM.deleteBlock(endPos);
+		Intraface.deleteBlock(endPos);
 			for (int i = 0; i < 15; i++) {
 				ParticleMaster.addNewParticle(lightning, new Vector3f(endPos.x + 0.5f, endPos.y + 0.5f, endPos.z + 0.5f),
 						Vects.randomVector3f(-3f, 3f, -3f, 3f, -3f, 3f), 0, 1, 0, 0.2f);
 			}
 //		}
 		if(Meth.doChance(lightningFire)){
-			CM.setBlock(endPos, Block.FIRE);
+			Intraface.setBlock(endPos, Block.FIRE);
 		}
 		if (AudioMaster.soundEnabled) {
 			thunder.setVolume(thundervolume);

@@ -135,7 +135,11 @@ public class Line {
 		set2(vect.x, vect.y, vect.z);
 	}
 
-	private static RawModel model = Loader.loadToVAO(new float[] { 1, 1, 1, -1, -1, -1 }, new int[] { 0, 1 });
+	private static RawModel model;
+	
+	public static void init(){
+		model = Loader.loadToVAO(new float[] { 1, 1, 1, -1, -1, -1 }, new int[] { 0, 1 });
+	}
 
 	public static RawModel getRawModel() {
 		return model;

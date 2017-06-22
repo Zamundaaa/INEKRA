@@ -12,7 +12,7 @@ import toolBox.Queues;
 
 public class QueueKeeper {
 	
-	private static ArrayList<Key3D> toLoad = new ArrayList<Key3D>();
+	private static ArrayList<Key3D> toLoad = new ArrayList<>();
 	private static int pointer = 0;
 	
 	public static Key3D next(){

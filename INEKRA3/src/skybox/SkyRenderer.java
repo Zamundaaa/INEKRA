@@ -10,7 +10,9 @@ import org.lwjgl.opengl.*;
 import controls.Keyboard;
 import data.Generator;
 import entities.Camera;
-import gameStuff.*;
+import entities.graphicsParts.Texes;
+import gameStuff.TM;
+import gameStuff.WorldObjects;
 import models.RawModel;
 import postProcessing.Fbo;
 import renderStuff.*;
@@ -64,7 +66,7 @@ public class SkyRenderer {
 
 		renderStars();
 
-		moonTex = SC.getTex("sky/moon").getID();
+		moonTex = Texes.getTex(Texes.moon);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, moonTex);
 		GL11.glTexParameterfv(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_BORDER_COLOR, new float[] { 0, 0, 0, 0 });
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);

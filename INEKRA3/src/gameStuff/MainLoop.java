@@ -18,15 +18,15 @@ import cubyWaterNew.NewWaterRenderer;
 import cubyWaterNew.WaterFrameBuffers;
 import data.Block;
 import data.ChunkManager;
-import entities.Camera;
-import entities.Projectil;
+import entities.*;
+import entities.graphicsParts.Texes;
 import fontRendering.Out;
 import fontRendering.TextMaster;
 import gameStuff2.CommandProcessor;
 import guis.*;
 import inventory.Inv2D;
 import inventory.ItemRenderer;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import menuThings.*;
 import menuThings2.ProgressBar;
 import particles.ParticleMaster;
@@ -91,10 +91,22 @@ public abstract class MainLoop {
 		outputFbo2 = new Fbo(DisplayManager.WIDTH, DisplayManager.HEIGHT, Fbo.DEPTH_TEXTURE);
 		guiFbo = new Fbo(DisplayManager.WIDTH, DisplayManager.HEIGHT, Fbo.DEPTH_TEXTURE);
 		wfbo = new WaterFrameBuffers();
-		PreferenceSaver.applyPrefs();
+		ScreenPreferencesSaver.applyPrefs();
 		Frame.start();
 		alive = false;
-		System.exit(0);
+		
+		for(int i = 0; i < 10 && Thread.activeCount() > 1; i++){
+			System.out.println("waiting " + (10-i) + " seconds more for threads to finish bevore forcing exit");
+			Meth.wartn(1000);
+		}
+		if(Thread.activeCount() > 1){
+			System.out.println("forcing exit with " + (Thread.activeCount()-1) + " thread(s) too much open!");
+			System.exit(0);
+		}else{
+			System.out.println("Exited gracefully");
+		}
+		
+//		System.exit(0);
 		// }
 	}
 	
@@ -106,7 +118,7 @@ public abstract class MainLoop {
 				80, 80*DisplayManager.desiredRatioForGUI), Frame.button, true);
 		show.setHOVER(false);
 		
-		int blackBorder = SC.getTex("BlackBorder").getID();
+		int blackBorder = Models.getLoadedTex(Texes.blackBorder);
 		
 		Button forText = new Button("nothing", new Rectangle(310, 30, 
 				290, 80), blackBorder, true);
@@ -118,6 +130,7 @@ public abstract class MainLoop {
 			@Override
 			public void update(){
 				Vector3f c = MousePicker.getNextFilledBlockCoord(100, Camera.underWater());
+				
 				if(c != null){
 //					show.show();
 					short b = ChunkManager.getBlockID(c);
@@ -147,15 +160,15 @@ public abstract class MainLoop {
 		coords = new Button("HI!", new Rectangle(775, 900, 200, 80)){
 			@Override
 			public void update(){
-				setText("X: " + Meth.toInt(WorldObjects.player.getPosition().x) + 
-						" Y: " + Meth.toInt(WorldObjects.player.getPosition().y) + 
-						" Z: " + Meth.toInt(WorldObjects.player.getPosition().z));
+				setText("X: " + Meth.toInt(Camera.getPosition().x) + 
+						" Y: " + Meth.toInt(Camera.getPosition().y-2) + 
+						" Z: " + Meth.toInt(Camera.getPosition().z));
 				super.update();
 			}
 		};
 		coords.setHOVER(false);
 		playerGUI.add(coords);
-		life = new ProgressBar(new Rectangle(100, 920, 150, 30), SC.getTex("texPack/red").getID(), false, 1);
+		life = new ProgressBar(new Rectangle(100, 920, 150, 30), Models.getLoadedTex(Texes.red), false, 1);
 		life.show();
 		playerGUI.add(life);
 		Button clock = new Button("clock", new Rectangle(10, 10*DisplayManager.desiredRatioForGUI, 250, 75)){
@@ -199,13 +212,13 @@ public abstract class MainLoop {
 		fps.setHOVER(false);
 		fps.setTextPos();
 		playerGUI.add(fps);
-		playerGUI.add(WorldObjects.player.getInventory().getPanel());
+		playerGUI.add(Player.players.get(0).getInventory().getPanel());
 	}
 
 	private static Menü debugPanel = new Menü(new ArrayList<>());
 	
 	public static void addDebugGUI(){
-		debugPanel.add(new Button("", new Rectangle(900, 400, 100, 200), SC.getTex("BlackBorder").getID(), true){
+		debugPanel.add(new Button("", new Rectangle(900, 400, 100, 200), Models.getLoadedTex(Texes.blackBorder), true){
 			@Override
 			public void update(){
 				setText("Verts: " + BlockRenderer.VERTICES);
@@ -215,6 +228,7 @@ public abstract class MainLoop {
 	}
 	
 	public static void runGame() {
+		
 		MENUOPEN = false;
 		ANYMENUOPEN = false;
 		
@@ -233,11 +247,12 @@ public abstract class MainLoop {
 		Mouse.setGrabbed(true);
 		firstRender = true;
 		SkyRenderer.setMoonThings();
-
+		
 		addPlayerGUI();
 		addDebugGUI();
 		
 		boolean resetDMouse = false;
+		
 		while (running && !DisplayManager.isCloseRequested()) {
 			if (CLEANUPNOW) {
 				running = false;
@@ -254,28 +269,30 @@ public abstract class MainLoop {
 				ANYMENUOPEN = true;
 				Frame.startInMenu();
 				DisplayManager.setFrameTimeSeconds(0.000000000001f);
-				WorldObjects.player.setCooldowns();
+				Player.players.get(0).setCooldowns();
 				MENUOPEN = false;
 				ANYMENUOPEN = false;
 				resetDMouse = true;
 				Mouse.getDX();
 				Mouse.getDY();
 				Chat.showAgain();
+				
 				debugPanel.show();
 				playerGUI.show();
+				
 			}
 			if (Keyboard.keyTipped(GUISWITCHKEY)) {
 				renderGUI = !renderGUI;
 			}
 			
 			update();
-			
 			updateIngameText();
 			ParticleSystemMaster.update();
 			ParticleMaster.update();
 
 			if (renderGUI)
 				renderGUIandText();
+			
 			render();
 			
 			DisplayManager.disableVsyncMessage();
@@ -406,6 +423,7 @@ public abstract class MainLoop {
 	public static void updateIngameText() {
 		FontColorManager.update();
 		Out.update();
+		
 		if (!MENUOPEN) {
 //			float x = WorldObjects.player.getPosition().x;
 //			float y = WorldObjects.player.getPosition().y;
@@ -429,7 +447,7 @@ public abstract class MainLoop {
 //		text.setColour(FontColorManager.one);
 		headUpDisplay.setTextColor(FontColorManager.one.x, FontColorManager.one.y, FontColorManager.one.z);
 		
-		life.setProgress(WorldObjects.player.lives()*0.1f);
+		life.setProgress(Player.players.get(0).lives()*0.1f);
 		
 		playerGUI.update();
 		
@@ -455,7 +473,7 @@ public abstract class MainLoop {
 		SourcesManager.update();
 		MusicManager.update();
 		
-		CM.update();
+		Intraface.update();
 		
 	}
 
@@ -471,8 +489,9 @@ public abstract class MainLoop {
 		Err.err.println("Planets cleanedUp!");
 		TM.save();
 		Err.err.println("Time settings saved!");
-		PreferenceSaver.savePrefs();
+		ScreenPreferencesSaver.savePrefs();
 		Err.err.println("Preferences saved!");
+		Intraface.cleanUp();
 	}
 
 	public static void cleanUp() {
@@ -521,7 +540,7 @@ public abstract class MainLoop {
 
 	public static void renderLoadingScreen() {
 		if (loading == null)
-			loading = new GuiTexture(SC.getTex("LoadingScreens/L1quad").getID(), new Vector2f(0, 0),
+			loading = new GuiTexture(Models.getLoadedTex(Texes.loadingScreen), new Vector2f(0, 0),
 					new Vector2f(1, 1), false);
 		// loading.setDisplayLevel(GUIManager.UP);
 
@@ -536,7 +555,7 @@ public abstract class MainLoop {
 
 	public static void renderStartAnimation() {
 		// renderUWE_THE_KILLERAnimation();
-		icon16 = new GuiTexture(SC.getTex("Icons/16").getID(), new Vector2f(), new Vector2f(0), false);// 0.5f,
+		icon16 = new GuiTexture(Models.getLoadedTex(Texes.icon16), new Vector2f(), new Vector2f(0), false);// 0.5f,
 																								// 0.5f*DisplayManager.desiredRatioForGUI
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, icon16.getTexture());
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
@@ -565,47 +584,47 @@ public abstract class MainLoop {
 		DisplayManager.setFrameTimeSeconds(0.00001f);
 	}
 
-	private static GuiTexture UWE_THE_KILLER_STUDIOS, rlyDarkGreen1, rlyDarkGreen2, rlyDarkGreen3;
-
-	public static void renderUWE_THE_KILLERAnimation() {
-		DisplayManager.setFrameTimeSeconds(0.0000001f);
-		UWE_THE_KILLER_STUDIOS = new GuiTexture(SC.getTex("LoadingScreens/uwe_the_killer_studios").getID(),
-				new Vector2f(0, 0), new Vector2f(0), false);
-		UWE_THE_KILLER_STUDIOS.show();
-		rlyDarkGreen1 = new GuiTexture(SC.getTex("LoadingScreens/rlyDarkGreen").getID(), new Vector2f(0, 0.3f),
-				new Vector2f(0, 0.01f), false);
-		rlyDarkGreen1.show();
-		rlyDarkGreen2 = new GuiTexture(rlyDarkGreen1.getTexture(), new Vector2f(0, -0.05f), new Vector2f(0, 0.01f), false);
-		rlyDarkGreen2.show();
-		rlyDarkGreen3 = new GuiTexture(rlyDarkGreen1.getTexture(), new Vector2f(0, -0.4f), new Vector2f(0, 0.01f), false);
-		rlyDarkGreen3.show();
-		while (UWE_THE_KILLER_STUDIOS.getScale().x < 1) {
-			UWE_THE_KILLER_STUDIOS.getScale()
-					.set(UWE_THE_KILLER_STUDIOS.getScale().x + 0.5f * DisplayManager.getFrameTimeSeconds());
-			UWE_THE_KILLER_STUDIOS.setHighlight(UWE_THE_KILLER_STUDIOS.getScale().x - 1);
-			renderGUIandText();
-			DisplayManager.updateWindow();
-		}
-		while (rlyDarkGreen1.getScale().x < 0.1f) {
-			rlyDarkGreen1.getScale().x += DisplayManager.getFrameTimeSeconds();
-			renderGUIandText();
-			DisplayManager.updateWindow();
-		}
-		while (rlyDarkGreen2.getScale().x < 0.75f) {
-			rlyDarkGreen2.getScale().x += 1.5f * DisplayManager.getFrameTimeSeconds();
-			renderGUIandText();
-			DisplayManager.updateWindow();
-		}
-		while (rlyDarkGreen3.getScale().x < 0.5f) {
-			rlyDarkGreen3.getScale().x += DisplayManager.getFrameTimeSeconds();
-			renderGUIandText();
-			DisplayManager.updateWindow();
-		}
-		UWE_THE_KILLER_STUDIOS.hide();
-		rlyDarkGreen1.hide();
-		rlyDarkGreen2.hide();
-		rlyDarkGreen3.hide();
-		Meth.wartn(1000);
-	}
+//	private static GuiTexture UWE_THE_KILLER_STUDIOS, rlyDarkGreen1, rlyDarkGreen2, rlyDarkGreen3;
+//
+//	public static void renderUWE_THE_KILLERAnimation() {
+//		DisplayManager.setFrameTimeSeconds(0.0000001f);
+//		UWE_THE_KILLER_STUDIOS = new GuiTexture(SC.getTex("LoadingScreens/uwe_the_killer_studios").getID(),
+//				new Vector2f(0, 0), new Vector2f(0), false);
+//		UWE_THE_KILLER_STUDIOS.show();
+//		rlyDarkGreen1 = new GuiTexture(SC.getTex("LoadingScreens/rlyDarkGreen").getID(), new Vector2f(0, 0.3f),
+//				new Vector2f(0, 0.01f), false);
+//		rlyDarkGreen1.show();
+//		rlyDarkGreen2 = new GuiTexture(rlyDarkGreen1.getTexture(), new Vector2f(0, -0.05f), new Vector2f(0, 0.01f), false);
+//		rlyDarkGreen2.show();
+//		rlyDarkGreen3 = new GuiTexture(rlyDarkGreen1.getTexture(), new Vector2f(0, -0.4f), new Vector2f(0, 0.01f), false);
+//		rlyDarkGreen3.show();
+//		while (UWE_THE_KILLER_STUDIOS.getScale().x < 1) {
+//			UWE_THE_KILLER_STUDIOS.getScale()
+//					.set(UWE_THE_KILLER_STUDIOS.getScale().x + 0.5f * DisplayManager.getFrameTimeSeconds());
+//			UWE_THE_KILLER_STUDIOS.setHighlight(UWE_THE_KILLER_STUDIOS.getScale().x - 1);
+//			renderGUIandText();
+//			DisplayManager.updateWindow();
+//		}
+//		while (rlyDarkGreen1.getScale().x < 0.1f) {
+//			rlyDarkGreen1.getScale().x += DisplayManager.getFrameTimeSeconds();
+//			renderGUIandText();
+//			DisplayManager.updateWindow();
+//		}
+//		while (rlyDarkGreen2.getScale().x < 0.75f) {
+//			rlyDarkGreen2.getScale().x += 1.5f * DisplayManager.getFrameTimeSeconds();
+//			renderGUIandText();
+//			DisplayManager.updateWindow();
+//		}
+//		while (rlyDarkGreen3.getScale().x < 0.5f) {
+//			rlyDarkGreen3.getScale().x += DisplayManager.getFrameTimeSeconds();
+//			renderGUIandText();
+//			DisplayManager.updateWindow();
+//		}
+//		UWE_THE_KILLER_STUDIOS.hide();
+//		rlyDarkGreen1.hide();
+//		rlyDarkGreen2.hide();
+//		rlyDarkGreen3.hide();
+//		Meth.wartn(1000);
+//	}
 
 }

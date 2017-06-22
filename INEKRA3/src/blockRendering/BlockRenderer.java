@@ -74,32 +74,32 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 		loadTransmat();
 		
 		bindTex();
-		if (!allAtOnce) {
-			if (!culling)
-				MasterRenderer.disableCulling();
-			// MasterRenderer.enableTranslucency();// per chunk test? Later!
-
-			int csrendered = 0;
-			for (int i = 0; i < entities.size(); i++) {
-				ChunkEntity e = entities.get(i);
-				if (MasterRenderer.FI.testAab(e.getX(), e.getY(), e.getZ(), e.getX() + Chunk.SIZE,
-						e.getY() + Chunk.SIZE, e.getZ() + Chunk.SIZE)) {
-					RawModel mod = entities.get(i).getMod();
-					prepareModel(mod);
-					prepareInstance(entities.get(i));
-					// MasterRenderer.enableTranslucency();
-					GL11.glDrawElements(GL11.GL_TRIANGLES, mod.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
-					csrendered++;
-					// MasterRenderer.disableTranslucency();
-				}
-			}
-			// MasterRenderer.disableTranslucency();
-			if (!culling)
-				MasterRenderer.enableCulling();
-			MainLoop.chunksRendered = csrendered;
-		} else {
+//		if (!allAtOnce) {
+//			if (!culling)
+//				MasterRenderer.disableCulling();
+//			// MasterRenderer.enableTranslucency();// per chunk test? Later!
+//
+//			int csrendered = 0;
+//			for (int i = 0; i < entities.size(); i++) {
+//				ChunkEntity e = entities.get(i);
+//				if (MasterRenderer.FI.testAab(e.getX(), e.getY(), e.getZ(), e.getX() + Chunk.SIZE,
+//						e.getY() + Chunk.SIZE, e.getZ() + Chunk.SIZE)) {
+//					RawModel mod = entities.get(i).getMod();
+//					prepareModel(mod);
+//					prepareInstance(entities.get(i));
+//					// MasterRenderer.enableTranslucency();
+//					GL11.glDrawElements(GL11.GL_TRIANGLES, mod.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+//					csrendered++;
+//					// MasterRenderer.disableTranslucency();
+//				}
+//			}
+//			// MasterRenderer.disableTranslucency();
+//			if (!culling)
+//				MasterRenderer.enableCulling();
+//			MainLoop.chunksRendered = csrendered;
+//		} else {
 			renderAllAtOnce();
-		}
+//		}
 		unbindTexturedModel();
 		shader.stop();
 		if (WIREFRAME)
@@ -118,15 +118,15 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 		GL30.glBindVertexArray(0);
 	}
 
-	private static void prepareInstance(ChunkEntity entity) {
-		Matrix4f transformationMatrix = Meth.createTransformationMatrix(entity.getX(), entity.getY(), entity.getZ(),
-				entity.getRotX(), entity.getRotY(), entity.getRotZ(), entity.getScale(), Vects.mat4);
-		shader.loadTransformationMatrix(transformationMatrix);
-		if (usePerPixelLighting) {
-			LightMaster.getLights(entity, ls);
-		}
-		shader.loadLights(ls);
-	}
+//	private static void prepareInstance(ChunkEntity entity) {
+//		Matrix4f transformationMatrix = Meth.createTransformationMatrix(entity.getX(), entity.getY(), entity.getZ(),
+//				entity.getRotX(), entity.getRotY(), entity.getRotZ(), entity.getScale(), Vects.mat4);
+//		shader.loadTransformationMatrix(transformationMatrix);
+//		if (usePerPixelLighting) {
+//			LightMaster.getLights(entity, ls);
+//		}
+//		shader.loadLights(ls);
+//	}
 
 	public static void setProjectionMatrix(Matrix4f projectionMatrix) {
 		shader.start();
@@ -172,31 +172,31 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 		shader.loadSun(WorldObjects.getSunDirection(Vects.calcVect, (float)TM.getDayTime()), WorldObjects.sun.getColour());
 		
 		bindTex();
-		if (!allAtOnce) {
-			if (!culling)
-				MasterRenderer.disableCulling();
-
-			int csrendered = 0;
-			for (int i = 0; i < entities.size(); i++) {
-				ChunkEntity e = entities.get(i);
-				if (MasterRenderer.FI.testAab(e.getX(), e.getY(), e.getZ(), e.getX() + Chunk.SIZE,
-						e.getY() + Chunk.SIZE, e.getZ() + Chunk.SIZE)) {
-					RawModel mod = entities.get(i).getMod();
-					prepareModel(mod);
-					prepareInstance(entities.get(i));
-					GL11.glDrawElements(GL11.GL_TRIANGLES, mod.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
-					csrendered++;
-				}
-			}
-
-			// MasterRenderer.disableTranslucency();
-			if (!culling)
-				MasterRenderer.enableCulling();
-
-			MainLoop.chunksRendered = csrendered;
-		} else {
+//		if (!allAtOnce) {
+//			if (!culling)
+//				MasterRenderer.disableCulling();
+//
+//			int csrendered = 0;
+//			for (int i = 0; i < entities.size(); i++) {
+//				ChunkEntity e = entities.get(i);
+//				if (MasterRenderer.FI.testAab(e.getX(), e.getY(), e.getZ(), e.getX() + Chunk.SIZE,
+//						e.getY() + Chunk.SIZE, e.getZ() + Chunk.SIZE)) {
+//					RawModel mod = entities.get(i).getMod();
+//					prepareModel(mod);
+//					prepareInstance(entities.get(i));
+//					GL11.glDrawElements(GL11.GL_TRIANGLES, mod.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+//					csrendered++;
+//				}
+//			}
+//
+//			// MasterRenderer.disableTranslucency();
+//			if (!culling)
+//				MasterRenderer.enableCulling();
+//
+//			MainLoop.chunksRendered = csrendered;
+//		} else {
 			renderAllAtOnce();
-		}
+//		}
 		unbindTexturedModel();
 		shader.stop();
 		if (WIREFRAME)
@@ -333,6 +333,11 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 				} else {
 					Loader.updateVAO3DTex(rm, vertices, texCoords, normals, indices, lightData);
 				}
+//				if(vertices.length > 0){
+//					System.out.println(vertices[0] + ", " + vertices[1] + ", " + vertices[2]);
+//				}else{
+//					System.out.println("No verts!!!");
+//				}
 				privateRenderOrigin.set(vergleich);
 				newMaskAvailable = false;
 			}
@@ -346,6 +351,7 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 					Camera.getPosition().x-privateRenderOrigin.x - 0.5f, 
 					Camera.getPosition().y-privateRenderOrigin.y - 0.5f, 
 					Camera.getPosition().z-privateRenderOrigin.z - 0.5f));
+//			System.out.println("rendering blocks! " + privateRenderOrigin);
 			shader.loadSonar(sonar);
 			if(sonar){
 				shader.loadSonarRadius(sonarRadius);
@@ -376,6 +382,7 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 						boolean change = false;
 						while(!change){
 							Meth.wartn(20);
+//							if(chunks.size() != 0)System.out.println("there are chunks");
 							for(int i = 0; i < chunks.size(); i++){
 								if(chunks.get(i).maskNeeded()){
 									change = true;
@@ -433,6 +440,7 @@ public class BlockRenderer {// SHADOWS AS OPTION!!! (in MasterRenderer now)
 //				}catch(Exception e){
 //					
 //				}
+				Err.err.println("ChunkMasker stopped (of natural causes)!");
 			}
 		};
 		masker.start();

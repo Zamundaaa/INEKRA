@@ -9,8 +9,9 @@ import audio.SourcesManager;
 import controls.Keyboard;
 import dataAdvanced.SimpleConstructs;
 import entities.Projectil;
+import entities.graphicsParts.RawMods;
 import gameStuff.*;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import objConverter.ModelData;
 import particles.PTM;
 import particles.ParticleMaster;
@@ -46,14 +47,15 @@ public class Block {
 		if (isGrass(ID)) {
 			short over = ChunkManager.getBlockID(x, y + 1, z);
 			if (!isTransparent(over)) {
-				c.set(x, y, z, DIRT);
+//				c.set(x, y, z, DIRT);
+				Intraface.setBlock(x, y, z, DIRT);
 			} else {
 				if (ID != jahresZeitGras())
-					c.set(x, y, z, jahresZeitGras());
+					Intraface.setBlock(x, y, z, jahresZeitGras());
 				if (growTallGrass) {
 					if (TM.jahresZeit() == TM.FRÜHLING || TM.jahresZeit() == TM.SOMMER) {
 						if (over == AIR && Meth.doChance(0.01f * TM.TIMEFACT * DisplayManager.getFrameTimeSeconds())) {
-							CM.setBlock(x, y + 1, z, TALL_GRASS);
+							Intraface.setBlock(x, y + 1, z, TALL_GRASS);
 						}
 					}
 				}
@@ -62,11 +64,11 @@ public class Block {
 			if (isTransparent(ChunkManager.getBlockID(x, y + 1, z)) && (isGrass(ChunkManager.getBlockID(x + 1, y, z))
 					|| isGrass(ChunkManager.getBlockID(x - 1, y, z)) || isGrass(ChunkManager.getBlockID(x, y, z + 1))
 					|| isGrass(ChunkManager.getBlockID(x, y, z - 1)))) {
-				c.set(x, y, z, GRASS);
+				Intraface.setBlock(x, y, z, GRASS);
 			}
 		} else if (isLeaves(ID)) {
 			if (ID != jahresZeitLeaves()) {
-				c.set(x, y, z, jahresZeitLeaves());
+				Intraface.setBlock(x, y, z, jahresZeitLeaves());
 			}
 		} else if (ID == SAPLING) {
 			if(TM.isDay()){
@@ -90,7 +92,7 @@ public class Block {
 			short d = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 			if (d == Block.AIR) {
 				ChunkManager.chanceToDo = chanceForNextFallingBlockToFall;
-				CM.deleteBlock(x, y, z);
+				Intraface.deleteBlock(x, y, z);
 				ChunkManager.chanceToDo = 0;
 				// CM.setBlock(x, y-1, z, ID);
 				Projectil p = new Projectil(new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f), new Vector3f(), null, false);
@@ -102,8 +104,8 @@ public class Block {
 				p.setParticleGravity(1);
 				p.attatch(SC.sandmod);
 			} else if (Block.isWater(d)) {
-				CM.deleteBlock(x, y, z);
-				CM.setBlock(x, y - 1, z, ID);
+				Intraface.deleteBlock(x, y, z);
+				Intraface.setBlock(x, y - 1, z, ID);
 				for (int i = 0; i < 5; i++) {
 					ParticleMaster.addNewParticle(PTM.raindrop, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
 							Vects.randomVector3f(-1, 1, 2, 2, -1, 1), 1, 2, 0, 0.1f);
@@ -153,7 +155,7 @@ public class Block {
 			short d = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 			if (d == Block.AIR) {
 				ChunkManager.chanceToDo = chanceForNextFallingBlockToFall;
-				CM.deleteBlock(x, y, z);
+				Intraface.deleteBlock(x, y, z);
 				ChunkManager.chanceToDo = 0;
 				// CM.setBlock(x, y-1, z, ID);
 				Projectil p = new Projectil(new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f), new Vector3f(), null, false);
@@ -165,8 +167,8 @@ public class Block {
 				p.setParticleGravity(1);
 				p.attatch(SC.sandmod);
 			} else if (Block.isWater(d)) {
-				CM.deleteBlock(x, y, z);
-				CM.setBlock(x, y - 1, z, ID);
+				Intraface.deleteBlock(x, y, z);
+				Intraface.setBlock(x, y - 1, z, ID);
 				for (int i = 0; i < 5; i++) {
 					ParticleMaster.addNewParticle(PTM.raindrop, new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f),
 							Vects.randomVector3f(-1, 1, 2, 2, -1, 1), 1, 2, 0, 0.1f);
@@ -220,8 +222,8 @@ public class Block {
 		}
 		for (int i = 1; i <= h; i++) {
 			if (ChunkManager.getBlockID(x, y - i, z) != WOOD) {
-				CM.setBlock(x, y, z, WOOD);
-				CM.setBlock(x, y + 1, z, SAPLING);
+				Intraface.setBlock(x, y, z, WOOD);
+				Intraface.setBlock(x, y + 1, z, SAPLING);
 				for(int i2 = 0; i2 < treeLeaveGrowPlaces.length; i2++){
 					if(i == treeLeaveGrowPlaces[i2]){
 						SimpleConstructs.fillSphere(x, y, z, treeLeaveGrowDiameters[i2], LEAVES, false);
@@ -236,7 +238,7 @@ public class Block {
 						}
 						int d = Meth.randomInt(2, 4);
 						for(int i3 = 0; i3 < d; i3++)
-							CM.setBlock(x+i3*Vects.calcVect.x,
+							Intraface.setBlock(x+i3*Vects.calcVect.x,
 									y+i3*Vects.calcVect.y,
 									z+i3*Vects.calcVect.z, WOOD);
 						SimpleConstructs.fillSphere(x+d*Vects.calcVect.x, 
@@ -248,7 +250,7 @@ public class Block {
 			}
 		}
 		if (!grown) {
-			CM.setBlock(x, y, z, LEAVES);
+			Intraface.setBlock(x, y, z, LEAVES);
 		}
 		for(int i = 0; i < treeLeaveGrowPlaces.length; i++){
 			treeLeaveGrowPlaces[i] = -1;
@@ -456,11 +458,11 @@ public class Block {
 	public static ModelData getModel(short s) {
 		switch (s) {
 		case SAPLING:
-			return Models.getModelData("Sapling");
+			return Models.getModelData(RawMods.sapling);
 		case TORCH:
-			return Models.getModelData("torch");
+			return Models.getModelData(RawMods.torch);
 		case TALL_GRASS:
-			return Models.getModelData("grass");
+			return Models.getModelData(RawMods.grass);
 		}
 		return null;
 	}

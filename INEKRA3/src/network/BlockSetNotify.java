@@ -1,5 +1,9 @@
 package network;
 
+import collectionsStuff.SmartByteBuffer;
+import data.ChunkManager;
+import mainInterface.Intraface;
+
 public class BlockSetNotify {
 	
 	private int x, y, z;
@@ -34,6 +38,27 @@ public class BlockSetNotify {
 
 	public short getID() {
 		return ID;
+	}
+
+	public void putData(SmartByteBuffer buffer) {
+		buffer.addInt(x);
+		buffer.addInt(y);
+		buffer.addInt(z);
+		buffer.addShort(ID);
+	}
+	
+	public static void applyDatas(int count, SmartByteBuffer buffer){
+		for(int i = 0; i < count; i++){
+			int x = buffer.readInt();
+			int y = buffer.readInt();
+			int z = buffer.readInt();
+			short ID = buffer.readShort();
+			if(Intraface.isServer)
+				Intraface.setBlock(x, y, z, ID);
+			else
+				ChunkManager.setBlockID(x, y, z, ID);
+//			System.out.println("applyed data!");
+		}
 	}
 	
 }

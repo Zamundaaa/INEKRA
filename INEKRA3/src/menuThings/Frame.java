@@ -14,10 +14,12 @@ import audio.MusicManager;
 import controls.Keyboard;
 import controls.Mouse;
 import cubyWaterNew.NewWaterRenderer;
-import data.ChunkSaver;
+import data.chunkLoading.ChunkSaver;
 import entities.Player;
+import entities.graphicsParts.Texes;
 import fontMeshCreator.GUIText;
 import gameStuff.*;
+import mainInterface.Intraface;
 import mobs.MobMaster;
 import postProcessing.PostProcessing;
 import renderStuff.*;
@@ -27,7 +29,7 @@ import toolBox.Tools;
 public class Frame {
 
 	public static final int LEFT = 200, MIDDLE = 400, RIGHT = 600, LEFTISH = 270, RIGHTISH = 530, VERYRIGHT = 700,
-			VERYLEFT = 100, NOWHERE = -1000;
+			VERYLEFT = 100, MEGALEFT = 50, NOWHERE = -1000;
 
 	private static boolean running = true, worldChosen = false;
 	private static List<Menü> menus = new ArrayList<Menü>();
@@ -49,10 +51,10 @@ public class Frame {
 	public static void start() {
 		running = true;
 
-		button = SC.getTex("button").getID();
-		buttonClicked = SC.getTex("button_clicked").getID();
-		textfield = SC.getTex("textfield").getID();
-		textfieldChosen = SC.getTex("textfield_chosen").getID();
+		button = Models.getLoadedTex(Texes.button);
+		buttonClicked = Models.getLoadedTex(Texes.buttonClicked);
+		textfield = Models.getLoadedTex(Texes.textfield);
+		textfieldChosen = Models.getLoadedTex(Texes.textfieldChosen);
 
 		MusicManager.play();
 
@@ -165,6 +167,24 @@ public class Frame {
 		} else {
 			if (world == null) {
 				ArrayList<MenuThing> bs = new ArrayList<MenuThing>();
+				
+				bs.add(new Button("Multiplayer", new Rectangle(MEGALEFT, 550, 200, 100), button, false){
+					@Override
+					public void leftClick(){
+						Intraface.singlePlayer = false;
+						Intraface.isServer = false;
+						removeMenu(world);
+						name.cleanUp();
+						ScreenPreferencesSaver.savePrefs();
+						startGame();
+						name = new GUIText("INEKRA", 7, SC.specialFont, new Vector2f(0, 0.15f), 1, true);
+						name.setColour(0, 1, 1);
+						start.cleanUpAndClear();
+						start = null;
+						addStartMenu();
+					}
+				});
+				bs.get(0).setDisplayLevel(5);
 
 				startButton = new Button("START", new Rectangle(LEFTISH, 425, 200, 100), buttonClicked, false) {
 					private long textChange;
@@ -188,8 +208,10 @@ public class Frame {
 						if (worldChosen) {
 							removeMenu(world);
 							name.cleanUp();
-							PreferenceSaver.savePrefs();
+							ScreenPreferencesSaver.savePrefs();
 							ChunkSaver.worldName = worlds[selectedWorld];
+							Intraface.singlePlayer = true;
+							Intraface.isServer = false;
 							startGame();
 							name = new GUIText("INEKRA", 7, SC.specialFont, new Vector2f(0, 0.15f), 1, true);
 							name.setColour(0, 1, 1);
@@ -261,7 +283,7 @@ public class Frame {
 									};
 									n.setTex(textfield);
 									worldPane.attach(n);
-									Button b = new Button("", new Rectangle(0, 0, 80, 80), SC.getTex("trashcan_pic").getID(), true){
+									Button b = new Button("", new Rectangle(0, 0, 80, 80), Models.getLoadedTex(Texes.trashcan), true){
 										@Override
 										public void leftClick(){
 //											System.out.println(del.hidden);
@@ -331,7 +353,7 @@ public class Frame {
 					};
 					n.setTex(textfield);
 					worldPane.attach(n);
-					Button b = new Button("", new Rectangle(0, 0, 80, 80), SC.getTex("trashcan_pic").getID(), true){
+					Button b = new Button("", new Rectangle(0, 0, 80, 80), Models.getLoadedTex(Texes.trashcan), true){
 						@Override
 						public void leftClick(){
 //							System.out.println(del.hidden);
@@ -410,7 +432,7 @@ public class Frame {
 					};
 					n.setTex(textfield);
 					worldPane.attach(n);
-					Button b = new Button("", new Rectangle(0, 0, 80, 80), SC.getTex("trashcan_pic").getID(), true){
+					Button b = new Button("", new Rectangle(0, 0, 80, 80), Models.getLoadedTex(Texes.trashcan), true){
 						@Override
 						public void leftClick(){
 //							System.out.println(del.hidden);
@@ -433,8 +455,8 @@ public class Frame {
 
 	private static void addNewWorldMenu() {
 		if (newWorld == null) {
-			textfield = SC.getTex("textfield").getID();
-			textfieldChosen = SC.getTex("textfield_chosen").getID();
+			textfield = Models.getLoadedTex(Texes.textfield);
+			textfieldChosen = Models.getLoadedTex(Texes.textfieldChosen);
 
 			ArrayList<MenuThing> bs = new ArrayList<MenuThing>();
 
@@ -443,7 +465,7 @@ public class Frame {
 				public void leftClick() {
 					removeMenu(newWorld);
 					name.cleanUp();
-					PreferenceSaver.savePrefs();
+					ScreenPreferencesSaver.savePrefs();
 					ChunkSaver.worldName = light.getContent();
 					startGame();
 					name = new GUIText("INEKRA", 7, SC.specialFont, new Vector2f(0, 0.15f), 1, true);

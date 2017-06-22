@@ -10,7 +10,7 @@ import blockRendering.ChunkEntity;
 import data.Block;
 import data.Chunk;
 import entities.Camera;
-import gameStuff.SC;
+import entities.graphicsParts.Texes;
 import models.RawModel;
 import postProcessing.Fbo;
 import renderStuff.Loader;
@@ -40,7 +40,7 @@ public class ItemRenderer {
 
 	public static int getItemTex(short blockID) {
 		if(Block.isWater(blockID)){
-			return SC.getTex("water").getID();
+			return Texes.getTex(Texes.WATER);
 		}
 		Integer I = texes.get(blockID);
 		if(I != null){

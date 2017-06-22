@@ -2,10 +2,10 @@ package entities;
 
 import org.joml.Vector3f;
 
+import entities.graphicsParts.ModelGraphics;
 import gameStuff.EntityManager;
 import hitbox.BoundingSphere;
 import hitbox.Hitbox;
-import models.RawModel;
 import models.TexturedModel;
 import renderStuff.DisplayManager;
 import toolBox.Meth;
@@ -23,15 +23,10 @@ public class Entity extends MWBE {
 
 	protected Vector3f outSideSpeed = new Vector3f();
 
-	public Entity(TexturedModel model, int tIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale,
+	public Entity(short modelID, short texID, int tIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale,
 			Hitbox h) {
-		this.model = model;
+		super(modelID, texID, tIndex, position.x, position.y, position.z, rotX, rotY, rotZ, scale);
 		this.position = position;
-		this.rotX = rotX;
-		this.rotY = rotY;
-		this.rotZ = rotZ;
-		this.scale = scale;
-		this.tIndex = tIndex;
 
 		boundingSphere = Meth.createBoundingSphere(this);
 		if (h != null) {
@@ -43,16 +38,11 @@ public class Entity extends MWBE {
 		EntityManager.addEntity(this);
 	}
 
-	public Entity(TexturedModel model, int tIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale,
+	public Entity(short modelID, short texID, int tIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale,
 			boolean createBoundingSphere) {
-		this.model = model;
+		super(modelID, texID, tIndex, position.x, position.y, position.z, rotX, rotY, rotZ, scale);
 		this.position = position;
-		this.rotX = rotX;
-		this.rotY = rotY;
-		this.rotZ = rotZ;
-		this.scale = scale;
-		this.tIndex = tIndex;
-
+		
 		if (createBoundingSphere) {
 			boundingSphere = Meth.createBoundingSphere(this);
 		}
@@ -61,16 +51,10 @@ public class Entity extends MWBE {
 		EntityManager.addEntity(this);
 	}
 
-	public Entity(TexturedModel model, int tIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale,
+	public Entity(short modelID, short texID, int tIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale,
 			boolean createBoundingSphere, boolean autoInsert) {
-		this.model = model;
+		super(modelID, texID, tIndex, position.x, position.y, position.z, rotX, rotY, rotZ, scale);
 		this.position = position;
-		this.rotX = rotX;
-		this.rotY = rotY;
-		this.rotZ = rotZ;
-
-		this.scale = scale;
-		this.tIndex = tIndex;
 
 		this.velocity = new Vector3f();
 
@@ -82,17 +66,10 @@ public class Entity extends MWBE {
 		}
 	}
 
-	public Entity(TexturedModel model, int tIndex, Vector3f position, Vector3f velocity, float rotX, float rotY,
+	public Entity(short modelID, short texID, int tIndex, Vector3f position, Vector3f velocity, float rotX, float rotY,
 			float rotZ, float scale, boolean createBoundingSphere, boolean autoInsert) {
-		this.model = model;
+		super(modelID, texID, tIndex, position.x, position.y, position.z, rotX, rotY, rotZ, scale);
 		this.position = position;
-		this.rotX = rotX;
-		this.rotY = rotY;
-		this.rotZ = rotZ;
-
-		this.scale = scale;
-		this.tIndex = tIndex;
-
 		this.velocity = velocity;
 
 		if (createBoundingSphere) {
@@ -107,9 +84,31 @@ public class Entity extends MWBE {
 
 	}
 
-	public void setNonWeirdRotation(float x, float y, float z) {
-		rotZ = z;
+//	public void setNonWeirdRotation(float x, float y, float z) {
+//		rotZ = z;
+//
+//	}
 
+	public Entity(TexturedModel t, int tIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale,
+			boolean createBoundingSphere) {
+		this.tIndex = tIndex;
+		this.x = position.x;
+		this.y = position.y;
+		this.z = position.z;
+		this.rotX = rotX;
+		this.rotY = rotY;
+		this.rotZ = rotZ;
+		this.scale = scale;
+		this.position = position;
+		
+		graphics = new ModelGraphics(this, t);
+
+		if (createBoundingSphere) {
+			boundingSphere = Meth.createBoundingSphere(this);
+		}
+
+		this.velocity = new Vector3f();
+		EntityManager.addEntity(this);
 	}
 
 	public void setRotation(float x, float y, float z) {
@@ -128,6 +127,7 @@ public class Entity extends MWBE {
 
 	@Override
 	public void update() {
+		super.update();
 		if (velocity != null) {
 			position.x += velocity.x * DisplayManager.getFrameTimeSeconds();
 			position.y += velocity.y * DisplayManager.getFrameTimeSeconds();
@@ -164,6 +164,7 @@ public class Entity extends MWBE {
 	}
 
 	protected void update(boolean x, boolean y, boolean z) {
+		super.update();
 		if (x) {
 			position.x += velocity.x * DisplayManager.getFrameTimeSeconds();
 			position.x += outSideSpeed.x * DisplayManager.getFrameTimeSeconds();
@@ -333,10 +334,6 @@ public class Entity extends MWBE {
 	 */
 	public void translate(float x, float delta, float z) {
 		increasePos(x, delta, z);
-	}
-
-	public void setRawModel(RawModel mod) {
-		this.model.setRawMod(mod);
 	}
 
 }

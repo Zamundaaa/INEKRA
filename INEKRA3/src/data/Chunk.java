@@ -10,13 +10,15 @@ import blockRendering.BlockRenderer;
 import blockRendering.ChunkEntity;
 import collectionsStuff.*;
 import cubyWaterNew.NewWaterUpdater;
+import data.chunkLoading.ChunkSaver;
 import gameStuff.Err;
 import gameStuff.TM;
 import inventory.Item3D;
 import objConverter.ModelData;
 import particles.PTM;
 import particles.ParticleMaster;
-import renderStuff.*;
+import renderStuff.DisplayManager;
+import renderStuff.FramePerformanceLogger;
 import toolBox.Meth;
 
 /**
@@ -79,6 +81,53 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 		light = new short[SIZE][SIZE][SIZE];
 		genBlocks();
 //		genMask();
+	}
+
+	public Chunk(SmartByteBuffer rBuff, int x, int y, int z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		realX = this.x * SIZE;
+		realY = this.y * SIZE;
+		realZ = this.z * SIZE;
+		blocks = new short[SIZE][SIZE][SIZE];
+		light = new short[SIZE][SIZE][SIZE];
+		short count = rBuff.readShort();
+		short ID = rBuff.readShort();
+		boolean isWater = Block.isWater(ID);
+		if(ID != AIR && !isWater){
+			hasNoBlocksButWater = false;
+		}
+		for(x = 0; x < SIZE; x++){
+			for(y = 0; y < SIZE; y++){
+				for(z = 0; z < SIZE; z++){
+					if(count == 0){
+						count = rBuff.readShort();
+						ID = rBuff.readShort();
+						
+						isWater = Block.isWater(ID);
+						if(ID != AIR && !isWater){
+							hasNoBlocksButWater = false;
+						}
+						if(isWater){
+							uw = true;
+							NewWaterUpdater.waterChanged = true;
+						}
+					}
+					blocks[x][y][z] = ID;
+					count--;
+				}
+			}
+		}
+		for(x = 0; x < SIZE; x++)
+			for(y = 0; y < SIZE; y++)
+				for(z = 0; z < SIZE; z++)
+					setTorchLightIC(x, y, z, MAXL);
+		
+//		for(x = 0; x < SIZE; x++)
+//			for(y = 0; y < SIZE; y++)
+//				for(z = 0; z < SIZE; z++)
+//					light[x][y][z] = rBuff.readShort();
 	}
 
 //	public Chunk(int x, int y, int z, boolean genMask) {
@@ -276,10 +325,11 @@ public class Chunk {// OPT: genMask Vector3fs to Floats!
 	}
 
 	public void cleanUp() {
-		if (e != null) {
+		if (e != null)// {
 			BlockRenderer.entities.remove(e);
-			Loader.unload(e.getModel().getRawMod());
-		}
+//			Loader.unload(e.getModel().getRawMod());
+//		}
+		
 //		if (waters != null && MainLoop.running) {
 //			for (int i : waters.keySet()) {
 //				waters.get(i).cleanUp();

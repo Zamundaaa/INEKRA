@@ -1,10 +1,15 @@
-package data;
+package data.chunkLoading;
 
 import static data.Chunk.SIZE;
 
 import collectionsStuff.SmartByteBuffer;
-import gameStuff.*;
+import data.*;
+import entities.Player;
+import gameStuff.Err;
+import gameStuff.TM;
+import mainInterface.Intraface;
 import toolBox.Tools;
+import toolBox.configStuff.Config;
 
 public class ChunkSaver {
 
@@ -12,38 +17,82 @@ public class ChunkSaver {
 	public static final String kindTrenner = ":";
 	public static final String METADATA = "#";
 	public static String worldName = "fourth";
-
+	
+	private static Config config, playerDatas;
+	
 	public static void saveStandardData() {
-		if (WorldObjects.player != null) {
-			StringBuilder save = new StringBuilder();
-			save.append(Generator.seed);
-			save.append(trenner);
-			save.append(WorldObjects.player.getPosition().x);
-			save.append(trenner);
-			save.append(WorldObjects.player.getPosition().y);
-			save.append(trenner);
-			save.append(WorldObjects.player.getPosition().z);
-			save.append(trenner);
-			save.append(TM.inGameDays());
+////		if (WorldObjects.player != null) {
+//			StringBuilder save = new StringBuilder();
+//			save.append(Generator.seed);
 //			save.append(trenner);
-//			save.append(TM.getDayTime());
-
-			Tools.writeToFile("ChunksSave/" + worldName + "/" + "dataSave.txt", save.toString());
-		}
+////			save.append(WorldObjects.player.getPosition().x);
+////			save.append(trenner);
+////			save.append(WorldObjects.player.getPosition().y);
+////			save.append(trenner);
+////			save.append(WorldObjects.player.getPosition().z);
+////			save.append(trenner);
+//			save.append(TM.inGameDays());
+////			save.append(trenner);
+////			save.append(TM.getDayTime());
+//
+//			Tools.writeToFile("ChunksSave/" + worldName + "/" + "dataSave.txt", save.toString());
+////		}
+		
+		config.setConfig("seed", Generator.seed);
+		config.setConfig("ingameDays", TM.inGameDays());
+		
+		config.save();
+		
 		Tools.writeToFile("ChunksSave/" + worldName, "/saveVersion.txt", "2", true);
+	}
+	
+	public static Player restoreData(Player p){
+		if(Intraface.isServer || Intraface.singlePlayer){
+			if(!playerDatas.isKey(p.playerID() + "x")){
+				return getFirstSpawnPoint(p);
+			}
+		}else{
+			return p;
+		}
+		float x = playerDatas.getFloatConfig(p.playerID() + "x");
+		float y = playerDatas.getFloatConfig(p.playerID() + "y");
+		float z = playerDatas.getFloatConfig(p.playerID() + "z");
+		float rotY = playerDatas.getFloatConfig(p.playerID()+"rotY");
+		float pitch = playerDatas.getFloatConfig(p.playerID()+"pitch");
+		p.setPosition(x, y, z);
+		p.setRotY(rotY);
+		p.setPitch(pitch);
+		return p;
+	}
+
+	public static Player getFirstSpawnPoint(Player p) {
+		p.getPosition().set(5000, 100, 5000);
+		return p;
 	}
 
 	public static void restoreStandardData() {
-		String save = Tools.readFile("ChunksSave/" + worldName + "/dataSave.txt");
-		if (save != null) {
-			String[] datas = save.split(trenner);
-			Generator.seed = Long.parseLong(datas[0]);
-			WorldObjects.player.setPosition(Float.parseFloat(datas[1]), Float.parseFloat(datas[2]),
-					Float.parseFloat(datas[3]));
-			if(datas.length > 4 && !datas[4].isEmpty() && !datas[4].equals("\n"))
-				TM.setIngameDays(Double.parseDouble(datas[4]));
-		}
 		checkAndUpdateSaveVersion();
+		
+		config = new Config("ChunksSave/" + worldName + "/dataSave.conf");
+		
+		playerDatas = new Config("ChunkSave/" + worldName + "/playerDatas.save");
+		
+		if(config.entryCount() == 0){
+			String save = Tools.readFile("ChunksSave/" + worldName + "/dataSave.txt");
+			if (save != null) {
+				String[] datas = save.split(trenner);
+				int i = 0;
+				Generator.seed = Long.parseLong(datas[i]);
+//				WorldObjects.player.setPosition(Float.parseFloat(datas[1]), Float.parseFloat(datas[2]),
+//						Float.parseFloat(datas[3]));
+				i = 3;
+				if(!datas[i++].isEmpty() && !datas[i].equals("\n"))
+					TM.setIngameDays(Double.parseDouble(datas[i]));
+			}
+		}else{
+			Generator.seed = config.getLongConfig("seed");
+			TM.setIngameDays(config.getDoubleConfig("ingameDays"));
+		}
 	}
 
 	public static void saveChunk(Chunk c) {

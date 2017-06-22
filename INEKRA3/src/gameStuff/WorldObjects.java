@@ -10,14 +10,14 @@ import org.joml.Vector3f;
 import data.LightMaster;
 import entities.*;
 import gameStuff2.CommandProcessor;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import mobs.MobMaster;
 import toolBox.*;
 import weather.WeatherController;
 
 public abstract class WorldObjects {
 
-	public static Player player;
+//	public static Player player;
 	public static Light sun;
 	public static MousePicker picker;
 	public static Vector3f spawnPoint = new Vector3f(5000, 50, 5000);
@@ -27,14 +27,18 @@ public abstract class WorldObjects {
 	// private static ArrayList<Mob> stupidMobs = new ArrayList<Mob>();
 
 	public static void init() {
-
+		
+		Intraface.init();
 		createStartEntities();
-		Camera.getPosition().set(player.getPosition());
+		
+		if(!Intraface.isServer){
+			Camera.getPosition().set(Player.players.get(0).getPosition());
+		}
+		Intraface.finishInit();
 
 		sun = new Light(new Vector3f(200000, 300000, 200000), new Vector3f(0.5f, 0.5f, 0.5f));
 		ltr.add(sun);
-		CM.init();
-
+		
 		MousePicker.init();
 
 //		SensorData.init();
@@ -56,53 +60,20 @@ public abstract class WorldObjects {
 //	private static int lastTorchLight, lastSunLight;
 
 	public static void update() {
-
-		MousePicker.update();
-
+		
+		if(!Intraface.isServer)
+			MousePicker.update();
+		
 		if (Player.MANUUPDATE)
-			player.update();
+			for(int i = 0; i < Player.players.size(); i++)
+				Player.players.get(i).update();// something fails here!!!
 
 		EntityManager.updateAll();
 		TickManager.update();
-		
-//		System.out.println("WorldObjects updated!");
-
-//		Vector3f bpos = MousePicker.getNextFilledBlockCoord(50, false);
-//		if (bpos != null) {
-//			short b = ChunkManager.getBlockID(bpos);
-//			bpos = MousePicker.getLastEmptyBlockCoordWithOrientation(50);
-//			if (bpos != null) {
-//				bpos.add(MousePicker.calcVect);
-//			} else {
-//				Vects.setCalcVect(0);
-//				bpos = Vects.calcVect;
-//			}
-//			int tL = ChunkManager.getTorchLight(bpos);
-//			int sL = ChunkManager.getSunLight(bpos);
-//			if (b != lastID || tL != lastTorchLight || sL != lastSunLight) {
-//				lastID = b;
-//				lastTorchLight = tL;
-//				String text = Block.string(b);
-//				text += " light level: " + tL + " sunlight: " + sL;
-//				if (block != null) {
-//					block.setText(text);
-//				} else {
-//					block = new GUIText(text, 1.5f, SC.font, blockPos, mLL, true);
-//				}
-//			}
-//			block.setColour(FontColorManager.CV, FontColorManager.CV, FontColorManager.CV);
-//		} else {
-//			if (block != null) {
-//				block.cleanUp();
-//				block = null;
-//				lastID = Block.AIR;
-//			}
-//		}
-
 		MobMaster.update();
 
 		WeatherController.update();
-
+		
 		CommandProcessor.update();
 
 		LightMaster.update();
@@ -122,20 +93,25 @@ public abstract class WorldObjects {
 		spawnPoint.x = x;
 		spawnPoint.y = y;
 		spawnPoint.z = z;
-		if (player == null) {
-			player = new Player(SC.playermod, spawnPoint, 0, 0, 0, 0.15f, (int)Tools.loadLongPreference("playerID", 0));
-			hits.add(player);
-			players.add(player);
-		} else {
-			player.setPosition(spawnPoint);
-			players.add(player);
-			hits.add(player);
+		if(!Intraface.isServer){
+			new Player(new Vector3f(500, 50, 500), 0, 0, 0, 0.15f, 0);
 		}
+//		if (player == null) {
+//			player = new Player(spawnPoint, 0, 0, 0, 0.15f, (int)Tools.loadLongPreference("playerID", 0));
+//			Err.err.println("created player...");
+//			hits.add(player);
+//			players.add(player);
+//		} else {
+//			player.setPosition(spawnPoint);
+//			players.add(player);
+//			hits.add(player);
+//		}
 	}
 
 	public static float dayColor = 0.6f, nightColor = 0.1f;
 
 	public static void timeUpdate() {
+		Player player = Player.players.get(0);
 		float time = (float) TM.getDayTime();
 		if ((time >= night || time >= 0) && time < morningstart) {
 			sun.setColour(nightColor, nightColor, nightColor);
@@ -202,13 +178,8 @@ public abstract class WorldObjects {
 	}
 
 	public static void save() {
-		if (player != null) {
-			Tools.setFloatPreference("PX", player.getPosition().x);
-			Tools.setFloatPreference("PY", player.getPosition().y);
-			Tools.setFloatPreference("PZ", player.getPosition().z);
-			Tools.setBoolPreference("flight", player.flight());
-			// CM.saveAll();
-		}
+		if(Player.players.size() > 0)
+			Tools.setBoolPreference("flight", Player.players.get(0).flight());
 	}
 
 	public static ArrayList<HittableThing> getHits() {
@@ -227,14 +198,16 @@ public abstract class WorldObjects {
 
 	public static void cleanUp() {
 		// long millis = System.currentTimeMillis();
-		CM.cleanUp();
+		Intraface.cleanUp();
 		// System.err.println("Time to clean up CM: " +
 		// (System.currentTimeMillis()-millis));
 		EntityManager.cleanUp();
-		if (player != null) {
-			player.cleanUp();
-			player = null;
-		}
+		
+		for(int i = 0; i < Player.players.size(); i++)
+			Player.players.get(0).cleanUp();
+		
+		Player.players.clear();
+		
 		sun = null;
 		// picker = null;
 		players.clear();

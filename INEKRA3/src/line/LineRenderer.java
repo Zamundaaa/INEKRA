@@ -18,6 +18,7 @@ public class LineRenderer {
 
 	public static void init() {
 		ls = new LineShader();
+		Line.init();
 		inited = true;
 	}
 

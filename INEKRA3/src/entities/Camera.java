@@ -8,28 +8,26 @@ import controls.Controller;
 import controls.Mouse;
 import data.Block;
 import data.ChunkManager;
-import gameStuff.WorldObjects;
 import renderStuff.DisplayManager;
 import toolBox.Meth;
 import toolBox.Tools;
 
-@SuppressWarnings("unused")
 public abstract class Camera {
 
-	private static float distanceFromPlayer = 5, angleAroundPlayer = 0;
+//	private static float distanceFromPlayer = 5, angleAroundPlayer = 0;
 
 	private static Vector3f position = new Vector3f();
 	private static float pitch = 20, yaw, roll;
 	private static Vector2f rotation = new Vector2f();
-	private static Entity current;
+//	private static Entity current;
 	private static boolean following = false;
 	private static int cam = 1;
 
-	private static final float cap = 5;
+//	private static final float cap = 5;
 
-	public static void setCurrent(Entity e) {
-		current = e;
-	}
+//	public static void setCurrent(Entity e) {
+//		current = e;
+//	}
 
 	public static int cam() {
 		return cam;
@@ -84,8 +82,9 @@ public abstract class Camera {
 		// pitch = Meth.clamp(pitch, cap-90, 90);
 		pitch = Meth.clamp(pitch, -90, 90);
 		// if(WorldObjects.player != null){
-		position = WorldObjects.player.getHeadPosition();
-		yaw = (180 - WorldObjects.player.getRotY());
+		
+		position = Player.players.get(0).getHeadPosition();
+		yaw = (180 - Player.players.get(0).getRotY());
 		
 
 		BlockRenderer.sonarRadius += DisplayManager.getFrameTimeSeconds()*BlockRenderer.sonarSpeed;
@@ -111,61 +110,61 @@ public abstract class Camera {
 		// }
 	}
 
-	public static void setCam(int pos) {
-		cam = pos;
-		if (cam == 1) {
-			distanceFromPlayer = -0.5f;
-			if (Tools.mouseGrabbed) {
-				Mouse.setCursorPosition(DisplayManager.WIDTH / 2, DisplayManager.HEIGHT / 2);
-				Mouse.setGrabbed(true);
-			}
+//	public static void setCam(int pos) {
+//		cam = pos;
+//		if (cam == 1) {
+//			distanceFromPlayer = -0.5f;
+//			if (Tools.mouseGrabbed) {
+//				Mouse.setCursorPosition(DisplayManager.WIDTH / 2, DisplayManager.HEIGHT / 2);
+//				Mouse.setGrabbed(true);
+//			}
+//
+//		} else if (cam == 3) {
+//			Mouse.setGrabbed(false);
+////			 Mouse.setCursorPosition(DisplayManager.width/2,
+////			 DisplayManager.height/2);
+//			distanceFromPlayer = 5;
+//		} else {
+//			cam = 3;
+//		}
+//	}
 
-		} else if (cam == 3) {
-			Mouse.setGrabbed(false);
-//			 Mouse.setCursorPosition(DisplayManager.width/2,
-//			 DisplayManager.height/2);
-			distanceFromPlayer = 5;
-		} else {
-			cam = 3;
-		}
-	}
-
-	private static void calcCamPos(float HD, float VD) {
-
-		float offsetX = (float) (HD * Math.sin(Math.toRadians(angleAroundPlayer)));
-		float offsetZ = (float) (HD * Math.cos(Math.toRadians(angleAroundPlayer)));
-		position.x = current.getPosition().x - offsetX;
-		position.z = current.getPosition().z - offsetZ;
-
-		position.y = current.getPosition().y + 1f + VD;
-	}
-
-	private static float calcHD() {
-		return (float) (distanceFromPlayer * Math.cos(Math.toRadians(pitch)));
-	}
-
-	private static float calcVD() {
-		return (float) (distanceFromPlayer * Math.sin(Math.toRadians(pitch)));
-	}
-
-	private static void calcZoom() {
-		float zoom = Mouse.getDWheel() * 0.02f;
-		distanceFromPlayer -= zoom;
-	}
-
-	private static void calcPitch() {
-		if (Mouse.isButtonDown(1)) {
-			float pC = Mouse.getDY() * 0.1f;
-			pitch -= pC;
-		}
-	}
-
-	private static void calcAAP() {
-		if (Mouse.isButtonDown(0)) {
-			float aC = Mouse.getDX() * 0.3f;
-			angleAroundPlayer -= aC;
-		}
-	}
+//	private static void calcCamPos(float HD, float VD) {
+//
+//		float offsetX = (float) (HD * Math.sin(Math.toRadians(angleAroundPlayer)));
+//		float offsetZ = (float) (HD * Math.cos(Math.toRadians(angleAroundPlayer)));
+//		position.x = current.getPosition().x - offsetX;
+//		position.z = current.getPosition().z - offsetZ;
+//
+//		position.y = current.getPosition().y + 1f + VD;
+//	}
+//
+//	private static float calcHD() {
+//		return (float) (distanceFromPlayer * Math.cos(Math.toRadians(pitch)));
+//	}
+//
+//	private static float calcVD() {
+//		return (float) (distanceFromPlayer * Math.sin(Math.toRadians(pitch)));
+//	}
+//
+//	private static void calcZoom() {
+//		float zoom = Mouse.getDWheel() * 0.02f;
+//		distanceFromPlayer -= zoom;
+//	}
+//
+//	private static void calcPitch() {
+//		if (Mouse.isButtonDown(1)) {
+//			float pC = Mouse.getDY() * 0.1f;
+//			pitch -= pC;
+//		}
+//	}
+//
+//	private static void calcAAP() {
+//		if (Mouse.isButtonDown(0)) {
+//			float aC = Mouse.getDX() * 0.3f;
+//			angleAroundPlayer -= aC;
+//		}
+//	}
 
 	public static void setPosition(float x, float y, float z) {
 		position = new Vector3f(x, y, z);

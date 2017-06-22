@@ -10,14 +10,15 @@ import org.joml.Vector4i;
 import audio.AudioMaster;
 import audio.SourcesManager;
 import blockRendering.BlockRenderer;
+import collectionsStuff.SmartByteBuffer;
 import cubyWaterNew.NewWaterUpdater;
 import data.chunkLoading.ChunkLoader;
+import data.chunkLoading.ChunkSaver;
 import dataAdvanced.SimpleConstructs;
+import entities.Player;
 import gameStuff.Err;
-import gameStuff.WorldObjects;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import renderStuff.DisplayManager;
-import renderStuff.FramePerformanceLogger;
 import toolBox.Meth;
 import toolBox.Vects;
 
@@ -30,6 +31,8 @@ import toolBox.Vects;
  *
  */
 public class ChunkManager {
+	
+	// TODO remove dependency from *the one* player. Add support for multiple ones instead!
 
 	/**
 	 * pro Frame!
@@ -86,13 +89,13 @@ public class ChunkManager {
 	 * if chunks shall be generated on the fly (determined on the player's
 	 * position
 	 */
-	public static boolean generate = true;
+	public static final boolean generate = true;
 
-	/**
-	 * if this is true then all chunks near enough to the player will be loaded
-	 * at once (every frame) instead of using a queue
-	 */
-	private static boolean generateAllAtOnce = true;
+//	/**
+//	 * if this is true then all chunks near enough to the player will be loaded
+//	 * at once (every frame) instead of using a queue
+//	 */
+//	private static boolean generateAllAtOnce = true;
 
 //	/**
 //	 * when true a {@link inventory.Item3D} will be generated when a block is
@@ -114,15 +117,18 @@ public class ChunkManager {
 	 */
 	public static void init() {
 		ChunkSaver.restoreStandardData();
-		if (!generate) {
-			int X = 165;
-			int Z = 169;
-			generateChunk(X, 0, Z);
-			generateChunk(X + 1, 0, Z);
-		} else {
+		for(int i = 0; i < Player.players.size(); i++)
+			ChunkSaver.restoreData(Player.players.get(i));
+		
+//		if (!generate) {
+//			int X = 165;
+//			int Z = 169;
+//			generateChunk(X, 0, Z);
+//			generateChunk(X + 1, 0, Z);
+//		} else {
 			update();
-			generateAllAtOnce = false;
-		}
+//			generateAllAtOnce = false;
+//		}
 		LightMaster.init();
 		SimpleConstructs.init();
 	}
@@ -152,25 +158,27 @@ public class ChunkManager {
 	 * are still near enough and unloads those too far away
 	 */
 	public static void update() {
-		int key = FramePerformanceLogger.stopTime();
-		Vector3f pos = WorldObjects.player.getPosition();
-		int px = toChunkCoord(WorldObjects.player.getPosition().x);
-		int py = toChunkCoord(WorldObjects.player.getPosition().y);
-		int pz = toChunkCoord(WorldObjects.player.getPosition().z);
-		if (generateAllAtOnce) {
-//			notAddingOrRemovingChunks = false;
-			for (float x = -range; x <= range; x++) {
-				for (float z = -range; z <= range; z++) {
-					for (float y = -yrange; y <= yrange; y++) {
-						float div = (x * x + y * y + z * z) / (range * range);
-						if (div < 1) {
-							generateChunk((int) (toChunkCoord(pos.x) + x), (int) (toChunkCoord(pos.y) + y),
-									(int) (toChunkCoord(pos.z) + z));
-						}
-					}
-				}
-			}
-		} else if (generate) {
+//		int key = FramePerformanceLogger.stopTime();
+		
+//		int px = toChunkCoord(Camera.getPosition().x);
+//		int py = toChunkCoord(Camera.getPosition().y);
+//		int pz = toChunkCoord(Camera.getPosition().z);
+		
+//		if (generateAllAtOnce) {
+////			notAddingOrRemovingChunks = false;
+//			for (float x = -range; x <= range; x++) {
+//				for (float z = -range; z <= range; z++) {
+//					for (float y = -yrange; y <= yrange; y++) {
+//						float div = (x * x + y * y + z * z) / (range * range);
+//						if (div < 1) {
+//							generateChunk((int) (toChunkCoord(pos.x) + x), (int) (toChunkCoord(pos.y) + y),
+//									(int) (toChunkCoord(pos.z) + z));
+//						}
+//					}
+//				}
+//			}
+//		} else 
+		if (generate) {
 			// int gen = 0;
 			// int genCap = generationSpeed;
 			// while (toLoad.size() > 0 && gen < genCap) {
@@ -187,22 +195,30 @@ public class ChunkManager {
 			// }
 			
 //			notAddingOrRemovingChunks = false;
+			
+//			System.out.println(toAdd.isEmpty());
+			
 			int i = 0;
 			while (!toAdd.isEmpty() && i < 5) {
 				Chunk c = toAdd.poll();
 				c.scheduleMaskCreation();
 				addChunk(c);
 				i++;
+//				System.out.println("added a chunk at " + c.realX() + ", " + c.realY() + ", " + c.realZ());
 			}
-
 		}
+		
+		
 //		notAddingOrRemovingChunks = false;
+		
 		int i = 0;
 		for (int c = 0; c < clist.size(); c++) {
-			float X = clist.get(c).cx() - px;
-			float Y = clist.get(c).cy() - py;
-			float Z = clist.get(c).cz() - pz;
-			if (X * X + Y * Y + Z * Z > (genRad + 2) * (genRad + 2)) {
+			Chunk C = clist.get(c);
+			Player p = Player.getNearestPlayer(C.realX(), C.realY(), C.realZ());
+			float X = C.cx() - toChunkCoord(p.getPosition().x);
+			float Y = C.cy() - toChunkCoord(p.getPosition().y);
+			float Z = C.cz() - toChunkCoord(p.getPosition().z);
+			if (X * X + Y * Y + Z * Z > (genRad + 1) * (genRad + 1)) {
 				if (clist.get(c).unloadCheck()) {
 					unloadChunk(clist.get(c).cx(), clist.get(c).cy(), clist.get(c).cz());
 				}
@@ -213,12 +229,13 @@ public class ChunkManager {
 					if (pointer > clist.size() - 2)
 						pointer = 0;
 				}
-				clist.get(c).update();
+				clist.get(pointer).update();
 			}
 		}
+		
 //		notAddingOrRemovingChunks = true;
 		
-		FramePerformanceLogger.writeStoppedTime(key ,"CM Update Without BlockUpdates");
+//		FramePerformanceLogger.writeStoppedTime(key ,"CM Update Without BlockUpdates");
 		
 		BlockStuffUpdater.update();
 		
@@ -283,9 +300,9 @@ public class ChunkManager {
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @return basically calls {@link CM#toChunkCoord(float)} for each
+	 * @return basically calls {@link Intraface#toChunkCoord(float)} for each
 	 *         parameter and then
-	 *         {@link CM#getWithChunkCoords(int, int, int)}
+	 *         {@link Intraface#getWithChunkCoords(int, int, int)}
 	 */
 	public static Chunk getWithBlockCoords(float x, float y, float z) {
 		int cx = toChunkCoord(x);// ...-32-(-17); // -16-(-1); 0-15:0; //
@@ -562,7 +579,7 @@ public class ChunkManager {
 	}
 
 	/**
-	 * @see CM#setBlockIDWithNoise(float, float, float, short)
+	 * @see Intraface#setBlockIDWithNoise(float, float, float, short)
 	 */
 	public static void setBlockIDWithNoise(Vector3f vect, short id) {
 		setBlockIDWithNoise(vect.x, vect.y, vect.z, id);
@@ -796,6 +813,21 @@ public class ChunkManager {
 
 	public static void markChunkForLoading(int x, int y, int z) {
 		chunkLoader.loadChunk(x, y, z);
+	}
+
+	public static void loadCompressedChunk(SmartByteBuffer rBuff, int cx, int cy, int cz) {
+		Chunk c = new Chunk(rBuff, cx, cy, cz);
+//		Err.err.println("Loading a chunk via buffer! WOW! " + c.realX() + ", " + c.realY() + ", " + c.realZ());
+		
+//		toAdd.add(c);
+		
+//		c.scheduleMaskCreation();
+//		Key3D k = new Key3D(cx, cy, cz);
+//		if(!chunks.containsKey(k)){
+//			chunks.put(k, c);
+//			clist.add(c);
+//		}
+		addChunk(c);
 	}
 	
 //	public static int getHighestNonEmptyChunk(float x, float y, float z){

@@ -7,9 +7,10 @@ import org.joml.Vector3f;
 import data.ChunkManager;
 import dataAdvanced.SimpleConstructs;
 import entities.Projectil;
+import entities.graphicsParts.RawMods;
+import entities.graphicsParts.Texes;
 import gameStuff.SC;
-import mainInterface.CM;
-import models.TexturedModel;
+import mainInterface.Intraface;
 import particles.*;
 import renderStuff.DisplayManager;
 import toolBox.Meth;
@@ -17,14 +18,14 @@ import toolBox.Vects;
 
 public class Meteorite extends Projectil{
 	
-	private static final TexturedModel mod = SC.getModel("meteo", "grey");
+//	private static final TexturedModel mod = SC.getModel("meteo", "grey");
 	
 	private float krassigkeit = 1;
 	
 	public Meteorite(Vector3f position, Vector3f velocity, float scale) {
 		super(position, velocity, null, true);
 		particleScale = 4*scale;
-		attatch(mod, 10*scale);
+		attatch(RawMods.meteo, Texes.grey, 10*scale);
 		lifeTime = 60;
 		particleRandomOffset = 10*scale;
 		particleChanceMult = 10*scale;
@@ -49,7 +50,7 @@ public class Meteorite extends Projectil{
 		change.z *= DisplayManager.getFrameTimeSeconds();
 		position.add(change.x, change.y, change.z);
 		if (ChunkManager.getBlockID(position) != 0) {
-			CM.deleteBlock(position);
+			Intraface.deleteBlock(position);
 			numberOfDestroyBlocks--;
 			if (numberOfDestroyBlocks == 0) {
 //				ChunkManager.dontDropItems();

@@ -55,7 +55,7 @@ public class CommandProcessor {
 			TM.setNextNight();
 		} else if (cmd.startsWith(setTime)) {
 			try {
-				TM.setDayTime(Integer.parseInt(setTime.substring(11)));
+				TM.setDayTime(Integer.parseInt(setTime.substring(10)));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

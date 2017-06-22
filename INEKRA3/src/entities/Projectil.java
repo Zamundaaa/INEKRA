@@ -9,7 +9,7 @@ import audio.*;
 import data.ChunkManager;
 import dataAdvanced.SimpleConstructs;
 import gameStuff.*;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import models.TexturedModel;
 import particles.*;
 import renderStuff.DisplayManager;
@@ -238,7 +238,7 @@ public class Projectil implements TickingThing, HarmingThing {
 		if (blockDestroying) {
 			if (ChunkManager.getBlockID(position) != 0) {
 
-				CM.deleteBlock(position);
+				Intraface.deleteBlock(position);
 
 				numberOfDestroyBlocks--;
 				if (numberOfDestroyBlocks == 0) {
@@ -254,7 +254,7 @@ public class Projectil implements TickingThing, HarmingThing {
 			if (ChunkManager.getBlockID(Vects.calcVect.add(position)) != 0) {
 				for (int i = 0; i < 3; i++) {
 					if (ChunkManager.getBlockID(position.x, position.y + i, position.z) == 0) {
-						CM.setBlock(position.x, position.y + i, position.z, setBlock);
+						Intraface.setBlock(position.x, position.y + i, position.z, setBlock);
 						break;
 					}
 				}
@@ -262,7 +262,7 @@ public class Projectil implements TickingThing, HarmingThing {
 				return true;
 			}
 		}
-		if(flare)
+		if(flare && ParticleMaster.particlesEnabled)
 			ParticleMaster.addNewParticle(PTM.fireworks, Vects.addRandom(new Vector3f(position), 0.2f), 
 					Vects.addRandom(new Vector3f(velocity).negate().mul(0.1f), 0.1f), 0, 2, 0, Meth.randomFloat(0.01f, 0.15f));
 		if (flare && position.y > Camera.getPosition().y + desiredFlareHeight) {
@@ -296,6 +296,7 @@ public class Projectil implements TickingThing, HarmingThing {
 			removeAttatched();
 			return true;
 		}
+		if(ParticleMaster.particlesEnabled)
 		if (Meth.doChance(particleChanceMult * DisplayManager.getFrameTimeSeconds() * SC.particleMult
 				* (1000.0f / Math.max(1, ParticleMaster.NOP(flyParticle))))) {
 			Vector3f pos = new Vector3f(position);
@@ -326,9 +327,10 @@ public class Projectil implements TickingThing, HarmingThing {
 		for (int i = 0; i < WorldObjects.getHits().size(); i++) {
 			HittableThing e = WorldObjects.getHits().get(i);
 			if (e.inHitbox(position) && e != dest) {
-				if (e.hit(damage) && dest == WorldObjects.player) {
-					WorldObjects.player.killed(e);
+				if (e.hit(damage) && dest instanceof Player) {
+					((Player)e).killed(e);
 				}
+				if(ParticleMaster.particlesEnabled)
 				for (int i2 = 0; i2 < 30 * SC.particleMult; i2++) {
 					ParticleMaster.addNewParticle(particles2, new Vector3f(position),
 							Vects.randomVector3f(new Vector3f(-5, -5, -5), new Vector3f(5, 5, 5)), 0, 2, 0,
@@ -397,7 +399,11 @@ public class Projectil implements TickingThing, HarmingThing {
 	}
 	
 	public void attatch(TexturedModel mod, float scale) {
-		attatched = new Entity(mod, 0, position, null, 0, 0, 0, scale, false, true);
+		attatched = new Entity(mod, 0, position, 0, 0, 0, scale, false);
+	}
+	
+	public void attatch(short raw, short tex, float scale){
+		attatched = new Entity(raw, tex, 0, position, 0, 0, 0, scale, false);
 	}
 
 }

@@ -11,7 +11,7 @@ import collectionsStuff.ArrayListI;
 import data.*;
 import entities.Projectil;
 import gameStuff.TickManager;
-import mainInterface.CM;
+import mainInterface.Intraface;
 import particles.PTM;
 import renderStuff.DisplayManager;
 import threadingStuff.ThreadManager;
@@ -30,88 +30,96 @@ public class NewWaterUpdater {
 	
 	public static void init(){
 		if(!useWaterMesh)return;
-		modelUpdater = new Thread("WaterMeshUpdater"){
-			@Override
-			public void run(){
-				ArrayList<Chunk> chunks = ChunkManager.getLoadedChunkList();
-				ArrayListF vertices = new ArrayListF();
-				ArrayListF normals = new ArrayListF();
-				ArrayListI indices = new ArrayListI();
-				while(ThreadManager.running()){
-					if(waterChanged){
-						waterChanged = false;
-						vertices.clear();
-						normals.clear();
-						indices.clear();
-						for(int i = 0; i < chunks.size() && ThreadManager.running(); i++){
-							Chunk c = chunks.get(i);
-	//						if(c.waterChanged()){
-								c.mapWater(vertices, indices, normals);
-	//						}
+//		new Exception().printStackTrace();
+		if(!Intraface.isServer){
+			modelUpdater = new Thread("WaterMeshUpdater"){
+				@Override
+				public void run(){
+					System.out.println("WaterMeshUpdater started!");
+					ArrayList<Chunk> chunks = ChunkManager.getLoadedChunkList();
+					ArrayListF vertices = new ArrayListF();
+					ArrayListF normals = new ArrayListF();
+					ArrayListI indices = new ArrayListI();
+					while(ThreadManager.running()){
+						if(waterChanged){
+							waterChanged = false;
+							vertices.clear();
+							normals.clear();
+							indices.clear();
+							for(int i = 0; i < chunks.size() && ThreadManager.running(); i++){
+								Chunk c = chunks.get(i);
+		//						if(c.waterChanged()){
+									c.mapWater(vertices, indices, normals);
+		//						}
+							}
+							double buff = 0;
+							int count = 0;
+							for(int i = 1; i < vertices.size(); i+=3){
+								if(normals.get(i) == 1)
+									count++;
+							}
+							for(int i = 1; i < vertices.size(); i+=3){
+								if(normals.get(i) == 1)
+									buff += ((double)vertices.get(i))/count;
+							}
+							NewWaterRenderer.absHeight = (float)buff;
+							while(NewWaterRenderer.change){
+								Meth.wartn(3);
+							}
+							NewWaterRenderer.positions = vertices.capToArray();
+							NewWaterRenderer.norms = normals.capToArray();
+							NewWaterRenderer.indices = indices.capToArray();
+							NewWaterRenderer.change = true;
 						}
-						double buff = 0;
-						int count = 0;
-						for(int i = 1; i < vertices.size(); i+=3){
-							if(normals.get(i) == 1)
-								count++;
-						}
-						for(int i = 1; i < vertices.size(); i+=3){
-							if(normals.get(i) == 1)
-								buff += ((double)vertices.get(i))/count;
-						}
-						NewWaterRenderer.absHeight = (float)buff;
-						while(NewWaterRenderer.change){
-							Meth.wartn(3);
-						}
-						NewWaterRenderer.positions = vertices.capToArray();
-						NewWaterRenderer.norms = normals.capToArray();
-						NewWaterRenderer.indices = indices.capToArray();
-						NewWaterRenderer.change = true;
+						Meth.wartn(200);
 					}
-					Meth.wartn(200);
+					System.out.println("WaterMeshUpdater stopped!");
 				}
-			}
-		};
-		modelUpdater.start();
-		updater = new Thread("WaterUpdater"){
-			@Override
-			public void run(){
-				ArrayList<Chunk> chunks = ChunkManager.getLoadedChunkList();
-				Chunk last = null;
-				while(ThreadManager.running()){
-					if(chunks.size() > 0){
-						int i = Meth.randomInt(0, chunks.size()-1);
-						Chunk c = chunks.get(i);
-						short[][][] wc = c.giveWaterCopy();
-						int count = 0;
-						while(wc == null && count++ < 5){
-							i = Meth.randomInt(0, chunks.size()-1);
-							c = chunks.get(i);
-							wc = c.giveWaterCopy();
-						}
-						if(c == last){
-							Meth.wartn(10);
-						}
-						if(wc != null){
-							for(int x = 0; x < SIZE; x++){
-								for(int y = 0; y < SIZE; y++){
-									for(int z = 0; z < SIZE; z++){
-										if(wc[x][y][z] != 0)
-											update(c.realX()+x+0.5f, c.realY()+y, c.realZ()+z+0.5f, wc[x][y][z]);//+Block.waterHeight(wc[x][y][z])
+			};
+			modelUpdater.start();
+		}
+		if(Intraface.singlePlayer || Intraface.isServer){
+			updater = new Thread("WaterUpdater"){
+				@Override
+				public void run(){
+					ArrayList<Chunk> chunks = ChunkManager.getLoadedChunkList();
+					Chunk last = null;
+					while(ThreadManager.running()){
+						if(chunks.size() > 0){
+							int i = Meth.randomInt(0, chunks.size()-1);
+							Chunk c = chunks.get(i);
+							short[][][] wc = c.giveWaterCopy();
+							int count = 0;
+							while(wc == null && count++ < 5){
+								i = Meth.randomInt(0, chunks.size()-1);
+								c = chunks.get(i);
+								if(c != null)
+									wc = c.giveWaterCopy();
+							}
+							if(c == last){
+								Meth.wartn(10);
+							}
+							if(wc != null){
+								for(int x = 0; x < SIZE; x++){
+									for(int y = 0; y < SIZE; y++){
+										for(int z = 0; z < SIZE; z++){
+											if(wc[x][y][z] != 0)
+												update(c.realX()+x+0.5f, c.realY()+y, c.realZ()+z+0.5f, wc[x][y][z]);//+Block.waterHeight(wc[x][y][z])
+										}
 									}
 								}
+								last = c;
 							}
-							last = c;
 						}
+	//					if(watersUpdated > 500){
+	//						watersUpdated -= 500;
+	//						Meth.wartn(1);
+	//					}
 					}
-//					if(watersUpdated > 500){
-//						watersUpdated -= 500;
-//						Meth.wartn(1);
-//					}
 				}
-			}
-		};
-		updater.start();
+			};
+			updater.start();
+		}
 	}
 	
 //	private static int watersUpdated;
@@ -132,10 +140,10 @@ public class NewWaterUpdater {
 //				watersUpdated++;
 				short downID = ChunkManager.getBlockForBlocksOnly(x, y - 1, z);
 				if (downID == Block.AIR) {
-					CM.deleteWater(x, y, z);
+					Intraface.deleteWater(x, y, z);
 					// w.getSavedPos().y -= 1;
 					if (ChunkManager.getBlockID(x, y - 2, z) != 0) {
-						CM.setWaterID(x, y - 1, z, ID);
+						Intraface.setWaterID(x, y - 1, z, ID);
 					} else {
 						while (TickManager.updating) {
 							Meth.wartn(1);
@@ -155,7 +163,7 @@ public class NewWaterUpdater {
 				} else if (downID != Block.max_water && Block.isWater(downID)) {
 					int diff = Math.min(Block.max_water - downID, ID - 1000);
 					short i = (short) (downID + diff);
-					CM.setWaterID(x, y - 1, z, i);
+					Intraface.setWaterID(x, y - 1, z, i);
 					// if(!Block.isWater(i)){
 					// Err.err.println("a water block is set to " + i + " ???
 					// original ID: " + downID + " own ID: " + ID + " diff: " +
@@ -164,9 +172,9 @@ public class NewWaterUpdater {
 					// }
 					int newID = (ID - diff);
 					if (newID >= Block.min_water) {
-						CM.setWaterID(x, y, z, (short) newID);
+						Intraface.setWaterID(x, y, z, (short) newID);
 					} else {
-						CM.setWaterID(x, y, z, Block.AIR);
+						Intraface.setWaterID(x, y, z, Block.AIR);
 					}
 				} else {
 					if (ID > Block.evaporation_treshold) {
@@ -182,8 +190,8 @@ public class NewWaterUpdater {
 							if ((xp - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (xp - ID) % 2;
-							CM.setWaterID(x + 1, y, z, (short) (xp - hd));
-							CM.setWaterID(x, y, z, (short) (ID + hd));
+							Intraface.setWaterID(x + 1, y, z, (short) (xp - hd));
+							Intraface.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						if (xm != ID && Block.isWater(xm)) {
@@ -191,8 +199,8 @@ public class NewWaterUpdater {
 							if ((xm - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (xm - ID) % 2;
-							CM.setWaterID(x - 1, y, z, (short) (xm - hd));
-							CM.setWaterID(x, y, z, (short) (ID + hd));
+							Intraface.setWaterID(x - 1, y, z, (short) (xm - hd));
+							Intraface.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						if (zp != ID && Block.isWater(zp)) {
@@ -200,8 +208,8 @@ public class NewWaterUpdater {
 							if ((zp - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (zp - ID) % 2;
-							CM.setWaterID(x, y, z + 1, (short) (zp - hd));
-							CM.setWaterID(x, y, z, (short) (ID + hd));
+							Intraface.setWaterID(x, y, z + 1, (short) (zp - hd));
+							Intraface.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						if (zm != ID && Block.isWater(zm)) {
@@ -209,8 +217,8 @@ public class NewWaterUpdater {
 							if ((zm - ID) % 2 == 1
 									&& Meth.doChance(RANDOMSHIFTPS * DisplayManager.getFrameTimeSeconds()))
 								hd += (zm - ID) % 2;
-							CM.setWaterID(x, y, z - 1, (short) (zm - hd));
-							CM.setWaterID(x, y, z, (short) (ID + hd));
+							Intraface.setWaterID(x, y, z - 1, (short) (zm - hd));
+							Intraface.setWaterID(x, y, z, (short) (ID + hd));
 							ID += hd;
 						}
 						int n = 1;
@@ -226,33 +234,33 @@ public class NewWaterUpdater {
 						if (aow > Block.min_water) {
 							n = 0;
 							if (xp == Block.AIR) {
-								CM.setWaterID(x + 1, y, z, aow);
+								Intraface.setWaterID(x + 1, y, z, aow);
 								n++;
 							}
 							if (xm == Block.AIR) {
-								CM.setWaterID(x - 1, y, z, aow);
+								Intraface.setWaterID(x - 1, y, z, aow);
 								n++;
 							}
 							if (zp == Block.AIR) {
-								CM.setWaterID(x, y, z + 1, aow);
+								Intraface.setWaterID(x, y, z + 1, aow);
 								n++;
 							}
 							if (zm == Block.AIR) {
-								CM.setWaterID(x, y, z - 1, aow);
+								Intraface.setWaterID(x, y, z - 1, aow);
 								n++;
 							}
 							if (n > 0) {
-								CM.setWaterID(x, y, z, aow);
+								Intraface.setWaterID(x, y, z, aow);
 							}
 						} else {
-							CM.setBlock(x, y, z, Block.AIR);
+							Intraface.setBlock(x, y, z, Block.AIR);
 						}
 					} else {
 						ID--;
 						if (ID >= Block.min_water) {
-							CM.setWaterID(x, y, z, ID);
+							Intraface.setWaterID(x, y, z, ID);
 						} else {
-							CM.setBlock(x, y, z, Block.AIR);
+							Intraface.setBlock(x, y, z, Block.AIR);
 						}
 					}
 				}

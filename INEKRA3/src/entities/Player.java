@@ -1,7 +1,5 @@
 package entities;
 
-import static particles.PTM.fire;
-
 import java.util.*;
 
 import org.joml.Vector2f;
@@ -9,17 +7,20 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import audio.AudioMaster;
-import chatStuff.Chat;
 import controls.*;
 import data.Block;
 import data.ChunkManager;
+import entities.graphicsParts.RawMods;
+import entities.graphicsParts.Texes;
 import gameStuff.*;
+import gameStuff2.ServerLoop;
 import guis.PixelGUITex;
 import hitbox.Hitbox;
 import hitbox.PlayerHitbox;
 import inventory.Inv2D;
+import inventory.Inventory;
 import line.Line;
-import models.TexturedModel;
+import mainInterface.Intraface;
 import particles.PTM;
 import particles.ParticleMaster;
 import renderStuff.DisplayManager;
@@ -49,34 +50,47 @@ public class Player extends Entity implements HittableThing {
 	private boolean HEADUNDERWATER = false;
 	private boolean inAir = false;
 
-	private Inv2D inv;
+	private Inventory inv;
+	private Inv2D inv2D;
 
 	public boolean GHOSTRIDER = Tools.loadBoolPreference("burn", false);
 
 	public static boolean MANUUPDATE = true;
 	public static boolean NOCONTROL = false;
 	// private static long LS = Meth.systemTime();
+	
+	private static PixelGUITex nerdscope;
+	
+	public Player(Vector3f position, float rotX, float rotY, float rotZ, float scale, int ID) {
+		this.x = position.x;
+		this.y = position.y;
+		this.z = position.z;
+		this.rotX = rotX;
+		this.rotY = rotY;
+		this.rotZ = rotZ;
+		this.scale = scale;
+		this.position = position;
+		
+		graphics = Intraface.getModelGraphics(this, RawMods.person, Texes.playerTex);
+		
+			
+//		boundingSphere = Meth.createBoundingSphere(this);
 
-	// private Line LINE;
-	private static PixelGUITex nerdscope = new PixelGUITex(SC.getTex("fadenkreuz").getID(), new Vector2f(),
-			new Vector2f(4, 4));
-
-	public Entity e;// , e2
-
-	public Player(TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float scale, int ID) {
-		super(model, 0, position, rotX, rotY, rotZ, scale, false);
-		// Err.err.println();
+		this.velocity = new Vector3f();
+		
 		hit = new PlayerHitbox(position, scale);
-
-		if (GHOSTRIDER) {
-			ParticleMaster.addNewParticle(fire,
-					new Vector3f(position.x + Meth.randomFloat(-0.1f, 0.1f),
-							position.y + (10f * scale) + Meth.randomFloat(-0.1f, 0.1f),
-							position.z + Meth.randomFloat(-0.1f, 0.1f)),
-					new Vector3f(), Meth.randomFloat(-0.05f, -0.01f), 0.3f, 0, 1);
-		}
-		if (MANUUPDATE) {
-			EntityManager.removeEntity(this);
+		
+//		if (GHOSTRIDER) {
+//			ParticleMaster.addNewParticle(fire,
+//					new Vector3f(position.x + Meth.randomFloat(-0.1f, 0.1f),
+//							position.y + (10f * scale) + Meth.randomFloat(-0.1f, 0.1f),
+//							position.z + Meth.randomFloat(-0.1f, 0.1f)),
+//					new Vector3f(), Meth.randomFloat(-0.05f, -0.01f), 0.3f, 0, 1);
+//		}
+		
+		if (!MANUUPDATE) {
+			EntityManager.addEntity(this);
+//			EntityManager.removeEntity(this);
 		}
 
 		lines = new Line[12];
@@ -84,14 +98,22 @@ public class Player extends Entity implements HittableThing {
 			lines[i] = new Line(0, 0, 0, 0, 0, 0, 0, 0, 0);
 		}
 
-		e = new Entity(SC.getModel("person", "cube"), 0, new Vector3f(), 0, 0, 0, 0.1f, false);
+//		e = new Entity(SC.getModel("person", "cube"), 0, new Vector3f(), 0, 0, 0, 0.1f, false);
+		
 		// e2 = new Entity(SC.getModel("cube", "cube"), 0, new Vector3f(), 0, 0,
 		// 0, 0.5f, false);
-
+		
 		// LINE = new Line(0, 0, 0, 0, 0, 0, 0, 0.5f, 0.5f);
-
-		inv = new Inv2D();
-		nerdscope.show();
+		
+		if(!ServerLoop.isServer){
+			inv2D = new Inv2D(this);
+			inv = inv2D;
+			nerdscope = new PixelGUITex(Models.getLoadedTex(Texes.fadenkreuz), new Vector2f(),
+						new Vector2f(4, 4));
+			nerdscope.show();
+		}else{
+			inv = new Inventory();
+		}
 		
 		playerIDs.put(ID, this);
 		players.add(this);
@@ -122,15 +144,8 @@ public class Player extends Entity implements HittableThing {
 		// rotY += -2*SensorData.dorientation.x*Meth.radToAng;
 		// Camera.setPitch(Camera.getPitch()+SensorData.dorientation.y*Meth.radToAng);
 		
-		Chat.update();
-
-		if (GHOSTRIDER) {
-			ParticleMaster.addNewParticle(fire,
-					new Vector3f(position.x + Meth.randomFloat(-0.1f, 0.1f),
-							position.y + (10f * scale) + Meth.randomFloat(-0.1f, 0.1f),
-							position.z + Meth.randomFloat(-0.1f, 0.1f)),
-					new Vector3f(), Meth.randomFloat(-0.05f, -0.01f), 0.3f, 0, 1);
-		}
+//		Chat.update();
+		
 		if (!NOCONTROL) {
 			checkInputs();
 			move();
@@ -141,8 +156,12 @@ public class Player extends Entity implements HittableThing {
 			// scripted = true;
 			// }
 		}
-		Camera.move();
+		
+		if(!Intraface.isServer)
+			Camera.move();
+		
 		inv.update();
+		
 		// Vector3f p = MousePicker.getPoint(5);
 		// if (Mouse.isButtonDown(0)) {
 		// Vector3f b = MousePicker.getNextFilledBlockCoord(100, false);
@@ -177,7 +196,14 @@ public class Player extends Entity implements HittableThing {
 		// // LINE.set1(Vects.NULL);
 		// // LINE.set2(Vects.NULL);
 		// }
-		setLines();
+		
+//		if(Intraface.isServer)
+//		System.out.println("setting lines");
+		if(!Intraface.isServer)
+			setLines();
+//		if(Intraface.isServer)
+//		System.out.println("lines set");
+		
 		if (lives < 10 && lives > 0 && Meth.time() > LH + 0.2f) {
 			lives += 1;
 			if (lives > 10) {
@@ -554,20 +580,21 @@ public class Player extends Entity implements HittableThing {
 				velocity.y = JETSPEED*speedMul;
 			}
 			// if(Meth.doChance(100*DisplayManager.getFrameTimeSeconds())){
-			float min = -0.2f;
-			float max = 0.2f;
-			float pvel = 0.2f;
-			// boolean cosmic = Meth.doChance(0.1f);
-			boolean cosmic = (TM.jahresZeit() == TM.WINTER)
-					|| ((TM.jahresZeit() == TM.HERBST || TM.jahresZeit() == TM.FRÜHLING) && Meth.doChance(0.5f));
-			float size = Meth.randomFloat(0.1f, 0.3f);
-			ParticleMaster.addNewParticle(cosmic ? PTM.cosmic : PTM.projectile,
-					new Vector3f(position.x - ysin * 0.2f + ycos * Meth.randomFloat(min, max),
-							position.y + 1 + Meth.randomFloat(min, max),
-							position.z - ycos * 0.2f + ysin * Meth.randomFloat(min, max)),
-					Vects.randomVector3f(-pvel, pvel, -1 + velocity.y * 0.5f, -5 + velocity.y * 0.5f, -pvel, pvel), 0,
-					1, 0, size);
-			// }
+			if(!Intraface.isServer) {
+				float min = -0.2f;
+				float max = 0.2f;
+				float pvel = 0.2f;
+				// boolean cosmic = Meth.doChance(0.1f);
+				boolean cosmic = (TM.jahresZeit() == TM.WINTER)
+						|| ((TM.jahresZeit() == TM.HERBST || TM.jahresZeit() == TM.FRÜHLING) && Meth.doChance(0.5f));
+				float size = Meth.randomFloat(0.1f, 0.3f);
+				ParticleMaster.addNewParticle(cosmic ? PTM.cosmic : PTM.projectile,
+						new Vector3f(position.x - ysin * 0.2f + ycos * Meth.randomFloat(min, max),
+								position.y + 1 + Meth.randomFloat(min, max),
+								position.z - ycos * 0.2f + ysin * Meth.randomFloat(min, max)),
+						Vects.randomVector3f(-pvel, pvel, -1 + velocity.y * 0.5f, -5 + velocity.y * 0.5f, -pvel, pvel), 0,
+						1, 0, size);
+			}
 		}
 	}
 
@@ -814,6 +841,7 @@ public class Player extends Entity implements HittableThing {
 
 	@Override
 	public void destroy() {
+		if(Intraface.isServer)return;
 		float v = 50;
 		for (int i = 0; i < 200; i++) {
 			ParticleMaster.addNewParticle(Meth.doChance(0.5f) ? PTM.cosmic : PTM.projectile, new Vector3f(position),
@@ -830,11 +858,50 @@ public class Player extends Entity implements HittableThing {
 	}
 
 	public Inv2D getInventory() {
-		return inv;
+		return inv2D;
 	}
 	
 	public int playerID() {
 		return playerID;
+	}
+
+	public static Player getNearestPlayer(float x, float y, float z) {// TODO can and should be optimized!
+		if(players.size() == 0)return null;
+		Player ret = players.get(0);
+		float distsq = ret.getPosition().distanceSquared(x, y, z);
+		for(int i = 1; i < players.size(); i++){
+			float dsq = players.get(i).getPosition().distanceSquared(x, y, z);
+			if(dsq < distsq){
+				ret = players.get(i);
+				distsq = dsq;
+			}
+		}
+		return ret;
+	}
+	
+	private float pitch;
+	
+	public void setPitch(float pitch) {
+		this.pitch = pitch;
+	}
+	
+	public float pitch(){
+		return pitch;
+	}
+	
+	private static ArrayDeque<Integer> toRemove = new ArrayDeque<>();
+	
+	public static void updateSomeThings(){
+		while(!toRemove.isEmpty()){
+			int i = toRemove.pop();
+			Player p = playerIDs.remove(i);
+			if(p != null)
+				players.remove(p);
+		}
+	}
+	
+	public static void remove(int playerID) {
+		toRemove.add(playerID);
 	}
 
 }

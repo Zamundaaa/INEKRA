@@ -2,13 +2,15 @@ package mainInterface;
 
 import static data.Block.AIR;
 
+import cubyWaterNew.NewWaterUpdater;
 import data.ChunkManager;
+import entities.MWBE;
+import entities.graphicsParts.ModelGraphics;
 import gameStuff.WorldObjects;
 import network.Server;
-import solarSystemRendering.PlanetManager;
 import toolBox.Meth;
 
-public class ServerCM extends CM{
+public class ServerCM extends Intraface{
 
 	@Override
 	public void setB(int x, int y, int z, short ID) {
@@ -38,7 +40,27 @@ public class ServerCM extends CM{
 	protected void updateSpecifics() {
 		ChunkManager.update();
 		WorldObjects.update();
-		PlanetManager.update();
+//		PlanetManager.update();
+	}
+	
+	private static final ModelGraphics staticModelGraphics = new ModelGraphics(null, null){
+		@Override
+		public void update(){
+			
+		}
+	};
+	
+	@Override
+	public ModelGraphics getMG(MWBE m, short modelID, short texID) {
+		return staticModelGraphics;
+	}
+
+	@Override
+	protected void initSpecifics() {
+		// TODO Auto-generated method stub
+		ChunkManager.init();
+		Server.init();
+		NewWaterUpdater.init();
 	}
 
 }

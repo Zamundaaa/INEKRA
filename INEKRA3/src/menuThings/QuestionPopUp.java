@@ -1,6 +1,7 @@
 package menuThings;
 
-import gameStuff.SC;
+import entities.graphicsParts.Texes;
+import gameStuff.Models;
 
 public abstract class QuestionPopUp extends PopUpMenu {
 
@@ -46,14 +47,14 @@ public abstract class QuestionPopUp extends PopUpMenu {
 
 	public QuestionPopUp(String text, Rectangle bounds, int texID, boolean texTransparent) {
 		super(text, bounds, texID, texTransparent);
-		yes = new Button("YES", new Rectangle(0, 0, size * bounds.w, size * bounds.h), SC.getTex("texPack/green").getID(), false) {
+		yes = new Button("YES", new Rectangle(0, 0, size * bounds.w, size * bounds.h), Models.getLoadedTex(Texes.green), false) {
 			@Override
 			public void leftClick() {
 				visible = false;
 				yes();
 			}
 		};
-		no = new Button("NO", new Rectangle(0, 0, size * bounds.w, size * bounds.h), SC.getTex("texPack/red").getID(), false) {
+		no = new Button("NO", new Rectangle(0, 0, size * bounds.w, size * bounds.h), Models.getLoadedTex(Texes.red), false) {
 			@Override
 			public void leftClick() {
 				visible = false;
@@ -85,7 +86,7 @@ public abstract class QuestionPopUp extends PopUpMenu {
 	}
 
 	public QuestionPopUp(String text, Rectangle bounds) {
-		this(text, bounds, SC.getTex("QuestionBackground").getID(), false);
+		this(text, bounds, Models.getLoadedTex(Texes.questionBackground), false);
 	}
 
 	@Override

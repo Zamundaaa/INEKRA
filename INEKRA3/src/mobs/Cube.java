@@ -6,9 +6,11 @@ import data.Block;
 import data.ChunkManager;
 import dataAdvanced.SimpleConstructs;
 import entities.Entity;
-import gameStuff.*;
-import mainInterface.CM;
-import models.TexturedModel;
+import entities.Player;
+import entities.graphicsParts.RawMods;
+import entities.graphicsParts.Texes;
+import gameStuff.EntityManager;
+import mainInterface.Intraface;
 import renderStuff.DisplayManager;
 import toolBox.*;
 
@@ -19,14 +21,16 @@ public class Cube extends Entity {
 	public static final float bodnoffset = 0.5f;
 	public static final float HEIGHT = 1;
 
-	protected static final TexturedModel model = SC.getModel("cube", "WATER");
+//	protected static final TexturedModel model = SC.getModel("cube", "WATER");
+	protected static final short modelID = RawMods.cube;
+	protected static final short texID = Texes.WATER;
 
 	private float TERRAINHEIGHT, waitingTime;
 	private boolean inAir = false;
 	private float water;
 
 	public Cube(Vector3f position) {
-		super(model, 0, position, 0, 0, 0, 0.4f, false);
+		super(modelID, texID, 0, position, 0, 0, 0, 0.4f, false);
 	}
 
 	@Override
@@ -83,11 +87,13 @@ public class Cube extends Entity {
 	}
 
 	private void setTargets() {
+		if(Player.players.size() == 0)return;
+		Player player = Player.players.get(0);
 
 		if (Meth.doChance(0.1f * DisplayManager.getFrameTimeSeconds())) {
 			boostCap = Meth.systemTime() + 1000;
 		}
-		Vects.calcVect.set(WorldObjects.player.getPosition());
+		Vects.calcVect.set(player.getPosition());
 		Vects.calcVect.y += 1;
 
 		// if(CommandProcessor.isClient){
@@ -122,11 +128,11 @@ public class Cube extends Entity {
 			// scale += BIGSCALE*DisplayManager.getFrameTimeSeconds();
 			// }else{
 			scale = BIGSCALE;
-			Vects.calcVect.set(WorldObjects.player.getPosition());
+			Vects.calcVect.set(player.getPosition());
 			Vects.calcVect.y++;
 			if(position.distanceSquared(Vects.calcVect) <= 4) {
 				boostCap = 0;
-				WorldObjects.player.influence(velocity.mul(0.5f));
+				player.influence(velocity.mul(0.5f));
 				destroy();
 			}
 			
@@ -256,7 +262,7 @@ public class Cube extends Entity {
 				if (Vects.calcVect2D.lengthSquared() != 0) {
 					Vects.calcVect2D.normalize();
 				}
-				CM.deleteBlock(position.x + Vects.calcVect2D.x, position.y, position.z + Vects.calcVect2D.y);
+				Intraface.deleteBlock(position.x + Vects.calcVect2D.x, position.y, position.z + Vects.calcVect2D.y);
 			}
 		} else {
 			if (Meth.doChance(DisplayManager.getFrameTimeSeconds()) || ChunkManager.getBlockID(position) != Block.AIR) {// 10*Di...

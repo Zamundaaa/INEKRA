@@ -16,59 +16,18 @@ import renderStuff.MasterRenderer;
 
 public class MousePicker {
 
-	// private static final int RECURSION_COUNT = 200;
-	// private static final float RAY_RANGE = 600;
-
 	private static Vector3f currentRay = new Vector3f();
 
 	private static Matrix4f projectionMatrix;
 	private static Matrix4f viewMatrix;
 
-	// private Terrains terrain;
-	// private Vector3f currentTerrainPoint;
-
 	public static void init() {
+		System.out.println("initing mp");
 		projectionMatrix = MasterRenderer.getProjectionMatrix();
+		System.out.println("got pm");
 		viewMatrix = Meth.createViewMatrix();
-		// this.terrain = terrain;
+		System.out.println("inited mp");
 	}
-
-	// public Block getNextBlockOnCurrentRay(float blockCoordMaxDist, float
-	// blockCoordInterval) {
-	// return getNextBlock(currentRay, blockCoordMaxDist, blockCoordInterval);
-	// }
-
-	// public Vector3f getNextBlockCoordOnCurrentRay(float blockCoordMaxDist,
-	// float blockCoordInterval) {
-	// Block b = getNextBlockOnCurrentRay(blockCoordMaxDist,
-	// blockCoordInterval);
-	// if (b != null) {
-	// return b.getBlockPos();
-	// }
-	// return null;
-	// }
-
-	// public Block getNextBlock(Vector3f ray, float blockCoordMaxDist, float
-	// blockCoordInterval) {
-	// Vector3f point;
-	// Vector3f lastPoint = null;
-	// for (int i2 = 0; i2 < (int) (blockCoordMaxDist / blockCoordInterval);
-	// i2++) {
-	// point = getPointOnRay(ray, i2 * blockCoordInterval);
-	// if (point != null) {
-	// if (lastPoint != null && Vects.sameIntVects(point, lastPoint)) {
-	// continue;
-	// }
-	// lastPoint = point;
-	// Block b = ChunkManager.getBlockID(point.x, point.y, point.z);
-	// if (b != null) {
-	// return b;
-	// }
-	// }
-	// }
-	//
-	// return null;
-	// }
 
 	public static Vector3f getCurrentRay() {
 		return currentRay;
@@ -82,9 +41,6 @@ public class MousePicker {
 	private static Vector3f calculateMouseRay() {
 		float mouseX = Mouse.getX();
 		float mouseY = DisplayManager.HEIGHT * 0.5f - (Mouse.getY() - DisplayManager.HEIGHT * 0.5f);
-		// H*0.5 - Y + H*0.5
-		// = -Y
-//		float mouseY = -Mouse.getY();
 		Vector2f normalizedCoords = getNormalisedDeviceCoordinates(mouseX, mouseY);
 		Vector4f clipCoords = new Vector4f(normalizedCoords.x, normalizedCoords.y, -1.0f, 1.0f);
 		Vector4f eyeCoords = toEyeCoords(clipCoords);
@@ -481,7 +437,7 @@ public class MousePicker {
 		} else {
 			tMaxZ = tDeltaZ * frac0(start.z);
 		}
-
+		
 		// float t = 0;
 		Vector3f result = Vects.calcVect;
 		short b;

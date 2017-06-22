@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import org.lwjgl.BufferUtils;
 
 import gameStuff.Err;
+import toolBox.configStuff.Config;
 
 /**
  * @author xaver
@@ -22,9 +23,12 @@ public class Tools {
 	public static final String screenShotFolder;
 	public static final String scriptFolderInINEKRA = "/Scripts/";
 	public static final String scriptFolder;
-
+	
+	private static Config preferences;
+	
 	static {
 		superpath = System.getProperty("user.home") + "/" + superFolder;
+		
 		// File folder = new File(superpath + "/");
 		// if (!folder.exists()) {
 		// folder.mkdirs();
@@ -39,17 +43,22 @@ public class Tools {
 		if (!folder.exists()) {
 			folder.mkdirs();
 		}
+		
+		preferences = new Config("preferences.conf", true);
+		
+//		System.out.println(preferences.toString());
+		
 	}
 
 	public static String[] getFiles(String folder) {
 		String[] ret;
 		File Folder;
 		Folder = new File(superpath + "/" + folder);
-		if (Folder.exists() && Folder.list() != null) {
-			ret = Folder.list();
+		if (Folder.exists() && (ret = Folder.list()) != null) {
+			
 		} else {
 			Folder.mkdirs();
-			ret = Folder.list();
+			ret = new String[0];
 		}
 		// File playing = new File(Folder.getPath() + "/" + musics[playin]);
 		return ret;
@@ -63,251 +72,298 @@ public class Tools {
 		return Tools.class.getClassLoader().getResourceAsStream(name);
 	}
 
-	private static void testPreferenceData() {
-		String content = readFile("preferences.txt");
-		if (content == null || content.equals("")) {
-			String c2 = readJarFile("toolBox/preferences.txt");
-			writeToFile("preferences.txt", c2);
-		}
-	}
+//	private static void testPreferenceData() {
+//		String content = readFile("preferences.txt");
+//		if (content == null || content.equals("")) {
+//			String c2 = readJarFile("toolBox/preferences.txt");
+//			writeToFile("preferences.txt", c2);
+//		}
+//	}
 
 	public static long loadLongPreference(String name, long standardValue) {
-		testPreferenceData();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
-			String line;
-			line = reader.readLine();
-			while (line != null) {
-				if (line.split(" ")[0].equals(name)) {
-					break;
-				} else {
-					line = reader.readLine();
-				}
-			}
-			reader.close();
-			if (line == null) {
-				Err.err.println("Preference not found! Setting it default to " + standardValue);
-				setLongPreference(name, standardValue);
-				return standardValue;
-			}
-			String[] things = line.split(name + " = ");
-			if (things.length != 2) {
-				Err.err.println("Preference with wrong formation found! Setting it default to 0");
-				setLongPreference(name, standardValue);
-				return standardValue;
-			}
-			try {
-				return Long.parseLong(things[1]);
-			} catch (Exception e) {
-				Err.err.println("some error occurred parsing '" + things[1] + "' to long. Returning the standard value "
-						+ standardValue + " instead");
-				return standardValue;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while loading a (float)Preference ocurred");
-			System.exit(-1);
+//		testPreferenceData();
+//		try {
+//			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
+//			String line;
+//			line = reader.readLine();
+//			while (line != null) {
+//				if (line.split(" ")[0].equals(name)) {
+//					break;
+//				} else {
+//					line = reader.readLine();
+//				}
+//			}
+//			reader.close();
+//			if (line == null) {
+//				Err.err.println("Preference not found! Setting it default to " + standardValue);
+//				setLongPreference(name, standardValue);
+//				return standardValue;
+//			}
+//			String[] things = line.split(name + " = ");
+//			if (things.length != 2) {
+//				Err.err.println("Preference with wrong formation found! Setting it default to 0");
+//				setLongPreference(name, standardValue);
+//				return standardValue;
+//			}
+//			try {
+//				return Long.parseLong(things[1]);
+//			} catch (Exception e) {
+//				Err.err.println("some error occurred parsing '" + things[1] + "' to long. Returning the standard value "
+//						+ standardValue + " instead");
+//				return standardValue;
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while loading a (float)Preference ocurred");
+//			System.exit(-1);
+//		}
+//		return standardValue;
+		if(preferences.isKey(name)){
+			return preferences.getLongConfig(name);
+		}else{
+			preferences.setConfig(name, standardValue);
+			return standardValue;
 		}
-		return standardValue;
+	}
+	
+	public static int loadIntPreference(String name, int valueIfNotPresent){
+		if(preferences.isKey(name)){
+			return preferences.getIntConfig(name);
+		}else{
+			preferences.setConfig(name, valueIfNotPresent);
+			return valueIfNotPresent;
+		}
+	}
+	
+	public static void setIntPreference(String name, int value) {
+		preferences.setConfig(name, value);
+		preferences.save();
 	}
 
 	public static void setLongPreference(String name, long value) {
-		testPreferenceData();
-		try {
-			preferences = readFile("preferences.txt");
-			String[] strs = preferences.split("\n");
-			String newContent = strs[0];
-			boolean gotit = false;
-			for (int i = 0; i < strs.length; i++) {
-				if (strs[i].split(" ")[0].equals(name)) {
-					newContent += name + " = " + value + "\n";
-					gotit = true;
-				} else {
-					newContent += strs[i] + "\n";
-				}
-			}
-			if (!gotit) {
-				newContent += name + " = " + value + "\n";
-				Err.err.println("didn't find preference '" + name + "'; writing it new");
-			}
-			writeToFile("", "preferences.txt", newContent, true);
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while writing a (long)Preference ocurred (Preference: " + name + ")");
-			System.exit(-1);
-		}
+//		testPreferenceData();
+//		try {
+//			preferences = readFile("preferences.txt");
+//			String[] strs = preferences.split("\n");
+//			String newContent = strs[0];
+//			boolean gotit = false;
+//			for (int i = 0; i < strs.length; i++) {
+//				if (strs[i].split(" ")[0].equals(name)) {
+//					newContent += name + " = " + value + "\n";
+//					gotit = true;
+//				} else {
+//					newContent += strs[i] + "\n";
+//				}
+//			}
+//			if (!gotit) {
+//				newContent += name + " = " + value + "\n";
+//				Err.err.println("didn't find preference '" + name + "'; writing it new");
+//			}
+//			writeToFile("", "preferences.txt", newContent, true);
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while writing a (long)Preference ocurred (Preference: " + name + ")");
+//			System.exit(-1);
+//		}
+		preferences.setConfig(name, value);
+		preferences.save();
 	}
 
 	public static boolean loadBoolPreference(String name, boolean standardValue) {
-		testPreferenceData();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
-			String line = reader.readLine();
-			while (line != null) {
-				if (line.split(" ")[0].equals(name)) {
-					break;
-				} else {
-					line = reader.readLine();
-				}
-			}
-			reader.close();
-			if (line == null) {
-				setBoolPreference(name, standardValue);
-				Err.err.println("Didn't find the preference " + name + "; Setting it to " + standardValue + " for now");
-				return standardValue;
-			}
-			String[] things = line.split(name + " = ");
-			if (things.length != 2) {
-				throw new RuntimeException("Preferences with wrong formation found!");
-			}
-			if (things[1].equals("true")) {
-				return true;
-			} else {
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while loading a (bool)Preference ocurred");
-			System.exit(-1);
+//		testPreferenceData();
+//		try {
+//			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
+//			String line = reader.readLine();
+//			while (line != null) {
+//				if (line.split(" ")[0].equals(name)) {
+//					break;
+//				} else {
+//					line = reader.readLine();
+//				}
+//			}
+//			reader.close();
+//			if (line == null) {
+//				setBoolPreference(name, standardValue);
+//				Err.err.println("Didn't find the preference " + name + "; Setting it to " + standardValue + " for now");
+//				return standardValue;
+//			}
+//			String[] things = line.split(name + " = ");
+//			if (things.length != 2) {
+//				throw new RuntimeException("Preferences with wrong formation found!");
+//			}
+//			if (things[1].equals("true")) {
+//				return true;
+//			} else {
+//				return false;
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while loading a (bool)Preference ocurred");
+//			System.exit(-1);
+//		}
+//		return standardValue;
+		if(preferences.isKey(name)){
+//			boolean ret = preferences.getBoolConfig(name);
+//			System.out.println("preference '" + name + "' is " + ret);
+//			return ret;
+			return preferences.getBoolConfig(name);
+		}else{
+			preferences.setConfig(name, standardValue);
+			return standardValue;
 		}
-		return false;
 	}
 
 	public static boolean loadBoolPreference(String name) {
-		testPreferenceData();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
-			String line = reader.readLine();
-			while (line != null) {
-				if (line.split(" ")[0].equals(name)) {
-					break;
-				} else {
-					line = reader.readLine();
-				}
-			}
-			reader.close();
-			if (line == null) {
-				setBoolPreference(name, false);
-				Err.err.println("Tryed loading the " + name
-						+ " preference. Didn't find it. Now it's false. Correct it if it's wrong!");
-				return false;
-			}
-			String[] things = line.split(name + " = ");
-			if (things.length != 2) {
-				Err.err.println("Preferences with wrong formation found!");
-				System.exit(-1);
-			}
-			if (things[1].equals("true")) {
-				return true;
-			} else {
-				return false;
-			}
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while loading a (bool)Preference ocurred");
-			System.exit(-1);
+//		testPreferenceData();
+//		try {
+//			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
+//			String line = reader.readLine();
+//			while (line != null) {
+//				if (line.split(" ")[0].equals(name)) {
+//					break;
+//				} else {
+//					line = reader.readLine();
+//				}
+//			}
+//			reader.close();
+//			if (line == null) {
+//				setBoolPreference(name, false);
+//				Err.err.println("Tryed loading the " + name
+//						+ " preference. Didn't find it. Now it's false. Correct it if it's wrong!");
+//				return false;
+//			}
+//			String[] things = line.split(name + " = ");
+//			if (things.length != 2) {
+//				Err.err.println("Preferences with wrong formation found!");
+//				System.exit(-1);
+//			}
+//			if (things[1].equals("true")) {
+//				return true;
+//			} else {
+//				return false;
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while loading a (bool)Preference ocurred");
+//			System.exit(-1);
+//		}
+//		return false;
+		if(preferences.isKey(name)){
+			return preferences.getBoolConfig(name);
+		}else{
+			return false;
 		}
-		return false;
 	}
 
 	public static void setBoolPreference(String name, boolean bool) {
-		testPreferenceData();
-		try {
-			String preferences = readFile("preferences.txt");
-			String[] strs = preferences.split("\n");
-			String newContent = "";
-			boolean gotit = false;
-			for (int i = 0; i < strs.length; i++) {
-				if (strs[i].split(" ")[0].equals(name)) {
-					newContent = newContent + name + " = " + bool + "\n";
-					gotit = true;
-				} else {
-					newContent = newContent + strs[i] + "\n";
-				}
-			}
-			if (!gotit) {
-				newContent += name + " = " + bool + "\n";
-				Err.err.println("didn't find preference '" + name + "'; writing it new || OLD CONTENT: ");
-			}
-			writeToFile("", "preferences.txt", newContent, true);
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while writing a (bool)Preference ocurred");
-			System.exit(-1);
-		}
+//		testPreferenceData();
+//		try {
+//			String preferences = readFile("preferences.txt");
+//			String[] strs = preferences.split("\n");
+//			String newContent = "";
+//			boolean gotit = false;
+//			for (int i = 0; i < strs.length; i++) {
+//				if (strs[i].split(" ")[0].equals(name)) {
+//					newContent = newContent + name + " = " + bool + "\n";
+//					gotit = true;
+//				} else {
+//					newContent = newContent + strs[i] + "\n";
+//				}
+//			}
+//			if (!gotit) {
+//				newContent += name + " = " + bool + "\n";
+//				Err.err.println("didn't find preference '" + name + "'; writing it new || OLD CONTENT: ");
+//			}
+//			writeToFile("", "preferences.txt", newContent, true);
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while writing a (bool)Preference ocurred");
+//			System.exit(-1);
+//		}
+		preferences.setConfig(name, bool);
+		preferences.save();
 	}
 
-	private static String preferences;
+//	private static String preferences;
 
 	public static void setFloatPreference(String name, float f) {
-		testPreferenceData();
-		try {
-			preferences = readFile("preferences.txt");
-			String[] strs = preferences.split("\n");
-			String newContent = strs[0];
-			boolean gotit = false;
-			for (int i = 0; i < strs.length; i++) {
-				if (strs[i].split(" ")[0].equals(name)) {
-					newContent += name + " = " + f + "\n";
-					gotit = true;
-				} else {
-					newContent += strs[i] + "\n";
-				}
-			}
-			if (!gotit) {
-				newContent += name + " = " + f + "\n";
-				Err.err.println("didn't find preference '" + name + "'; writing it new");
-			}
-			writeToFile("", "preferences.txt", newContent, true);
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while writing a (float)Preference ocurred");
-			System.exit(-1);
-		}
+//		testPreferenceData();
+//		try {
+//			preferences = readFile("preferences.txt");
+//			String[] strs = preferences.split("\n");
+//			String newContent = strs[0];
+//			boolean gotit = false;
+//			for (int i = 0; i < strs.length; i++) {
+//				if (strs[i].split(" ")[0].equals(name)) {
+//					newContent += name + " = " + f + "\n";
+//					gotit = true;
+//				} else {
+//					newContent += strs[i] + "\n";
+//				}
+//			}
+//			if (!gotit) {
+//				newContent += name + " = " + f + "\n";
+//				Err.err.println("didn't find preference '" + name + "'; writing it new");
+//			}
+//			writeToFile("", "preferences.txt", newContent, true);
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while writing a (float)Preference ocurred");
+//			System.exit(-1);
+//		}
+		preferences.setConfig(name, f);
+		preferences.save();
 	}
 
 	public static float loadFloatPreference(String name) {
-		testPreferenceData();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
-			String line;
-			line = reader.readLine();
-			while (line != null) {
-				if (line.split(" ")[0].equals(name)) {
-					break;
-				} else {
-					line = reader.readLine();
-				}
-			}
-			reader.close();
-
-			String[] things = line.split(name + " = ");
-			if (things.length != 2) {
-				Err.err.println("Preference with wrong formation found! Setting it default to 0");
-				setFloatPreference(name, 0);
-				return 0;
-			}
-			return Float.parseFloat(things[1]);
-
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while loading a (bool)Preference ocurred");
-			System.exit(-1);
+//		testPreferenceData();
+//		try {
+//			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
+//			String line;
+//			line = reader.readLine();
+//			while (line != null) {
+//				if (line.split(" ")[0].equals(name)) {
+//					break;
+//				} else {
+//					line = reader.readLine();
+//				}
+//			}
+//			reader.close();
+//
+//			String[] things = line.split(name + " = ");
+//			if (things.length != 2) {
+//				Err.err.println("Preference with wrong formation found! Setting it default to 0");
+//				setFloatPreference(name, 0);
+//				return 0;
+//			}
+//			return Float.parseFloat(things[1]);
+//
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while loading a (bool)Preference ocurred");
+//			System.exit(-1);
+//		}
+		if(preferences.isKey(name)){
+			return preferences.getFloatConfig(name);
 		}
 		return 0;
 	}
 
 	public static void writeToFile(String pathInsideThingsFolder, String context) {
-		File f = new File(getFolderPath() + "/" + pathInsideThingsFolder);
+		File f = new File(superpath + "/" + pathInsideThingsFolder);
 		try {
+			f = f.getCanonicalFile();
+			if(!f.getParentFile().exists())
+				f.getParentFile().mkdirs();
+			
 			if (!f.exists()) {
-				f.createNewFile();
+				f.createNewFile();// if(!f.createNewFile()){...}
 			}
 			BufferedWriter writer = new BufferedWriter(new FileWriter(f));
 			writer.write(context);
 			writer.close();
 		} catch (Exception e) {
-			Err.err.println("A error while writing to File " + f.getAbsolutePath() + " ocurred!");
+			Err.err.println("An error ocurred while writing to File '" + f.getAbsolutePath() + "' !!!");
 			e.printStackTrace(Err.err);
 			System.exit(-1);
 		}
@@ -329,7 +385,7 @@ public class Tools {
 			writer.close();
 		} catch (Exception e) {
 			e.printStackTrace(Err.err);
-			Err.err.println("A error while writing to File " + f.getAbsolutePath() + " ocurred!");
+			Err.err.println("An error while writing to File " + f.getAbsolutePath() + " ocurred!");
 			System.exit(-1);
 		}
 	}
@@ -406,38 +462,43 @@ public class Tools {
 	}
 
 	public static float loadFloatPreference(String name, float defaultValueIfPreferenceIsNotPresent) {
-		testPreferenceData();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
-			String line;
-			line = reader.readLine();
-			while (line != null) {
-				if (line.startsWith(name)) {
-					break;
-				} else {
-					line = reader.readLine();
-				}
-			}
-			reader.close();
-			if (line == null) {
-				System.err
-						.println("Preference not found! Setting it default to " + defaultValueIfPreferenceIsNotPresent);
-				setFloatPreference(name, defaultValueIfPreferenceIsNotPresent);
-				return defaultValueIfPreferenceIsNotPresent;
-			}
-			String[] things = line.split(name + " = ");
-			if (things.length != 2) {
-				Err.err.println("Preference with wrong formation found! Setting it default to 0");
-				setFloatPreference(name, defaultValueIfPreferenceIsNotPresent);
-				return defaultValueIfPreferenceIsNotPresent;
-			}
-			return Float.parseFloat(things[1]);
-		} catch (Exception e) {
-			e.printStackTrace(Err.err);
-			Err.err.println("An error while loading a (float)Preference ocurred");
-			System.exit(-1);
+//		testPreferenceData();
+//		try {
+//			BufferedReader reader = new BufferedReader(new FileReader(new File(getFolderPath() + "/preferences.txt")));
+//			String line;
+//			line = reader.readLine();
+//			while (line != null) {
+//				if (line.startsWith(name)) {
+//					break;
+//				} else {
+//					line = reader.readLine();
+//				}
+//			}
+//			reader.close();
+//			if (line == null) {
+//				System.err
+//						.println("Preference not found! Setting it default to " + defaultValueIfPreferenceIsNotPresent);
+//				setFloatPreference(name, defaultValueIfPreferenceIsNotPresent);
+//				return defaultValueIfPreferenceIsNotPresent;
+//			}
+//			String[] things = line.split(name + " = ");
+//			if (things.length != 2) {
+//				Err.err.println("Preference with wrong formation found! Setting it default to 0");
+//				setFloatPreference(name, defaultValueIfPreferenceIsNotPresent);
+//				return defaultValueIfPreferenceIsNotPresent;
+//			}
+//			return Float.parseFloat(things[1]);
+//		} catch (Exception e) {
+//			e.printStackTrace(Err.err);
+//			Err.err.println("An error while loading a (float)Preference ocurred");
+//			System.exit(-1);
+//		}
+		if(preferences.isKey(name)){
+			return preferences.getFloatConfig(name);
+		}else{
+			preferences.setConfig(name, defaultValueIfPreferenceIsNotPresent);
+			return defaultValueIfPreferenceIsNotPresent;
 		}
-		return defaultValueIfPreferenceIsNotPresent;
 	}
 
 	/**

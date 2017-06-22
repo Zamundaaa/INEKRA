@@ -5,8 +5,10 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import controls.*;
-import data.ChunkSaver;
+import data.chunkLoading.ChunkSaver;
 import entities.*;
+import entities.graphicsParts.RawMods;
+import entities.graphicsParts.Texes;
 import gameStuff.*;
 import guis.GUIManager;
 import guis.GuiTexture;
@@ -18,12 +20,12 @@ import renderStuff.DisplayManager;
 import textures.ModelTexture;
 import toolBox.*;
 
-public class Inv2D {
+public class Inv2D extends Inventory{
 
 	public static int INV_SWITCH = GLFW.GLFW_KEY_E;
 	public static boolean open = false;
 
-	public static final int emptyStackTex = SC.getTex("invStackBack").getID();
+	public static final int emptyStackTex = Models.getLoadedTex(Texes.invStackBack);
 
 	private GuiTexture background, chosenItemStackIndicator;
 	private ItemStack[][] stacks;
@@ -42,15 +44,19 @@ public class Inv2D {
 	private Entity handcontents;
 	
 	private Pane pane;
-
-	public Inv2D() {
+	
+	private Player player;
+	
+	public Inv2D(Player p) {
 		pane = new Pane();
 		
-		background = new GuiTexture(SC.getTex("menu").getID(), new Vector2f(), new Vector2f(0.5f, 0.5f), false);
+		this.player = p;
+		
+		background = new GuiTexture(Models.getLoadedTex(Texes.menu), new Vector2f(), new Vector2f(0.5f, 0.5f), false);
 		stacks = new ItemStack[9][yrows];
 		buttons = new Button[9][yrows];
 		H = (int) (W * DisplayManager.desiredRatioForGUI);
-		chosenItemStackIndicator = new GuiTexture(SC.getTex("texPack/Border").getID(), new Vector2f(),
+		chosenItemStackIndicator = new GuiTexture(Models.getLoadedTex(Texes.blackBorder), new Vector2f(),
 				new Vector2f(W / 1000.0f, H / 1000.0f), true);
 		chosenItemStackIndicator.setDisplayLevel(10);
 		chosenItemStackIndicator.show();
@@ -179,7 +185,7 @@ public class Inv2D {
 			buttons[x][exy].setPosition(((x + ka - 4.5f) * space * W + 500) - W / 2, 950 - H / 2);
 			buttons[x][exy].show();
 		}
-		handcontents = new Entity(gun, 0, new Vector3f(), 0, 0, 0, 0.3f, false, false);
+		handcontents = new Entity(gun, 0, new Vector3f(), 0, 0, 0, 0.3f, false);
 		handcontents.hide();
 		handcontents.show();
 	}
@@ -209,7 +215,8 @@ public class Inv2D {
 	}
 
 	private Button cb;
-
+	
+	@Override
 	public void update() {// clearing the button text on deletion of Stack; Q with closed INV!!! 
 		checkForItem3Ds();
 		if (Keyboard.keyPressedThisFrame(INV_SWITCH)) {
@@ -302,7 +309,7 @@ public class Inv2D {
 			if (stacks[chosen][exy] != null) {
 				if (stacks[chosen][exy].ID() == ItemStack.BOOM) {
 					Vector3f v = getRightPos(true);
-					float alpha = WorldObjects.player.getRotY();
+					float alpha = Camera.getYaw();
 					handcontents.setRotZ(-Camera.getPitch());
 					handcontents.setRotY(alpha - 90);
 					v.y += 0.5f;
@@ -312,7 +319,7 @@ public class Inv2D {
 					handcontents.show();
 				} else if (stacks[chosen][exy].isBlockItem()) {
 					Vector3f v = getRightPos(false);
-					float alpha = WorldObjects.player.getRotY();
+					float alpha = Camera.getYaw();
 
 					handcontents.setRotZ(-Camera.getPitch());
 					handcontents.setRotY(alpha);
@@ -328,7 +335,7 @@ public class Inv2D {
 			} else {
 				handcontents.hide();
 			}
-			if(Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_Q)){
+			if(Keyboard.keyPressedThisFrame(GLFW.GLFW_KEY_Q) && stacks[chosen][exy] != null){
 				final float push = 3;
 				Item3D I = Item3D.getBlockInstance(stacks[chosen][exy].blockID(), MousePicker.getPoint(3, new Vector3f()), true);
 				I.influence(push*(I.getPosition().x-Camera.getPosition().x),
@@ -373,9 +380,9 @@ public class Inv2D {
 		}
 	}
 
-	private RawModel cubeRaw = SC.getModel("cube", "button").getRawMod();
+	private RawModel cubeRaw = Models.getRawModel(RawMods.cube);
 	private TexturedModel cube = new TexturedModel(cubeRaw, new ModelTexture(0));
-	private TexturedModel gun = SC.getModel("gun-90", "gun");
+	private TexturedModel gun = Models.getModel(RawMods.gun90, Texes.gun);//SC.getModel("gun-90", "gun");
 
 	private boolean addItem(int ID) {
 		for (int x = 0; x < 9; x++) {
@@ -410,7 +417,7 @@ public class Inv2D {
 	private void checkForItem3Ds() {
 		for (int i = 0; i < Item3D.is.size(); i++) {
 			if (Item3D.is.get(i).isBlock()
-					&& Vects.xydistSq(Item3D.is.get(i).getPosition(), WorldObjects.player.getPosition()) <= 1) {
+					&& Vects.xydistSq(Item3D.is.get(i).getPosition(), player.getPosition()) <= 1) {
 				for(int i2 = 0; i2 < Item3D.is.get(i).getCurrentSize(); i2++){
 					if(!addItem(ItemStack.itemID(Item3D.is.get(i).BID()))){
 						break;
@@ -431,14 +438,15 @@ public class Inv2D {
 		float r = 0.2f;
 		if (gun)
 			r = 0.5f;
-		float ysin = (float) Math.sin(Math.toRadians(WorldObjects.player.getRotY() - 40));
-		float ycos = (float) Math.cos(Math.toRadians(WorldObjects.player.getRotY() - 40));
+		float ysin = (float) Math.sin(Math.toRadians(player.getRotY() - 40));
+		float ycos = (float) Math.cos(Math.toRadians(player.getRotY() - 40));
 		ret.y -= 0.6f;
 		ret.x += r * ysin;
 		ret.z += r * ycos;
 		return ret;
 	}
-
+	
+	@Override
 	public void cleanUp() {
 		save();
 		for (int x = 0; x < 9; x++) {

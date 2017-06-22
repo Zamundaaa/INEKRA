@@ -1,18 +1,23 @@
 package entities;
 
+import entities.graphicsParts.ModelGraphics;
+import mainInterface.Intraface;
 import models.TexturedModel;
 
 public class MWBE {
 
-	protected TexturedModel model;
+	protected short texID, modelID;
 	protected float x, y, z;
 	protected float rotX, rotY, rotZ, scale;
 
 	protected int tIndex = 0;
-
-	public MWBE(TexturedModel model, int tIndex, float x, float y, float z, float rotX, float rotY, float rotZ,
-			float scale) {
-		this.model = model;
+	
+	protected ModelGraphics graphics;
+	
+	public MWBE(short modelID, short texID, int tIndex, float x, float y, float z, float rotX, float rotY, float rotZ,
+			float scale, ModelGraphics g) {
+		this.texID = texID;
+		this.modelID = modelID;
 		this.tIndex = tIndex;
 		this.x = x;
 		this.y = y;
@@ -21,19 +26,54 @@ public class MWBE {
 		this.rotY = rotY;
 		this.rotZ = rotZ;
 		this.scale = scale;
+		this.graphics = g;
+		graphics.setParent(this);
 	}
-
-	public MWBE(TexturedModel model, int tIndex, float x, float y, float z, float scale) {
-		this.model = model;
+	
+	public MWBE(short modelID, short texID, int tIndex, float x, float y, float z, float scale, ModelGraphics g) {
+		this.texID = texID;
+		this.modelID = modelID;
 		this.tIndex = tIndex;
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.scale = scale;
+		this.graphics = g;
+		graphics.setParent(this);
+	}
+	
+	public MWBE(short modelID, short texID, int tIndex, float x, float y, float z, float rotX, float rotY, float rotZ,
+			float scale) {
+		this.texID = texID;
+		this.modelID = modelID;
+		this.tIndex = tIndex;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.rotX = rotX;
+		this.rotY = rotY;
+		this.rotZ = rotZ;
+		this.scale = scale;
+		graphics = Intraface.getModelGraphics(this, modelID, texID);
+	}
+
+	public MWBE(short modelID, short texID, int tIndex, float x, float y, float z, float scale) {
+		this.texID = texID;
+		this.modelID = modelID;
+		this.tIndex = tIndex;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.scale = scale;
+		graphics = Intraface.getModelGraphics(this, modelID, texID);
 	}
 
 	protected MWBE() {
 
+	}
+	
+	public void setModelGraphics(ModelGraphics g){
+		this.graphics = g;
 	}
 
 	public void settIndex(int i) {
@@ -58,16 +98,6 @@ public class MWBE {
 		rotZ += z;
 	}
 
-	public float getTextureXOffset() {
-		int column = tIndex % model.getTex().getNOR();
-		return (float) column / (float) model.getTex().getNOR();
-	}
-
-	public float getTextureYOffset() {
-		int row = (int) ((float) tIndex / (float) model.getTex().getNOR());
-		return (float) row / (float) model.getTex().getNOR();
-	}
-
 	public void increasePos(float dx, float dy, float dz) {
 		x += dx;
 		y += dy;
@@ -80,8 +110,20 @@ public class MWBE {
 		rotZ += dz;
 	}
 
-	public TexturedModel getModel() {
-		return model;
+	public int getModelID() {
+		return modelID;
+	}
+	
+	public int getTexID(){
+		return texID;
+	}
+	
+	public int texIndex(){
+		return tIndex;
+	}
+	
+	public ModelGraphics getModelGraphics(){
+		return graphics;
 	}
 
 	public float getRotX() {
@@ -101,7 +143,7 @@ public class MWBE {
 	}
 
 	public void setModel(TexturedModel model) {
-		this.model = model;
+		this.graphics.setModel(model);
 	}
 
 	public void setPosition(float x, float y, float z) {
@@ -127,7 +169,20 @@ public class MWBE {
 	}
 
 	public void update() {
-
+		graphics.update();
+	}
+	
+	public void show(){
+		graphics.show();
+	}
+	
+	public void hide(){
+		graphics.hide();
+	}
+	
+	public void cleanUp(){
+		hide();
+		graphics.cleanUp();
 	}
 
 }

@@ -1,0 +1,16 @@
+TO DO LIST:
+
+	split graphics, control and the rest even more
+		--> Entities get a graphics part which will
+				- lead to a static entity with empty methods if on the server side
+				- execute the normal graphics part like spawning particles, containing the model and so on
+		--> Player gets a control-Method which will be called by the singlePlayer and multiPlayer_Client
+		--> The graphics part for the player will contain the displaying part of the inventory, too.
+				so if you're on the server side, the inventory will still function normally, but won't be displayed
+		--> TexturedModel etc. from the other project in more advanced
+			* Entities get this ID only. If on client side, it'll be used to create the graphics part
+			* if on server side, it'll just be sent to the client
+	
+	This all should be sufficient to run the server without issues. SinglePlayer *has* to work, too.
+	If this is accomplished, then the server-client connection can be worked out without worries.
+	ETA: 1-2 days

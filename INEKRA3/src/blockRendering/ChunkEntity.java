@@ -1,21 +1,18 @@
 package blockRendering;
 
 import entities.MWBE;
-import gameStuff.SC;
-import models.RawModel;
-import models.TexturedModel;
 
 public class ChunkEntity extends MWBE {// still the shadowRenderer does not
 										// work!
 
-	private RawModel mod;
+//	private RawModel mod;
 	private float[] vertices, texcoords, normals, lightData;
 	private int[] indis;
 
 	public ChunkEntity(float[] vertices, float[] texcoords, float[] normals, int[] indis, float[] lightData, float x,
 			float y, float z) {
 //		mod = Loader.loadToVAO3DTex(vertices, texcoords, normals, indis, lightData);
-		this.model = new TexturedModel(mod, SC.getTex("white"));
+//		this.model = new TexturedModel(mod, SC.getTex("white"));
 		this.tIndex = 0;
 		this.x = x;
 		this.y = y;
@@ -60,17 +57,17 @@ public class ChunkEntity extends MWBE {// still the shadowRenderer does not
 		return lightData;
 	}
 
-	public RawModel getMod() {
-		return mod;
-	}
+//	public RawModel getMod() {
+//		return mod;
+//	}
 
-	/*
-	 * RETURNS A UNNECESSARY TEXTURED MODEL!
-	 */
-	@Override
-	public TexturedModel getModel() {
-		return this.model;
-	}
+//	/*
+//	 * RETURNS A UNNECESSARY TEXTURED MODEL!
+//	 */
+//	@Override
+//	public TexturedModel getModel() {
+//		return this.model;
+//	}
 
 	public void unload() {
 //		Loader.unload(mod);

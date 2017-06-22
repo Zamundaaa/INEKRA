@@ -106,8 +106,8 @@ public class Meth {
 
 	public static BoundingSphere createBoundingSphere(Entity e) {
 		float r2 = 0;
-		float[] vertices = e.getModel().getRawMod().getVertices();
-		int[] indices = e.getModel().getRawMod().getIndices();
+		float[] vertices = e.getModelGraphics().getModel().getRawMod().getVertices();
+		int[] indices = e.getModelGraphics().getModel().getRawMod().getIndices();
 		int i = 0;
 		while (i < indices.length) {
 			Vector3f pos = new Vector3f();
